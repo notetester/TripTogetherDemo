@@ -1,0 +1,1487 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="22vq2KzrX05aGhZEfDesL7VVzT69kxHU-Vc0YDih7NHgG6L57A-L4ZiIPi93KCBzThqYHYJh4FyEpnf5zDVSWQzA3OWBK8DK">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../resources/css/common/header.css">
+    <link rel="stylesheet" href="../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../resources/css/home/home.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../wallet.html">내 지갑</a>
+                    <a href="../shop.html">아이템샵</a>
+                    <a href="../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                        <div class="noti-empty">새로운 알림이 없어요.</div>
+                                    
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">최고관리자</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+<!-- ===== 히어로 섹션 ===== -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-ov"></div>
+    <div class="hero-c">
+        <h1>세계를 탐험하세요</h1>
+        <p>AI가 추천하는 완벽한 여행 계획</p>
+        <div class="hero-btns">
+            <button class="btn-pri" onclick="location.href='../explore.html'">
+                📍 여행지 탐색
+            </button>
+            <button class="btn-sec" onclick="location.href='/TripTogether/assistant'">
+                ✨ AI 추천받기
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 피처 섹션 ===== -->
+<section class="feat-sec">
+    <div class="si">
+        <div class="feat-grid">
+            <div class="feat-card" style="cursor:pointer;" onclick="location.href='/TripTogether/assistant'">
+                <div class="feat-icon fi-b">✨</div>
+                <h3>AI 여행 도우미</h3>
+                <p>AI가 당신의 취향에 맞는 완벽한 여행지와 일정을 추천해드립니다</p>
+            </div>
+            <div class="feat-card" style="cursor:pointer;" onclick="location.href='/TripTogether/courses/list'">
+                <div class="feat-icon fi-p">📅</div>
+                <h3>일정 자동 생성</h3>
+                <p>여행 기간과 선호도만 입력하면 최적의 일정이 자동으로 생성됩니다</p>
+            </div>
+            <div class="feat-card" style="cursor:pointer;" onclick="location.href='../community/list.html'">
+                <div class="feat-icon fi-g">💬</div>
+                <h3>커뮤니티</h3>
+                <p>전 세계 여행자들과 경험을 공유하고 유용한 정보를 얻으세요</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 인기 여행지 섹션 ===== -->
+<section class="cs">
+    <div class="si">
+        <div class="sh">
+            <h2 class="st">인기 여행지</h2>
+            <button class="vm" onclick="location.href='../explore.html'">더보기 →</button>
+        </div>
+        <div id="spotsSection">
+            
+                
+                
+                    <div class="home-grid">
+                        
+                            
+                                <div class="cc-wrap" data-spot-id="2" style="cursor: pointer;">
+                                        <div class="dc">
+                                            <div class="dc-iw">
+                                                
+                                                    
+                                                        <img class="dc-img" src="https://picsum.photos/seed/busan1/800/600" alt="부산 해운대 해수욕장" onerror="spotImgError(this)">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                        
+                                                            <span class="dc-badge dc-badge-verygood">★ 4.6</span>
+                                                        
+                                                        
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="dc-b">
+                                                <div class="dc-name">부산 해운대 해수욕장</div>
+                                                
+                                                    <div class="dc-ctry">📍 asia</div>
+                                                
+                                                
+                                                    <div class="dc-desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-spot-id="1" style="cursor: pointer;">
+                                        <div class="dc">
+                                            <div class="dc-iw">
+                                                
+                                                    
+                                                        <img class="dc-img" src="https://picsum.photos/seed/jeju1/800/600" alt="제주 성산일출봉" onerror="spotImgError(this)">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                            <span class="dc-badge dc-badge-excellent">★ 4.8</span>
+                                                        
+                                                        
+                                                        
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="dc-b">
+                                                <div class="dc-name">제주 성산일출봉</div>
+                                                
+                                                    <div class="dc-ctry">📍 asia</div>
+                                                
+                                                
+                                                    <div class="dc-desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-spot-id="4" style="cursor: pointer;">
+                                        <div class="dc">
+                                            <div class="dc-iw">
+                                                
+                                                    
+                                                        <img class="dc-img" src="https://picsum.photos/seed/seoul1/800/600" alt="서울 경복궁" onerror="spotImgError(this)">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                        
+                                                            <span class="dc-badge dc-badge-verygood">★ 4.5</span>
+                                                        
+                                                        
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="dc-b">
+                                                <div class="dc-name">서울 경복궁</div>
+                                                
+                                                    <div class="dc-ctry">📍 asia</div>
+                                                
+                                                
+                                                    <div class="dc-desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-spot-id="7" style="cursor: pointer;">
+                                        <div class="dc">
+                                            <div class="dc-iw">
+                                                
+                                                    
+                                                        <img class="dc-img" src="https://picsum.photos/seed/paris1/800/600" alt="파리 에펠탑" onerror="spotImgError(this)">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                            <span class="dc-badge dc-badge-excellent">★ 4.9</span>
+                                                        
+                                                        
+                                                        
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="dc-b">
+                                                <div class="dc-name">파리 에펠탑</div>
+                                                
+                                                    <div class="dc-ctry">📍 europe</div>
+                                                
+                                                
+                                                    <div class="dc-desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                            
+                            
+                            
+                        </div>
+                
+            
+        </div>
+    </div>
+</section>
+
+<!-- ===== 추천 여행 패키지 섹션 ===== -->
+
+    
+    
+    <section class="cs home-package-sec">
+        <div class="si">
+            <div class="sh package-sh">
+                <div>
+                    <h2 class="st">추천 여행 패키지</h2>
+                    <p class="package-sub">승인된 여행 패키지를 파트너 상품 우선으로 추천합니다.</p>
+                </div>
+                <div class="package-controls">
+                    <button type="button" class="package-nav-btn" id="packagePrevBtn" aria-label="이전 패키지">‹</button>
+                    <button type="button" class="package-nav-btn" id="packageNextBtn" aria-label="다음 패키지">›</button>
+                    <button type="button" class="vm" data-home-package-list-url="/TripTogether/packages">
+                        더보기 →
+                    </button>
+                </div>
+            </div>
+
+            <div class="home-package-slider" id="homePackageSlider">
+                <div class="home-package-track" id="homePackageTrack">
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="7" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgparis/900/600" alt="파리 5일 에펠탑 &amp; 루브르 자유여행">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 europe · 파리 에펠탑
+                                </div>
+                                <h3>파리 5일 에펠탑 &amp; 루브르 자유여행</h3>
+                                <p>
+                                    
+                                        
+                                            센강 유람선 + 루브르 입장권 포함
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        2,390,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        58
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="8" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgtokyo/900/600" alt="도쿄 3박4일 시부야 &amp; 디즈니">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 asia · 도쿄 시부야
+                                </div>
+                                <h3>도쿄 3박4일 시부야 &amp; 디즈니</h3>
+                                <p>
+                                    
+                                        
+                                            디즈니랜드 1일권 + 시부야 쇼핑
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        890,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        49
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="1" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgjeju/900/600" alt="제주 2박3일 성산일출봉 &amp; 우도 패키지">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 asia · 제주 성산일출봉
+                                </div>
+                                <h3>제주 2박3일 성산일출봉 &amp; 우도 패키지</h3>
+                                <p>
+                                    
+                                        
+                                            제주 동부 핵심 코스, 전일정 가이드 동행
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        329,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        42
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="10" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgny/900/600" alt="뉴욕 6일 자유여행 핵심 패키지">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 north_america · 뉴욕 센트럴파크
+                                </div>
+                                <h3>뉴욕 6일 자유여행 핵심 패키지</h3>
+                                <p>
+                                    
+                                        
+                                            센트럴파크·타임스퀘어·MoMA
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        3,290,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        33
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="2" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgbusan/900/600" alt="부산 해운대 야경 &amp; 미식 1박2일">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 asia · 부산 해운대 해수욕장
+                                </div>
+                                <h3>부산 해운대 야경 &amp; 미식 1박2일</h3>
+                                <p>
+                                    
+                                        
+                                            마린시티 야경과 자갈치 회센터 투어
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        189,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        31
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="9" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgbangkok/900/600" alt="방콕 4박5일 사원 &amp; 마사지 힐링">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 asia · 방콕 왓아룬
+                                </div>
+                                <h3>방콕 4박5일 사원 &amp; 마사지 힐링</h3>
+                                <p>
+                                    
+                                        
+                                            왓아룬·왓포 + 전통 타이마사지
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        690,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        24
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                        
+                        
+
+                        <article class="home-package-card" data-spot-id="5" tabindex="0">
+                            <div class="home-package-img-wrap">
+                                
+                                    
+                                        <img class="home-package-img" src="https://picsum.photos/seed/pkggn/900/600" alt="강릉 바다 &amp; 카페투어 1박2일">
+                                    
+                                    
+                                
+
+                                
+                            </div>
+
+                            <div class="home-package-body">
+                                <div class="home-package-spot">
+                                    📍 asia · 강릉 안목해변 카페거리
+                                </div>
+                                <h3>강릉 바다 &amp; 카페투어 1박2일</h3>
+                                <p>
+                                    
+                                        
+                                            안목해변 카페거리 + 정동진 일출
+                                        
+                                        
+                                    
+                                </p>
+                                <div class="home-package-meta">
+                                    <span>
+                                        145,000
+                                        KRW
+                                    </span>
+                                    <span>
+                                        예약
+                                        19
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+<!-- ===== 트렌딩 여행 코스 섹션 ===== -->
+<section class="cs bg">
+    <div class="si">
+        <div class="sh">
+            <h2 class="st">트렌딩 여행 코스</h2>
+            <button class="vm" onclick="location.href='/TripTogether/courses/list'">더보기 →</button>
+        </div>
+        <div id="plansSection">
+            
+                
+                
+                    <div class="home-grid">
+                        
+                            
+                                <div class="cc-wrap" data-plan-id="1" style="cursor: pointer;">
+                                        <div class="tc">
+                                            <div class="tc-iw">
+                                                
+                                                    
+                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593736/community_default/europe.jpg" alt="제주 가족여행 3박4일">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="tc-b">
+                                                <div class="tc-title">제주 가족여행 3박4일</div>
+                                                <div class="tc-foot">
+                                                    <span class="tc-auth">by {0}</span>
+                                                    
+                                                        <span class="tc-dest">📍 제주</span>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-plan-id="2" style="cursor: pointer;">
+                                        <div class="tc">
+                                            <div class="tc-iw">
+                                                
+                                                    
+                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593731/community_default/asia.jpg" alt="파리 허니문 5일 코스">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="tc-b">
+                                                <div class="tc-title">파리 허니문 5일 코스</div>
+                                                <div class="tc-foot">
+                                                    <span class="tc-auth">by {0}</span>
+                                                    
+                                                        <span class="tc-dest">📍 파리</span>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-plan-id="3" style="cursor: pointer;">
+                                        <div class="tc">
+                                            <div class="tc-iw">
+                                                
+                                                    
+                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593750/community_default/south_america.jpg" alt="부산 1박2일 미식투어">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                            <span class="tc-badge tc-badge-short">{0}박 {1}일</span>
+                                                        
+                                                        
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="tc-b">
+                                                <div class="tc-title">부산 1박2일 미식투어</div>
+                                                <div class="tc-foot">
+                                                    <span class="tc-auth">by {0}</span>
+                                                    
+                                                        <span class="tc-dest">📍 부산</span>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                                <div class="cc-wrap" data-plan-id="4" style="cursor: pointer;">
+                                        <div class="tc">
+                                            <div class="tc-iw">
+                                                
+                                                    
+                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593741/community_default/africa.jpg" alt="유럽 3개국 2주 배낭여행">
+                                                    
+                                                    
+                                                
+                                                
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
+                                                        
+                                                    
+                                                
+                                            </div>
+                                            <div class="tc-b">
+                                                <div class="tc-title">유럽 3개국 2주 배낭여행</div>
+                                                <div class="tc-foot">
+                                                    <span class="tc-auth">by {0}</span>
+                                                    
+                                                        <span class="tc-dest">📍 파리/로마/바르셀로나</span>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                            
+                            
+                        </div>
+                
+            
+        </div>
+    </div>
+</section>
+
+<!-- ===== 커뮤니티 미리보기 섹션 ===== -->
+<section class="cs">
+    <div class="si">
+        <div class="sh">
+            <h2 class="st">인기 여행 이야기</h2>
+            <button class="vm" onclick="location.href='../community/list.html'">더보기 →</button>
+        </div>
+        <div id="communitySection">
+            
+                
+                
+                    <div class="home-grid">
+                        
+                            
+                                    
+                                    
+                                        
+                                        
+                                        
+                                        <div class="cc-wrap" data-id="7" style="cursor: pointer;">
+                                            
+                                            
+                                            <div class="cc">
+                                                <div class="cc-iw">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
+                                                        
+                                                    
+                                                    <span class="cc-badge cc-badge-tip">
+                                                        
+                                                            
+                                                            
+                                                            팁
+                                                            
+                                                            
+                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="cc-b">
+                                                    <div class="cc-title">유럽 3개국 2주 일정표 공유합니다</div>
+                                                    <div class="cc-foot">
+                                                        <div class="cc-auth">
+                                                            <div class="cc-av">장</div>
+                                                            <div>
+                                                                <div class="cc-an">장미네VIP</div>
+                                                                <div class="cc-dt">2026.06.09</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="cc-stats">
+                                                            <span>❤ 160</span>
+                                                            <span>💬 4</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                        </div>
+                                    
+                        
+                            
+                                    
+                                    
+                                        
+                                        
+                                        
+                                        <div class="cc-wrap" data-id="3" style="cursor: pointer;">
+                                            
+                                            
+                                            <div class="cc">
+                                                <div class="cc-iw">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
+                                                        
+                                                    
+                                                    <span class="cc-badge cc-badge-tip">
+                                                        
+                                                            
+                                                            
+                                                            팁
+                                                            
+                                                            
+                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="cc-b">
+                                                    <div class="cc-title">파리 자유여행 가서 루브르 100% 즐기는 법</div>
+                                                    <div class="cc-foot">
+                                                        <div class="cc-auth">
+                                                            <div class="cc-av">윤</div>
+                                                            <div>
+                                                                <div class="cc-an">윤서진여행</div>
+                                                                <div class="cc-dt">2026.06.15</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="cc-stats">
+                                                            <span>❤ 142</span>
+                                                            <span>💬 5</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                        </div>
+                                    
+                        
+                            
+                                    
+                                    
+                                        
+                                        
+                                        
+                                        <div class="cc-wrap" data-id="5" style="cursor: pointer;">
+                                            
+                                            
+                                            <div class="cc">
+                                                <div class="cc-iw">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
+                                                        
+                                                    
+                                                    <span class="cc-badge cc-badge-tip">
+                                                        
+                                                            
+                                                            
+                                                            팁
+                                                            
+                                                            
+                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="cc-b">
+                                                    <div class="cc-title">도쿄 디즈니랜드 어트랙션 공략 순서</div>
+                                                    <div class="cc-foot">
+                                                        <div class="cc-auth">
+                                                            <div class="cc-av">임</div>
+                                                            <div>
+                                                                <div class="cc-an">임도현</div>
+                                                                <div class="cc-dt">2026.06.11</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="cc-stats">
+                                                            <span>❤ 98</span>
+                                                            <span>💬 3</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                        </div>
+                                    
+                        
+                            
+                                    
+                                    
+                                        
+                                        
+                                        
+                                        <div class="cc-wrap" data-id="1" style="cursor: pointer;">
+                                            
+                                            
+                                            <div class="cc">
+                                                <div class="cc-iw">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
+                                                        
+                                                    
+                                                    <span class="cc-badge cc-badge-review">
+                                                        
+                                                            여행후기
+                                                            
+                                                            
+                                                            
+                                                            
+                                                        
+                                                    </span>
+                                                </div>
+                                                <div class="cc-b">
+                                                    <div class="cc-title">제주 3박4일 다녀온 후기 (사진 많음)</div>
+                                                    <div class="cc-foot">
+                                                        <div class="cc-auth">
+                                                            <div class="cc-av">여</div>
+                                                            <div>
+                                                                <div class="cc-an">여행가김철수</div>
+                                                                <div class="cc-dt">2026.06.14</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="cc-stats">
+                                                            <span>❤ 86</span>
+                                                            <span>💬 4</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                        </div>
+                                    
+                        
+                    </div>
+                
+            
+        </div>
+    </div>
+</section>
+
+<script>
+    var ctx            = '/TripTogether';
+    var adminMode      = false;
+    var fallbackImgUrl = 'https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593746/community_default/north_america.jpg';
+
+
+    function spotImgError(img) {
+        if (fallbackImgUrl) {
+            img.onerror = null;
+            img.src = fallbackImgUrl;
+        } else {
+            img.outerHTML = '<div class="dc-img-placeholder">'
+                + '<span class="dc-ph-icon">&#9992;</span>'
+                + '<span class="dc-ph-name">' + escHtml(img.alt) + '</span>'
+                + '</div>';
+        }
+    }
+
+    function escHtml(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function removeReportBlur(overlay) {
+        var wrap = overlay.closest('.report-blurred-wrap');
+        wrap.classList.remove('report-blurred-wrap');
+        overlay.previousElementSibling.classList.remove('report-blurred');
+        overlay.remove();
+    }
+
+    /* ===== 인기 여행지 카드 클릭 ===== */
+    var spotsSection = document.getElementById('spotsSection');
+    if (spotsSection) {
+        spotsSection.querySelectorAll('.cc-wrap[data-spot-id]').forEach(function (wrap) {
+            wrap.style.cursor = 'pointer';
+            wrap.addEventListener('click', function () {
+                location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
+            });
+        });
+    }
+
+    /* ===== 트렌딩 코스 카드 클릭 ===== */
+    var plansSection = document.getElementById('plansSection');
+    if (plansSection) {
+        plansSection.querySelectorAll('.cc-wrap[data-plan-id]').forEach(function (wrap) {
+            wrap.style.cursor = 'pointer';
+            wrap.addEventListener('click', function () {
+                location.href = ctx + '/courses/detail?planId=' + this.getAttribute('data-plan-id');
+            });
+        });
+    }
+
+    /* ===== 추천 여행 패키지 자동 슬라이드 ===== */
+    var packageTrack = document.getElementById('homePackageTrack');
+    var packageSlider = document.getElementById('homePackageSlider');
+    var packagePrevBtn = document.getElementById('packagePrevBtn');
+    var packageNextBtn = document.getElementById('packageNextBtn');
+    var packageAutoTimer = null;
+
+    function getPackageStep() {
+        if (!packageTrack) return 0;
+        var firstCard = packageTrack.querySelector('.home-package-card');
+        if (!firstCard) return 0;
+        var gap = 24;
+        return (firstCard.offsetWidth + gap) * 3;
+    }
+
+    function movePackageSlider(direction) {
+        if (!packageSlider || !packageTrack) return;
+
+        var step = getPackageStep();
+        if (step <= 0) return;
+
+        var maxScroll = packageTrack.scrollWidth - packageSlider.clientWidth;
+        var nextLeft = packageSlider.scrollLeft + (step * direction);
+
+        if (nextLeft > maxScroll - 4) {
+            nextLeft = 0;
+        }
+        if (nextLeft < 0) {
+            nextLeft = maxScroll;
+        }
+
+        packageSlider.scrollTo({
+            left: nextLeft,
+            behavior: 'smooth'
+        });
+    }
+
+    function startPackageAutoSlide() {
+        if (!packageSlider || packageAutoTimer) return;
+        packageAutoTimer = window.setInterval(function () {
+            movePackageSlider(1);
+        }, 4500);
+    }
+
+    function stopPackageAutoSlide() {
+        if (!packageAutoTimer) return;
+        window.clearInterval(packageAutoTimer);
+        packageAutoTimer = null;
+    }
+
+    if (packageSlider) {
+        if (packagePrevBtn) {
+            packagePrevBtn.addEventListener('click', function () {
+                movePackageSlider(-1);
+            });
+        }
+        if (packageNextBtn) {
+            packageNextBtn.addEventListener('click', function () {
+                movePackageSlider(1);
+            });
+        }
+
+        packageSlider.addEventListener('mouseenter', stopPackageAutoSlide);
+        packageSlider.addEventListener('mouseleave', startPackageAutoSlide);
+
+        packageSlider.querySelectorAll('.home-package-card[data-spot-id]').forEach(function (card) {
+            card.addEventListener('click', function () {
+                location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
+            });
+            card.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-home-package-list-url]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                location.href = this.getAttribute('data-home-package-list-url');
+            });
+        });
+
+        startPackageAutoSlide();
+    }
+
+    /* ===== 인기 여행 이야기 카드 클릭 ===== */
+    var communitySection = document.getElementById('communitySection');
+    if (communitySection) {
+        communitySection.querySelectorAll('.cc-wrap[data-id]').forEach(function (wrap) {
+            wrap.style.cursor = 'pointer';
+            wrap.addEventListener('click', function () {
+                location.href = ctx + '/community/' + this.getAttribute('data-id');
+            });
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+
+<script>window.__DEMO_BASE__="../";</script>
+<script src="../assets/demo-mock.js"></script>
+</body></html>

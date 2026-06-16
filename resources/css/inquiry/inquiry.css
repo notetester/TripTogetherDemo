@@ -1,0 +1,1161 @@
+/* =============================================
+   TRIPTOGETHER - 고객지원 (inquiry)
+   resources/css/inquiry/inquiry.css
+
+   [규칙]
+   ※ 모든 클래스는 inq- 접두사 사용 → 타 페이지와 충돌 없음
+   ※ 색상은 variables.css 의 CSS 변수만 참조
+   ※ 반응형 640px 이하 별도 처리
+
+   [페이지 구성]
+   1. 공통 레이아웃
+   2. 목록 페이지 헤더
+   3. 카테고리 탭
+   4. 목록 본문 영역
+   5. 테이블
+   6. 페이지네이션
+   7. 작성 페이지
+   8. 상세 페이지
+   9. 반응형
+   ============================================= */
+
+/* ══════════════════════════════════════════════
+   1. 공통 레이아웃
+   - flex 컨테이너 안에서 남은 공간을 채우도록 설정
+══════════════════════════════════════════════ */
+.inq-body-wrap,
+.inq-write-wrap,
+.inq-detail-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ══════════════════════════════════════════════
+   2. 목록 페이지 헤더
+══════════════════════════════════════════════ */
+.inq-ph {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 40px 24px 0;
+}
+
+.inq-ph h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 6px;
+}
+
+.inq-ph-sub {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin: 0 0 28px;
+}
+
+/* ══════════════════════════════════════════════
+   3. 카테고리 탭
+══════════════════════════════════════════════ */
+.inq-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: none;
+}
+
+.inq-tab {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+}
+
+.inq-tab:hover { color: var(--blue); }
+
+/* 현재 선택된 탭 */
+.inq-tab.active {
+    color: var(--blue);
+    font-weight: 700;
+    border-bottom-color: var(--blue);
+}
+
+/* ══════════════════════════════════════════════
+   4. 목록 본문 영역
+══════════════════════════════════════════════ */
+.inq-body-wrap {
+    padding: 32px 24px 80px;
+    background: var(--gray-50);
+    min-height: 60vh;
+}
+
+/* ── 툴바 (총 개수 + 필터 + 버튼) ── */
+.inq-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.inq-total {
+    font-size: 14px;
+    color: var(--gray-500);
+    flex: 1;
+}
+
+.inq-total strong {
+    color: var(--gray-800);
+    font-weight: 700;
+}
+
+/* 어드민 전용 상태 필터 버튼 */
+.inq-status-filter {
+    display: flex;
+    gap: 6px;
+}
+
+.inq-sf {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-decoration: none;
+    transition: all .15s;
+}
+
+.inq-sf:hover,
+.inq-sf.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+}
+
+/* 문의하기 버튼 */
+.inq-btn-write {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .2s;
+    white-space: nowrap;
+}
+
+.inq-btn-write:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+}
+
+/* ── 검색창 ── */
+.inq-search-form { margin-bottom: 16px; }
+
+.inq-search-wrap {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 4px 4px 4px 14px;
+    max-width: 440px;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.inq-search-wrap:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+.inq-search-icon { font-size: 15px; margin-right: 8px; flex-shrink: 0; }
+
+.inq-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: transparent;
+}
+
+.inq-search-btn {
+    padding: 7px 16px;
+    border-radius: 7px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+
+.inq-search-btn:hover { opacity: .85; }
+
+/* 검색어 하이라이트 */
+.inq-highlight {
+    background: #fef08a;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+/* ══════════════════════════════════════════════
+   5. 테이블
+══════════════════════════════════════════════ */
+.inq-table-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.inq-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.inq-table thead tr {
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.inq-table th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.inq-table th:first-child { text-align: center; }
+
+/* 일반 행 */
+.inq-row {
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: background .12s;
+}
+
+.inq-row:last-child { border-bottom: none; }
+.inq-row:hover { background: var(--gray-50); }
+
+/* 비공개 글 행 (클릭 불가 처리) */
+.inq-row-blocked {
+    border-bottom: 1px solid var(--gray-100);
+    cursor: default;
+}
+.inq-row-blocked:hover { background: none; }
+
+.inq-table td {
+    padding: 14px 16px;
+    color: var(--gray-700);
+    vertical-align: middle;
+}
+
+/* No 컬럼 */
+.inq-no {
+    text-align: center;
+    color: var(--gray-400);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.inq-lock { font-size: 14px; }
+
+/* 제목 컬럼 */
+.inq-title-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.inq-title { font-weight: 500; color: var(--gray-800); }
+.inq-row:hover .inq-title { color: var(--blue); }
+
+/* 비공개 글 제목 (회색 처리) */
+.inq-title-blocked { color: var(--gray-400); }
+
+/* 비공개 태그 */
+.inq-private-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--gray-100);
+    color: var(--gray-500);
+}
+
+/* 상태 뱃지 (색상으로 상태 구분) */
+.inq-status-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.inq-status-badge.PENDING            { background: #fef9c3; color: #92400e; } /* 노란색: 대기중 */
+.inq-status-badge.IN_PROGRESS        { background: #dbeafe; color: #1e40af; } /* 파란색: 처리중 */
+.inq-status-badge.COMPLETED          { background: #dcfce7; color: #15803d; } /* 초록색: 답변완료 */
+.inq-status-badge.USER_COMPLETED     { background: #d1fae5; color: #065f46; } /* 에메랄드: 해결됨 */
+.inq-status-badge.CANCELLED          { background: #f3f4f6; color: #6b7280; } /* 회색: 취소됨 */
+.inq-status-badge.DELETE_REQUESTED   { background: #fee2e2; color: #991b1b; } /* 연빨강: 삭제요청 */
+.inq-status-badge.PRIVATE_REQUESTED  { background: #ede9fe; color: #5b21b6; } /* 보라: 비공개요청 */
+.inq-status-badge.PUBLIC_REQUESTED   { background: #e0f2fe; color: #0369a1; } /* 하늘: 공개요청 */
+
+/* 카테고리 태그 */
+.inq-category-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--blue-light);
+    color: var(--blue);
+    white-space: nowrap;
+}
+
+/* 작성자 / 날짜 */
+.inq-nick { color: var(--gray-500); font-size: 13px; }
+.inq-date { color: var(--gray-400); font-size: 12px; white-space: nowrap; }
+
+/* 빈 목록 */
+.inq-empty {
+    text-align: center;
+    padding: 60px 24px !important;
+}
+
+.inq-empty-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.inq-empty-icon  { font-size: 40px; }
+.inq-empty-msg   { font-size: 16px; font-weight: 600; color: var(--gray-600); }
+.inq-empty-sub   { font-size: 13px; color: var(--gray-400); }
+
+/* ══════════════════════════════════════════════
+   6. 페이지네이션
+══════════════════════════════════════════════ */
+.inq-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 28px;
+}
+
+.inq-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-decoration: none;
+    border: 1px solid var(--gray-200);
+    background: #fff;
+    transition: all .15s;
+}
+
+.inq-page-btn:hover,
+.inq-page-btn.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+}
+
+/* ══════════════════════════════════════════════
+   7. 작성 페이지
+══════════════════════════════════════════════ */
+.inq-write-wrap {
+    background: var(--gray-50);
+    min-height: 80vh;
+    padding: 40px 24px 80px;
+}
+
+.inq-write-inner {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.inq-write-header { margin-bottom: 28px; }
+
+.inq-write-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 6px;
+}
+
+.inq-write-header p {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+/* 뒤로가기 버튼 */
+.inq-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    transition: color .15s;
+    font-family: inherit;
+}
+
+.inq-back-btn:hover { color: var(--blue); }
+
+/* 폼 카드 */
+.inq-write-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 폼 요소 */
+.inq-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inq-form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.inq-required { color: #ef4444; margin-left: 2px; }
+
+.inq-form-input,
+.inq-form-select {
+    padding: 11px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-800);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+}
+
+.inq-form-input:focus,
+.inq-form-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+.inq-form-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-800);
+    outline: none;
+    resize: vertical;
+    min-height: 160px;
+    line-height: 1.6;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.inq-form-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+/* 비활성화된 textarea (답변 완료 후 수정 불가 시) */
+.inq-form-textarea:disabled {
+    background: var(--gray-50);
+    color: var(--gray-600);
+    cursor: not-allowed;
+}
+
+.inq-textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 글자수 카운터 */
+.inq-char-count { font-size: 12px; color: var(--gray-400); }
+
+/* 필드 유효성 메시지 */
+.inq-field-msg { font-size: 12px; min-height: 16px; }
+.inq-field-msg.error   { color: #ef4444; }
+.inq-field-msg.success { color: #15803d; }
+
+/* 비공개 토글 스위치 */
+.inq-private-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.inq-private-toggle input { display: none; }
+
+.inq-toggle-slider {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    background: var(--gray-200);
+    border-radius: 22px;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+
+.inq-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 3px;
+    left: 3px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .2s;
+}
+
+/* 토글 ON 상태 */
+.inq-private-toggle input:checked + .inq-toggle-slider { background: var(--blue); }
+.inq-private-toggle input:checked + .inq-toggle-slider::before { transform: translateX(18px); }
+
+.inq-toggle-label { font-size: 14px; font-weight: 500; color: var(--gray-700); }
+.inq-private-hint { font-size: 12px; color: var(--gray-400); }
+
+/* 작성 버튼 영역 */
+.inq-write-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--gray-100);
+}
+
+/* 공통 버튼 - 제출 */
+.inq-btn-submit {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .2s;
+}
+
+.inq-btn-submit:hover    { opacity: .88; transform: translateY(-1px); }
+.inq-btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* 제출 버튼 로딩 스피너 */
+.inq-btn-submit.loading::after {
+    content: '';
+    display: inline-block;
+    width: 11px; height: 11px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: inq-spin .6s linear infinite;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+@keyframes inq-spin { to { transform: rotate(360deg); } }
+
+/* 공통 버튼 - 취소 */
+.inq-btn-cancel {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.inq-btn-cancel:hover { background: var(--gray-200); }
+
+/* ══════════════════════════════════════════════
+   8. 상세 페이지
+══════════════════════════════════════════════ */
+.inq-detail-wrap {
+    background: var(--gray-50);
+    min-height: 80vh;
+    padding: 32px 24px 80px;
+}
+
+.inq-detail-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 문의 카드 */
+.inq-detail-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.inq-detail-head {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.inq-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.inq-detail-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.inq-detail-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--gray-400);
+    flex-wrap: wrap;
+}
+
+.inq-detail-nick    { color: var(--gray-600); font-weight: 500; }
+.inq-detail-divider { color: var(--gray-200); }
+.inq-detail-views   { color: var(--gray-400); }
+
+.inq-detail-body { padding: 24px 32px; }
+
+.inq-detail-content {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--gray-700);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+}
+
+/* 답변 카드 (파란 왼쪽 보더로 구분) */
+.inq-answer-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border-left: 4px solid var(--blue);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.inq-answer-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--blue-light);
+}
+
+.inq-answer-icon  { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.inq-answer-title { font-size: 15px; font-weight: 700; color: var(--blue); }
+.inq-answer-meta  { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+
+.inq-answer-body { padding: 20px 28px; }
+
+/* 미답변 안내 */
+.inq-no-answer {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 40px 24px;
+    text-align: center;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.inq-no-answer-icon { font-size: 36px; }
+.inq-no-answer-msg  { font-size: 15px; font-weight: 600; color: var(--gray-600); }
+.inq-no-answer-sub  { font-size: 13px; color: var(--gray-400); }
+
+/* 어드민 전용 답변 작성 폼 */
+.inq-admin-form {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    border: 1.5px dashed var(--gray-200);
+}
+
+.inq-admin-form-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 14px;
+}
+
+/* 관리자 패널 상태변경 버튼 영역 */
+.inq-admin-status-bar {
+    margin-bottom: 16px;
+}
+
+/* 관리자 패널 상태변경 버튼 */
+.inq-btn-status {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity .15s, transform .15s;
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.inq-btn-status:hover    { opacity: .85; transform: translateY(-1px); }
+.inq-btn-status:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.inq-btn-status.inq-btn-status-pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.inq-btn-status.inq-btn-status-complete {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.inq-admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+/* 하단 액션 버튼 영역 */
+.inq-detail-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* ══════════════════════════════════════════════
+   9. 반응형 (767px 이하)
+══════════════════════════════════════════════ */
+@media (max-width: 767px) {
+    /* 패딩 줄이기 */
+    .inq-write-card,
+    .inq-detail-head,
+    .inq-answer-head,
+    .inq-detail-body,
+    .inq-answer-body,
+    .inq-admin-form {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    /* 카테고리 컬럼 숨기기 */
+    .inq-table th:nth-child(3),
+    .inq-table td:nth-child(3) { display: none; }
+
+    /* 탭 폰트 줄이기 */
+    .inq-tab { padding: 10px 12px; font-size: 13px; }
+}
+
+/* =============================================
+   첨부파일 목록
+   ============================================= */
+.inq-attachment-list {
+    margin-top: 20px;
+    padding-top: 16px;
+    padding-left: 20px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.inq-attachment-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 12px;
+}
+
+.inq-attachment-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 0 8px 12px 0;
+    vertical-align: top;
+}
+
+.inq-attachment-img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.inq-attachment-img:hover {
+    opacity: 0.85;
+}
+
+.inq-attachment-name {
+    font-size: 12px;
+    color: var(--gray-500);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 첨부파일 미리보기 (write.jsp) */
+.inq-attach-preview {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.inq-attach-preview-item {
+    font-size: 12px;
+    color: var(--gray-600);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 4px;
+    padding: 3px 8px;
+}
+
+/* =============================================
+   AI 독성 감지 BLUR 처리
+   - 목록: 제목 blur + 전체 오버레이 (커뮤니티 패턴)
+   - 상세: 본문 blur만 (오버레이 없음, 관리자 해제로만 공개)
+   ============================================= */
+.inq-title-blurred {
+    filter: blur(4px);
+    user-select: none;
+}
+
+.inq-blurred {
+    filter: blur(6px);
+    user-select: none;
+    pointer-events: none;
+}
+
+/* 목록 제목 셀 위에 올라가는 클릭 가능한 오버레이 */
+.inq-title-blur-wrap {
+    position: relative;
+}
+
+.inq-title-blur-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+    font-weight: 600;
+    color: #b91c1c;
+    padding: 0 12px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.inq-ai-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.inq-admin-clear-blur-btn {
+    margin-left: 6px;
+    padding: 3px 10px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.inq-admin-clear-blur-btn:hover {
+    background: #2563eb;
+}
+
+/* =============================================
+   다크 테마 오버라이드 (html.dark)
+   ============================================= */
+
+/* ── 페이지 헤더 ── */
+html.dark .inq-ph {
+    background: #151922;
+    border-bottom-color: #232935;
+}
+html.dark .inq-ph h1 { color: #f1f5f9; }
+html.dark .inq-ph-sub { color: #9ca3af; }
+
+/* ── 카테고리 탭 ── */
+html.dark .inq-tab { color: #9ca3af; }
+html.dark .inq-tab:hover,
+html.dark .inq-tab.active { color: #93c5fd; }
+html.dark .inq-tab.active { border-bottom-color: #60a5fa; }
+
+/* ── 본문 래퍼 ── */
+html.dark .inq-body-wrap,
+html.dark .inq-write-wrap,
+html.dark .inq-detail-wrap { background: #0f1115; }
+
+/* ── 툴바 ── */
+html.dark .inq-total { color: #9ca3af; }
+html.dark .inq-total strong { color: #f1f5f9; }
+
+html.dark .inq-sf {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .inq-sf:hover,
+html.dark .inq-sf.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+/* ── 검색창 ── */
+html.dark .inq-search-wrap {
+    background: #1a1f2b;
+    border-color: #2b3241;
+}
+html.dark .inq-search-wrap:focus-within {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, .15);
+}
+html.dark .inq-search-input { color: #f1f5f9; }
+html.dark .inq-search-input::placeholder { color: #6b7280; }
+
+/* 검색어 하이라이트 */
+html.dark .inq-highlight {
+    background: #78350f;
+    color: #fde68a;
+}
+
+/* ── 테이블 ── */
+html.dark .inq-table-wrap {
+    background: #1a1f2b;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .35);
+}
+html.dark .inq-table thead tr {
+    background: #151922;
+    border-bottom-color: #232935;
+}
+html.dark .inq-table th { color: #9ca3af; }
+html.dark .inq-row,
+html.dark .inq-row-blocked { border-bottom-color: #232935; }
+html.dark .inq-row:hover { background: #1f2432; }
+html.dark .inq-table td { color: #e5e7eb; }
+
+html.dark .inq-no { color: #9ca3af; }
+
+html.dark .inq-title { color: #f1f5f9; }
+html.dark .inq-row:hover .inq-title { color: #93c5fd; }
+html.dark .inq-title-blocked { color: #6b7280; }
+
+html.dark .inq-private-tag {
+    background: #232935;
+    color: #9ca3af;
+}
+
+/* 카테고리 태그 */
+html.dark .inq-category-tag {
+    background: #1e293b;
+    color: #93c5fd;
+}
+
+/* 작성자/날짜 */
+html.dark .inq-nick { color: #9ca3af; }
+html.dark .inq-date { color: #6b7280; }
+
+/* 빈 목록 */
+html.dark .inq-empty-msg { color: #cbd5e1; }
+html.dark .inq-empty-sub { color: #9ca3af; }
+
+/* ── 페이지네이션 ── */
+html.dark .inq-page-btn {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .inq-page-btn:hover,
+html.dark .inq-page-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+/* ── 작성 페이지 ── */
+html.dark .inq-write-header h1 { color: #f1f5f9; }
+html.dark .inq-write-header p { color: #9ca3af; }
+html.dark .inq-back-btn { color: #cbd5e1; }
+html.dark .inq-back-btn:hover { color: #93c5fd; }
+
+html.dark .inq-write-card {
+    background: #1a1f2b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+}
+
+html.dark .inq-form-label { color: #e5e7eb; }
+
+html.dark .inq-form-input,
+html.dark .inq-form-select,
+html.dark .inq-form-textarea {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #f1f5f9;
+}
+html.dark .inq-form-input::placeholder,
+html.dark .inq-form-textarea::placeholder { color: #6b7280; }
+html.dark .inq-form-input:focus,
+html.dark .inq-form-select:focus,
+html.dark .inq-form-textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, .15);
+}
+html.dark .inq-form-textarea:disabled {
+    background: #151922;
+    color: #6b7280;
+}
+
+html.dark .inq-char-count { color: #9ca3af; }
+
+html.dark .inq-field-msg.error { color: #fca5a5; }
+html.dark .inq-field-msg.success { color: #86efac; }
+
+/* 비공개 토글 */
+html.dark .inq-toggle-slider { background: #2b3241; }
+html.dark .inq-toggle-label { color: #e5e7eb; }
+html.dark .inq-private-hint { color: #9ca3af; }
+
+html.dark .inq-write-actions { border-top-color: #232935; }
+
+html.dark .inq-btn-cancel {
+    background: #232935;
+    color: #cbd5e1;
+}
+html.dark .inq-btn-cancel:hover { background: #2b3241; }
+
+/* ── 상세 페이지 ── */
+html.dark .inq-detail-card,
+html.dark .inq-no-answer,
+html.dark .inq-admin-form {
+    background: #1a1f2b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+}
+html.dark .inq-detail-head { border-bottom-color: #232935; }
+html.dark .inq-detail-title { color: #f1f5f9; }
+html.dark .inq-detail-info { color: #9ca3af; }
+html.dark .inq-detail-nick { color: #cbd5e1; }
+html.dark .inq-detail-divider { color: #4b5563; }
+html.dark .inq-detail-views { color: #9ca3af; }
+html.dark .inq-detail-content { color: #e5e7eb; }
+
+/* 답변 카드 */
+html.dark .inq-answer-card {
+    background: #1a1f2b;
+    border-left-color: #60a5fa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+}
+html.dark .inq-answer-head {
+    background: #1e293b;
+    border-bottom-color: #232935;
+}
+html.dark .inq-answer-title { color: #93c5fd; }
+html.dark .inq-answer-meta { color: #9ca3af; }
+
+/* 미답변 안내 */
+html.dark .inq-no-answer-msg { color: #cbd5e1; }
+html.dark .inq-no-answer-sub { color: #9ca3af; }
+
+/* 관리자 폼 */
+html.dark .inq-admin-form { border-color: #2b3241; }
+html.dark .inq-admin-form-title { color: #cbd5e1; }
+
+/* ── 첨부파일 ── */
+html.dark .inq-attachment-list { border-top-color: #232935; }
+html.dark .inq-attachment-title { color: #cbd5e1; }
+html.dark .inq-attachment-img { border-color: #2b3241; }
+html.dark .inq-attachment-name { color: #9ca3af; }
+html.dark .inq-attach-preview-item {
+    background: #151922;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+
+/* ── 독성 감지 blur 오버레이 ── */
+html.dark .inq-title-blur-overlay {
+    background: rgba(15, 17, 21, 0.78);
+    color: #fca5a5;
+}
+
+html.dark .inq-ai-badge {
+    background: #2a1d0a;
+    color: #fde68a;
+    border-color: #a16207;
+}

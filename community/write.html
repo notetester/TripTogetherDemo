@@ -1,0 +1,1137 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="JTdnA0HBsZG6nkLgdG_0khTyLQzG4XObhymYyZtq0ZJG1yywRFYDMSWg1aSX_SbSEELAqiCQAG301hC25E-qq64J4_Bzsx6H">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../resources/css/common/header.css">
+    <link rel="stylesheet" href="../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../resources/css/community/community_write.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../wallet.html">내 지갑</a>
+                    <a href="../shop.html">아이템샵</a>
+                    <a href="../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/lang/summernote-ko-KR.min.js"></script>
+
+
+<style>
+.note-modal .note-modal-header { padding: 18px 32px !important; }
+.note-modal .note-modal-body   { padding: 32px 32px !important; }
+.note-modal .note-modal-body .note-form-group { padding-bottom: 28px !important; }
+.note-modal .note-modal-body .note-form-group:last-child { padding-bottom: 0 !important; }
+/* footer를 flex로 전환: Summernote 기본 float:right 가 height:auto 일 때 컨테이너 밖으로 밀려나는 문제 방지 */
+.note-modal .note-modal-footer {
+    height: auto !important;
+    padding: 16px 32px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-align: right !important;
+}
+.note-modal .note-modal-footer .note-btn { float: none !important; }
+.note-modal .note-form-label { margin-bottom: 12px !important; }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="write-wrap">
+
+  <div class="write-top-bar">
+    <button class="back-btn" onclick="cancelWrite()">← 목록으로</button>
+    <h2 class="write-page-title" id="writePageTitle">
+      
+        
+        <span class="write-title-reset" onclick="resetWrite()">여행 이야기 쓰기</span>
+      
+    </h2>
+  </div>
+
+  <form id="writeForm" enctype="multipart/form-data">
+    
+    
+
+    <div class="write-container">
+
+      
+      <main class="write-main">
+
+        
+        <div class="write-section">
+          <label class="section-label" for="writeTitle">
+            제목 <span class="required">*</span>
+          </label>
+          <input type="text" id="writeTitle" name="title" class="write-input" placeholder="오른쪽의 게시글 유형과 지역 선택도 함께 설정할 수 있어요" maxlength="100" value="" oninput="document.getElementById('titleCount').textContent=this.value.length">
+          <div class="input-counter">
+            <span id="titleCount">0</span>/100
+          </div>
+        </div>
+
+        
+        <div class="write-section">
+          <label class="section-label">
+            해시태그
+            <span class="section-label-sub">(지역 태그는 자동 추가됩니다)</span>
+          </label>
+          <div class="tag-input-wrap" id="tagInputWrap">
+            <div class="tag-list" id="tagList"><span class="tag-chip tag-chip-region">#아시아<button type="button" class="tag-chip-remove" onclick="removeTag(0)">📍</button></span></div>
+            <input type="text" id="tagInput" class="tag-input" placeholder="국가명, 도시명, 여행 키워드 입력 후 Enter (최대 10개)" maxlength="20" onkeydown="addTag(event)">
+          </div>
+          <input type="hidden" id="tagsHidden" name="tags" value="아시아">
+          <p class="input-hint">예: 도쿄, 일본여행, 맛집 (지역 태그는 자동으로 추가돼요) (지역선택이 헷갈리면 오른쪽 아래 챗봇이 도와드려요)</p>
+        </div>
+
+          
+        <div id="typeExtraSection"></div>
+
+        
+        <div class="write-section">
+          <label class="section-label" for="writeContent">
+            내용 <span class="required">*</span>
+          </label>
+          <div id="photoCountBadge" class="photo-count-badge is-short" hidden="">
+            <span class="photo-count-icon">📷</span>
+            <span id="photoCountText"></span>
+          </div>
+          <textarea id="writeContent" name="content" class="write-textarea" placeholder="우리는 목적지에 닿아야 행복해지는 것이 아니라 여행하는 과정에서 행복을 느낀다." style="display: none;"></textarea><div class="note-editor note-frame"><div class="note-dropzone"><div class="note-dropzone-message"></div></div><div class="note-toolbar" role="toolbar"><div class="note-btn-group note-style"><div class="note-btn-group"><button type="button" class="note-btn dropdown-toggle" tabindex="-1" data-toggle="dropdown" aria-label="스타일"><i class="note-icon-magic"></i> <span class="note-icon-caret"></span></button><div class="note-dropdown-menu dropdown-style" role="list" aria-label="스타일"><a class="note-dropdown-item" href="#" data-value="p" role="listitem" aria-label="p"><p>본문</p></a><a class="note-dropdown-item" href="#" data-value="blockquote" role="listitem" aria-label="blockquote"><blockquote>인용구</blockquote></a><a class="note-dropdown-item" href="#" data-value="pre" role="listitem" aria-label="pre"><pre>코드</pre></a><a class="note-dropdown-item" href="#" data-value="h1" role="listitem" aria-label="h1"><h1>제목 1</h1></a><a class="note-dropdown-item" href="#" data-value="h2" role="listitem" aria-label="h2"><h2>제목 2</h2></a><a class="note-dropdown-item" href="#" data-value="h3" role="listitem" aria-label="h3"><h3>제목 3</h3></a><a class="note-dropdown-item" href="#" data-value="h4" role="listitem" aria-label="h4"><h4>제목 4</h4></a><a class="note-dropdown-item" href="#" data-value="h5" role="listitem" aria-label="h5"><h5>제목 5</h5></a><a class="note-dropdown-item" href="#" data-value="h6" role="listitem" aria-label="h6"><h6>제목 6</h6></a></div></div></div><div class="note-btn-group note-font"><button type="button" class="note-btn note-btn-bold" tabindex="-1" aria-label="굵게 (CTRL+B)"><i class="note-icon-bold"></i></button><button type="button" class="note-btn note-btn-italic" tabindex="-1" aria-label="기울임꼴 (CTRL+I)"><i class="note-icon-italic"></i></button><button type="button" class="note-btn note-btn-underline" tabindex="-1" aria-label="밑줄 (CTRL+U)"><i class="note-icon-underline"></i></button><button type="button" class="note-btn note-btn-strikethrough" tabindex="-1" aria-label="취소선 (CTRL+SHIFT+S)"><i class="note-icon-strikethrough"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="서식 지우기 (CTRL+\)"><i class="note-icon-eraser"></i></button></div><div class="note-btn-group note-fontsize"><div class="note-btn-group"><button type="button" class="note-btn dropdown-toggle" tabindex="-1" data-toggle="dropdown" aria-label="글자 크기"><span class="note-current-fontsize">14</span> <span class="note-icon-caret"></span></button><div class="note-dropdown-menu note-check dropdown-fontsize" role="list" aria-label="글자 크기"><a class="note-dropdown-item" href="#" data-value="8" role="listitem" aria-label="8"><i class="note-icon-menu-check"></i> 8</a><a class="note-dropdown-item" href="#" data-value="9" role="listitem" aria-label="9"><i class="note-icon-menu-check"></i> 9</a><a class="note-dropdown-item" href="#" data-value="10" role="listitem" aria-label="10"><i class="note-icon-menu-check"></i> 10</a><a class="note-dropdown-item" href="#" data-value="11" role="listitem" aria-label="11"><i class="note-icon-menu-check"></i> 11</a><a class="note-dropdown-item" href="#" data-value="12" role="listitem" aria-label="12"><i class="note-icon-menu-check"></i> 12</a><a class="note-dropdown-item checked" href="#" data-value="14" role="listitem" aria-label="14"><i class="note-icon-menu-check"></i> 14</a><a class="note-dropdown-item" href="#" data-value="18" role="listitem" aria-label="18"><i class="note-icon-menu-check"></i> 18</a><a class="note-dropdown-item" href="#" data-value="24" role="listitem" aria-label="24"><i class="note-icon-menu-check"></i> 24</a><a class="note-dropdown-item" href="#" data-value="36" role="listitem" aria-label="36"><i class="note-icon-menu-check"></i> 36</a></div></div></div><div class="note-btn-group note-color"><div class="note-btn-group note-color note-color-all"><button type="button" class="note-btn note-current-color-button" tabindex="-1" aria-label="마지막으로 사용한 색" data-backcolor="#FFFF00" data-forecolor="#000000"><i class="note-icon-font note-recent-color" style="background-color: rgb(255, 255, 0); color: rgb(0, 0, 0);"></i></button><button type="button" class="note-btn dropdown-toggle" tabindex="-1" data-toggle="dropdown" aria-label="다른 색 선택"> <span class="note-icon-caret"></span></button><div class="note-dropdown-menu" role="list"><div class="note-palette"><div class="note-palette-title">배경색</div><div><button type="button" class="note-color-reset btn btn-light btn-default" data-event="backColor" data-value="transparent">투명</button></div><div class="note-holder" data-event="backColor"><!-- back colors --><div class="note-color-palette"><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#000000" data-event="backColor" data-value="#000000" data-title="Black" aria-label="Black" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#424242" data-event="backColor" data-value="#424242" data-title="Tundora" aria-label="Tundora" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#636363" data-event="backColor" data-value="#636363" data-title="Dove Gray" aria-label="Dove Gray" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9C9C94" data-event="backColor" data-value="#9C9C94" data-title="Star Dust" aria-label="Star Dust" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEC6CE" data-event="backColor" data-value="#CEC6CE" data-title="Pale Slate" aria-label="Pale Slate" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#EFEFEF" data-event="backColor" data-value="#EFEFEF" data-title="Gallery" aria-label="Gallery" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#F7F7F7" data-event="backColor" data-value="#F7F7F7" data-title="Alabaster" aria-label="Alabaster" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="White" aria-label="White" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#FF0000" data-event="backColor" data-value="#FF0000" data-title="Red" aria-label="Red" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FF9C00" data-event="backColor" data-value="#FF9C00" data-title="Orange Peel" aria-label="Orange Peel" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFF00" data-event="backColor" data-value="#FFFF00" data-title="Yellow" aria-label="Yellow" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#00FF00" data-event="backColor" data-value="#00FF00" data-title="Green" aria-label="Green" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#00FFFF" data-event="backColor" data-value="#00FFFF" data-title="Cyan" aria-label="Cyan" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#0000FF" data-event="backColor" data-value="#0000FF" data-title="Blue" aria-label="Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9C00FF" data-event="backColor" data-value="#9C00FF" data-title="Electric Violet" aria-label="Electric Violet" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FF00FF" data-event="backColor" data-value="#FF00FF" data-title="Magenta" aria-label="Magenta" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#F7C6CE" data-event="backColor" data-value="#F7C6CE" data-title="Azalea" aria-label="Azalea" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFE7CE" data-event="backColor" data-value="#FFE7CE" data-title="Karry" aria-label="Karry" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFEFC6" data-event="backColor" data-value="#FFEFC6" data-title="Egg White" aria-label="Egg White" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6EFD6" data-event="backColor" data-value="#D6EFD6" data-title="Zanah" aria-label="Zanah" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEDEE7" data-event="backColor" data-value="#CEDEE7" data-title="Botticelli" aria-label="Botticelli" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEE7F7" data-event="backColor" data-value="#CEE7F7" data-title="Tropical Blue" aria-label="Tropical Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6D6E7" data-event="backColor" data-value="#D6D6E7" data-title="Mischka" aria-label="Mischka" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#E7D6DE" data-event="backColor" data-value="#E7D6DE" data-title="Twilight" aria-label="Twilight" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#E79C9C" data-event="backColor" data-value="#E79C9C" data-title="Tonys Pink" aria-label="Tonys Pink" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFC69C" data-event="backColor" data-value="#FFC69C" data-title="Peach Orange" aria-label="Peach Orange" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFE79C" data-event="backColor" data-value="#FFE79C" data-title="Cream Brulee" aria-label="Cream Brulee" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B5D6A5" data-event="backColor" data-value="#B5D6A5" data-title="Sprout" aria-label="Sprout" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#A5C6CE" data-event="backColor" data-value="#A5C6CE" data-title="Casper" aria-label="Casper" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9CC6EF" data-event="backColor" data-value="#9CC6EF" data-title="Perano" aria-label="Perano" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B5A5D6" data-event="backColor" data-value="#B5A5D6" data-title="Cold Purple" aria-label="Cold Purple" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6A5BD" data-event="backColor" data-value="#D6A5BD" data-title="Careys Pink" aria-label="Careys Pink" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#E76363" data-event="backColor" data-value="#E76363" data-title="Mandy" aria-label="Mandy" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#F7AD6B" data-event="backColor" data-value="#F7AD6B" data-title="Rajah" aria-label="Rajah" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFD663" data-event="backColor" data-value="#FFD663" data-title="Dandelion" aria-label="Dandelion" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#94BD7B" data-event="backColor" data-value="#94BD7B" data-title="Olivine" aria-label="Olivine" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#73A5AD" data-event="backColor" data-value="#73A5AD" data-title="Gulf Stream" aria-label="Gulf Stream" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#6BADDE" data-event="backColor" data-value="#6BADDE" data-title="Viking" aria-label="Viking" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#8C7BC6" data-event="backColor" data-value="#8C7BC6" data-title="Blue Marguerite" aria-label="Blue Marguerite" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#C67BA5" data-event="backColor" data-value="#C67BA5" data-title="Puce" aria-label="Puce" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#CE0000" data-event="backColor" data-value="#CE0000" data-title="Guardsman Red" aria-label="Guardsman Red" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#E79439" data-event="backColor" data-value="#E79439" data-title="Fire Bush" aria-label="Fire Bush" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#EFC631" data-event="backColor" data-value="#EFC631" data-title="Golden Dream" aria-label="Golden Dream" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#6BA54A" data-event="backColor" data-value="#6BA54A" data-title="Chelsea Cucumber" aria-label="Chelsea Cucumber" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#4A7B8C" data-event="backColor" data-value="#4A7B8C" data-title="Smalt Blue" aria-label="Smalt Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#3984C6" data-event="backColor" data-value="#3984C6" data-title="Boston Blue" aria-label="Boston Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#634AA5" data-event="backColor" data-value="#634AA5" data-title="Butterfly Bush" aria-label="Butterfly Bush" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#A54A7B" data-event="backColor" data-value="#A54A7B" data-title="Cadillac" aria-label="Cadillac" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#9C0000" data-event="backColor" data-value="#9C0000" data-title="Sangria" aria-label="Sangria" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B56308" data-event="backColor" data-value="#B56308" data-title="Mai Tai" aria-label="Mai Tai" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#BD9400" data-event="backColor" data-value="#BD9400" data-title="Buddha Gold" aria-label="Buddha Gold" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#397B21" data-event="backColor" data-value="#397B21" data-title="Forest Green" aria-label="Forest Green" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#104A5A" data-event="backColor" data-value="#104A5A" data-title="Eden" aria-label="Eden" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#085294" data-event="backColor" data-value="#085294" data-title="Venice Blue" aria-label="Venice Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#311873" data-event="backColor" data-value="#311873" data-title="Meteorite" aria-label="Meteorite" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#731842" data-event="backColor" data-value="#731842" data-title="Claret" aria-label="Claret" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#630000" data-event="backColor" data-value="#630000" data-title="Rosewood" aria-label="Rosewood" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#7B3900" data-event="backColor" data-value="#7B3900" data-title="Cinnamon" aria-label="Cinnamon" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#846300" data-event="backColor" data-value="#846300" data-title="Olive" aria-label="Olive" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#295218" data-event="backColor" data-value="#295218" data-title="Parsley" aria-label="Parsley" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#083139" data-event="backColor" data-value="#083139" data-title="Tiber" aria-label="Tiber" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#003163" data-event="backColor" data-value="#003163" data-title="Midnight Blue" aria-label="Midnight Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#21104A" data-event="backColor" data-value="#21104A" data-title="Valentino" aria-label="Valentino" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#4A1031" data-event="backColor" data-value="#4A1031" data-title="Loulou" aria-label="Loulou" data-toggle="button" tabindex="-1"></button></div></div></div><div><button type="button" class="note-color-select btn btn-light btn-default" data-event="openPalette" data-value="backColorPicker-17815972891561">선택</button><input type="color" id="backColorPicker-17815972891561" class="note-btn note-color-select-btn" value="#FFFF00" data-event="backColorPalette-17815972891561"></div><div class="note-holder-custom" id="backColorPalette-17815972891561" data-event="backColor"><div class="note-color-palette"><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="backColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button></div></div></div></div><div class="note-palette"><div class="note-palette-title">글자색</div><div><button type="button" class="note-color-reset btn btn-light btn-default" data-event="removeFormat" data-value="foreColor">기본값으로 설정</button></div><div class="note-holder" data-event="foreColor"><!-- fore colors --><div class="note-color-palette"><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#000000" data-event="foreColor" data-value="#000000" data-title="Black" aria-label="Black" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#424242" data-event="foreColor" data-value="#424242" data-title="Tundora" aria-label="Tundora" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#636363" data-event="foreColor" data-value="#636363" data-title="Dove Gray" aria-label="Dove Gray" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9C9C94" data-event="foreColor" data-value="#9C9C94" data-title="Star Dust" aria-label="Star Dust" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEC6CE" data-event="foreColor" data-value="#CEC6CE" data-title="Pale Slate" aria-label="Pale Slate" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#EFEFEF" data-event="foreColor" data-value="#EFEFEF" data-title="Gallery" aria-label="Gallery" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#F7F7F7" data-event="foreColor" data-value="#F7F7F7" data-title="Alabaster" aria-label="Alabaster" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="White" aria-label="White" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#FF0000" data-event="foreColor" data-value="#FF0000" data-title="Red" aria-label="Red" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FF9C00" data-event="foreColor" data-value="#FF9C00" data-title="Orange Peel" aria-label="Orange Peel" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFF00" data-event="foreColor" data-value="#FFFF00" data-title="Yellow" aria-label="Yellow" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#00FF00" data-event="foreColor" data-value="#00FF00" data-title="Green" aria-label="Green" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#00FFFF" data-event="foreColor" data-value="#00FFFF" data-title="Cyan" aria-label="Cyan" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#0000FF" data-event="foreColor" data-value="#0000FF" data-title="Blue" aria-label="Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9C00FF" data-event="foreColor" data-value="#9C00FF" data-title="Electric Violet" aria-label="Electric Violet" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FF00FF" data-event="foreColor" data-value="#FF00FF" data-title="Magenta" aria-label="Magenta" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#F7C6CE" data-event="foreColor" data-value="#F7C6CE" data-title="Azalea" aria-label="Azalea" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFE7CE" data-event="foreColor" data-value="#FFE7CE" data-title="Karry" aria-label="Karry" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFEFC6" data-event="foreColor" data-value="#FFEFC6" data-title="Egg White" aria-label="Egg White" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6EFD6" data-event="foreColor" data-value="#D6EFD6" data-title="Zanah" aria-label="Zanah" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEDEE7" data-event="foreColor" data-value="#CEDEE7" data-title="Botticelli" aria-label="Botticelli" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#CEE7F7" data-event="foreColor" data-value="#CEE7F7" data-title="Tropical Blue" aria-label="Tropical Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6D6E7" data-event="foreColor" data-value="#D6D6E7" data-title="Mischka" aria-label="Mischka" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#E7D6DE" data-event="foreColor" data-value="#E7D6DE" data-title="Twilight" aria-label="Twilight" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#E79C9C" data-event="foreColor" data-value="#E79C9C" data-title="Tonys Pink" aria-label="Tonys Pink" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFC69C" data-event="foreColor" data-value="#FFC69C" data-title="Peach Orange" aria-label="Peach Orange" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFE79C" data-event="foreColor" data-value="#FFE79C" data-title="Cream Brulee" aria-label="Cream Brulee" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B5D6A5" data-event="foreColor" data-value="#B5D6A5" data-title="Sprout" aria-label="Sprout" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#A5C6CE" data-event="foreColor" data-value="#A5C6CE" data-title="Casper" aria-label="Casper" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#9CC6EF" data-event="foreColor" data-value="#9CC6EF" data-title="Perano" aria-label="Perano" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B5A5D6" data-event="foreColor" data-value="#B5A5D6" data-title="Cold Purple" aria-label="Cold Purple" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#D6A5BD" data-event="foreColor" data-value="#D6A5BD" data-title="Careys Pink" aria-label="Careys Pink" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#E76363" data-event="foreColor" data-value="#E76363" data-title="Mandy" aria-label="Mandy" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#F7AD6B" data-event="foreColor" data-value="#F7AD6B" data-title="Rajah" aria-label="Rajah" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFD663" data-event="foreColor" data-value="#FFD663" data-title="Dandelion" aria-label="Dandelion" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#94BD7B" data-event="foreColor" data-value="#94BD7B" data-title="Olivine" aria-label="Olivine" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#73A5AD" data-event="foreColor" data-value="#73A5AD" data-title="Gulf Stream" aria-label="Gulf Stream" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#6BADDE" data-event="foreColor" data-value="#6BADDE" data-title="Viking" aria-label="Viking" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#8C7BC6" data-event="foreColor" data-value="#8C7BC6" data-title="Blue Marguerite" aria-label="Blue Marguerite" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#C67BA5" data-event="foreColor" data-value="#C67BA5" data-title="Puce" aria-label="Puce" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#CE0000" data-event="foreColor" data-value="#CE0000" data-title="Guardsman Red" aria-label="Guardsman Red" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#E79439" data-event="foreColor" data-value="#E79439" data-title="Fire Bush" aria-label="Fire Bush" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#EFC631" data-event="foreColor" data-value="#EFC631" data-title="Golden Dream" aria-label="Golden Dream" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#6BA54A" data-event="foreColor" data-value="#6BA54A" data-title="Chelsea Cucumber" aria-label="Chelsea Cucumber" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#4A7B8C" data-event="foreColor" data-value="#4A7B8C" data-title="Smalt Blue" aria-label="Smalt Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#3984C6" data-event="foreColor" data-value="#3984C6" data-title="Boston Blue" aria-label="Boston Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#634AA5" data-event="foreColor" data-value="#634AA5" data-title="Butterfly Bush" aria-label="Butterfly Bush" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#A54A7B" data-event="foreColor" data-value="#A54A7B" data-title="Cadillac" aria-label="Cadillac" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#9C0000" data-event="foreColor" data-value="#9C0000" data-title="Sangria" aria-label="Sangria" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#B56308" data-event="foreColor" data-value="#B56308" data-title="Mai Tai" aria-label="Mai Tai" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#BD9400" data-event="foreColor" data-value="#BD9400" data-title="Buddha Gold" aria-label="Buddha Gold" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#397B21" data-event="foreColor" data-value="#397B21" data-title="Forest Green" aria-label="Forest Green" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#104A5A" data-event="foreColor" data-value="#104A5A" data-title="Eden" aria-label="Eden" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#085294" data-event="foreColor" data-value="#085294" data-title="Venice Blue" aria-label="Venice Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#311873" data-event="foreColor" data-value="#311873" data-title="Meteorite" aria-label="Meteorite" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#731842" data-event="foreColor" data-value="#731842" data-title="Claret" aria-label="Claret" data-toggle="button" tabindex="-1"></button></div><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#630000" data-event="foreColor" data-value="#630000" data-title="Rosewood" aria-label="Rosewood" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#7B3900" data-event="foreColor" data-value="#7B3900" data-title="Cinnamon" aria-label="Cinnamon" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#846300" data-event="foreColor" data-value="#846300" data-title="Olive" aria-label="Olive" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#295218" data-event="foreColor" data-value="#295218" data-title="Parsley" aria-label="Parsley" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#083139" data-event="foreColor" data-value="#083139" data-title="Tiber" aria-label="Tiber" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#003163" data-event="foreColor" data-value="#003163" data-title="Midnight Blue" aria-label="Midnight Blue" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#21104A" data-event="foreColor" data-value="#21104A" data-title="Valentino" aria-label="Valentino" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#4A1031" data-event="foreColor" data-value="#4A1031" data-title="Loulou" aria-label="Loulou" data-toggle="button" tabindex="-1"></button></div></div></div><div><button type="button" class="note-color-select btn btn-light btn-default" data-event="openPalette" data-value="foreColorPicker-17815972891561">선택</button><input type="color" id="foreColorPicker-17815972891561" class="note-btn note-color-select-btn" value="#000000" data-event="foreColorPalette-17815972891561"></div><div class="note-holder-custom" id="foreColorPalette-17815972891561" data-event="foreColor"><div class="note-color-palette"><div class="note-color-row"><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button><button type="button" class="note-btn note-color-btn" style="background-color:#FFFFFF" data-event="foreColor" data-value="#FFFFFF" data-title="#FFFFFF" aria-label="#FFFFFF" data-toggle="button" tabindex="-1"></button></div></div></div></div></div></div></div><div class="note-btn-group note-para"><button type="button" class="note-btn" tabindex="-1" aria-label="글머리 기호 (CTRL+SHIFT+NUM7)"><i class="note-icon-unorderedlist"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="번호 매기기 (CTRL+SHIFT+NUM8)"><i class="note-icon-orderedlist"></i></button><div class="note-btn-group"><button type="button" class="note-btn dropdown-toggle" tabindex="-1" data-toggle="dropdown" aria-label="문단 정렬"><i class="note-icon-align-left"></i> <span class="note-icon-caret"></span></button><div class="note-dropdown-menu" role="list"><div class="note-btn-group note-align"><button type="button" class="note-btn" tabindex="-1" aria-label="왼쪽 정렬 (CTRL+SHIFT+L)"><i class="note-icon-align-left"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="가운데 정렬 (CTRL+SHIFT+E)"><i class="note-icon-align-center"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="오른쪽 정렬 (CTRL+SHIFT+R)"><i class="note-icon-align-right"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="양쪽 정렬 (CTRL+SHIFT+J)"><i class="note-icon-align-justify"></i></button></div><div class="note-btn-group note-list"><button type="button" class="note-btn" tabindex="-1" aria-label="내어쓰기 (CTRL+[)"><i class="note-icon-align-outdent"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="들여쓰기 (CTRL+])"><i class="note-icon-align-indent"></i></button></div></div></div></div><div class="note-btn-group note-insert"><button type="button" class="note-btn" tabindex="-1" aria-label="링크 (CTRL+K)"><i class="note-icon-link"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="그림"><i class="note-icon-picture"></i></button></div><div class="note-btn-group note-view"><button type="button" class="note-btn btn-fullscreen note-codeview-keep" tabindex="-1" aria-label="전체 화면"><i class="note-icon-arrows-alt"></i></button><button type="button" class="note-btn btn-codeview note-codeview-keep" tabindex="-1" aria-label="코드 보기"><i class="note-icon-code"></i></button></div></div><div class="note-editing-area"><div class="note-placeholder" style="display: block;">우리는 목적지에 닿아야 행복해지는 것이 아니라 여행하는 과정에서 행복을 느낀다.</div><div class="note-handle"><div class="note-control-selection"><div class="note-control-selection-bg"></div><div class="note-control-holder note-control-nw"></div><div class="note-control-holder note-control-ne"></div><div class="note-control-holder note-control-sw"></div><div class="note-control-sizing note-control-se"></div><div class="note-control-selection-info"></div></div></div><textarea class="note-codable" aria-multiline="true"></textarea><div class="note-editable" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" autocorrect="true" style="height: 640px; min-height: 480px;"><p><br></p></div></div><output class="note-status-output" role="status" aria-live="polite"></output><div class="note-statusbar" role="status"><div class="note-resizebar" aria-label="resize"><div class="note-icon-bar"></div><div class="note-icon-bar"></div><div class="note-icon-bar"></div></div></div><div class="note-modal link-dialog" aria-hidden="false" tabindex="-1" role="dialog" aria-label="링크 삽입"><div class="note-modal-content"><div class="note-modal-header"><button type="button" class="close" aria-label="Close" aria-hidden="true"><i class="note-icon-close"></i></button><h4 class="note-modal-title">링크 삽입</h4></div><div class="note-modal-body"><div class="form-group note-form-group"><label for="note-dialog-link-txt-17815972891561" class="note-form-label">링크에 표시할 내용</label><input id="note-dialog-link-txt-17815972891561" class="note-link-text form-control note-form-control note-input" type="text"></div><div class="form-group note-form-group"><label for="note-dialog-link-url-17815972891561" class="note-form-label">이동할 URL</label><input id="note-dialog-link-url-17815972891561" class="note-link-url form-control note-form-control note-input" type="text" value="http://"></div><div class="checkbox sn-checkbox-open-in-new-window"><label><input role="checkbox" type="checkbox" checked="" aria-checked="true">새창으로 열기</label></div></div><div class="note-modal-footer"><input type="button" href="#" class="btn btn-primary note-btn note-btn-primary note-link-btn" value="링크 삽입" disabled=""></div></div></div><div class="note-popover bottom note-link-popover" style="display: none;"><div class="note-popover-arrow"></div><div class="popover-content note-children-container"><span><a target="_blank"></a>&nbsp;</span><div class="note-btn-group note-link"><button type="button" class="note-btn" tabindex="-1" aria-label="수정"><i class="note-icon-link"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="링크 삭제"><i class="note-icon-chain-broken"></i></button></div></div></div><div class="note-modal" aria-hidden="false" tabindex="-1" role="dialog" aria-label="그림 삽입"><div class="note-modal-content"><div class="note-modal-header"><button type="button" class="close" aria-label="Close" aria-hidden="true"><i class="note-icon-close"></i></button><h4 class="note-modal-title">그림 삽입</h4></div><div class="note-modal-body"><div class="form-group note-form-group note-group-select-from-files"><label for="note-dialog-image-file-17815972891561" class="note-form-label">파일 선택</label><input id="note-dialog-image-file-17815972891561" class="note-image-input form-control-file note-form-control note-input" type="file" name="files" accept="image/*" multiple="multiple"></div><div class="form-group note-group-image-url"><label for="note-dialog-image-url-17815972891561" class="note-form-label">사진 URL</label><input id="note-dialog-image-url-17815972891561" class="note-image-url form-control note-form-control note-input" type="text"></div></div><div class="note-modal-footer"><input type="button" href="#" class="btn btn-primary note-btn note-btn-primary note-image-btn" value="그림 삽입" disabled=""></div></div></div><div class="note-popover bottom note-image-popover" style="display: none;"><div class="note-popover-arrow"></div><div class="popover-content note-children-container"><div class="note-btn-group note-resize"><button type="button" class="note-btn" tabindex="-1" aria-label="100% 크기로 변경"><span class="note-fontsize-10">100%</span></button><button type="button" class="note-btn" tabindex="-1" aria-label="50% 크기로 변경"><span class="note-fontsize-10">50%</span></button><button type="button" class="note-btn" tabindex="-1" aria-label="25% 크기로 변경"><span class="note-fontsize-10">25%</span></button><button type="button" class="note-btn" tabindex="-1" aria-label="원본 크기"><i class="note-icon-rollback"></i></button></div><div class="note-btn-group note-float"><button type="button" class="note-btn" tabindex="-1" aria-label="왼쪽 정렬"><i class="note-icon-float-left"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="오른쪽 정렬"><i class="note-icon-float-right"></i></button><button type="button" class="note-btn" tabindex="-1" aria-label="정렬하지 않음"><i class="note-icon-rollback"></i></button></div><div class="note-btn-group note-remove"><button type="button" class="note-btn" tabindex="-1" aria-label="사진 삭제"><i class="note-icon-trash"></i></button></div></div></div><div class="note-popover bottom note-table-popover" style="display: none;"><div class="note-popover-arrow"></div><div class="popover-content note-children-container"><div class="note-btn-group note-add"><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="아래에 행 삽입"><i class="note-icon-row-below"></i></button><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="위에 행 삽입"><i class="note-icon-row-above"></i></button><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="왼쪽에 열 삽입"><i class="note-icon-col-before"></i></button><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="오른쪽에 열 삽입"><i class="note-icon-col-after"></i></button></div><div class="note-btn-group note-delete"><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="행 지우기"><i class="note-icon-row-remove"></i></button><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="열 지우기"><i class="note-icon-col-remove"></i></button><button type="button" class="note-btn btn-md" tabindex="-1" aria-label="표 삭제"><i class="note-icon-trash"></i></button></div></div></div><div class="note-modal" aria-hidden="false" tabindex="-1" role="dialog" aria-label="동영상 삽입"><div class="note-modal-content"><div class="note-modal-header"><button type="button" class="close" aria-label="Close" aria-hidden="true"><i class="note-icon-close"></i></button><h4 class="note-modal-title">동영상 삽입</h4></div><div class="note-modal-body"><div class="form-group note-form-group row-fluid"><label for="note-dialog-video-url-17815972891561" class="note-form-label">동영상 URL <small class="text-muted">(YouTube, Vimeo, Vine, Instagram, DailyMotion, Youku 사용 가능)</small></label><input id="note-dialog-video-url-17815972891561" class="note-video-url form-control note-form-control note-input" type="text"></div></div><div class="note-modal-footer"><input type="button" href="#" class="btn btn-primary note-btn note-btn-primary note-video-btn" value="동영상 삽입" disabled=""></div></div></div><div class="note-modal" aria-hidden="false" tabindex="-1" role="dialog" aria-label="도움말"><div class="note-modal-content"><div class="note-modal-header"><button type="button" class="close" aria-label="Close" aria-hidden="true"><i class="note-icon-close"></i></button><h4 class="note-modal-title">도움말</h4></div><div class="note-modal-body" style="max-height: 300px; overflow: scroll;"><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>ESC</kbd></label><span>Escape</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>ENTER</kbd></label><span>문단 삽입</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+Z</kbd></label><span>마지막 명령 취소</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+Y</kbd></label><span>마지막 명령 재실행</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>TAB</kbd></label><span>탭</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>SHIFT+TAB</kbd></label><span>탭 제거</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+B</kbd></label><span>굵은 글자로 설정</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+I</kbd></label><span>기울임꼴 글자로 설정</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+U</kbd></label><span>밑줄 글자로 설정</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+S</kbd></label><span>취소선 글자로 설정</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+BACKSLASH</kbd></label><span>서식 삭제</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+L</kbd></label><span>왼쪽 정렬하기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+E</kbd></label><span>가운데 정렬하기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+R</kbd></label><span>오른쪽 정렬하기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+J</kbd></label><span>좌우채움 정렬하기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+NUM7</kbd></label><span>글머리 기호 켜고 끄기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+SHIFT+NUM8</kbd></label><span>번호 매기기 켜고 끄기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+LEFTBRACKET</kbd></label><span>현재 문단 내어쓰기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+RIGHTBRACKET</kbd></label><span>현재 문단 들여쓰기</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM0</kbd></label><span>현재 블록의 포맷을 문단(P)으로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM1</kbd></label><span>현재 블록의 포맷을 제목1(H1)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM2</kbd></label><span>현재 블록의 포맷을 제목2(H2)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM3</kbd></label><span>현재 블록의 포맷을 제목3(H3)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM4</kbd></label><span>현재 블록의 포맷을 제목4(H4)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM5</kbd></label><span>현재 블록의 포맷을 제목5(H5)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+NUM6</kbd></label><span>현재 블록의 포맷을 제목6(H6)로 변경</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+ENTER</kbd></label><span>구분선 삽입</span><div class="help-list-item"></div><label style="width: 180px; margin-right: 10px;"><kbd>CTRL+K</kbd></label><span>링크 대화상자 열기</span></div><div class="note-modal-footer"><p class="text-center"><a href="http://summernote.org/" target="_blank" rel="noopener noreferrer">Summernote 0.9.1</a> · <a href="https://github.com/summernote/summernote" target="_blank" rel="noopener noreferrer">Project</a> · <a href="https://github.com/summernote/summernote/issues" target="_blank" rel="noopener noreferrer">Issues</a></p></div></div></div></div>
+          <div class="input-counter">
+            <span id="contentCount">0</span>/3000
+          </div>
+          <div class="write-bottom-actions">
+            <button type="button" class="btn-cancel" onclick="cancelWrite()">취소</button>
+            <button type="button" class="btn-submit" onclick="submitWrite()">
+              
+                
+                등록하기
+              
+            </button>
+          </div>
+        </div>
+
+      </main>
+
+      
+      <aside class="write-aside">
+
+        
+        <div class="aside-card">
+          <div class="aside-card-title">게시글 유형 <span class="required">*</span></div>
+          <input type="hidden" id="postType" name="postType" value="review">
+          <div class="type-select-grid">
+            <button type="button" class="type-select-btn active" data-type="review" onclick="selectType('review', this)">
+              <span class="type-btn-icon">💬</span>
+              <span class="type-btn-label">여행후기</span>
+            </button>
+            <button type="button" class="type-select-btn " data-type="photo" onclick="selectType('photo', this)">
+              <span class="type-btn-icon">📷</span>
+              <span class="type-btn-label">사진</span>
+            </button>
+            <button type="button" class="type-select-btn " data-type="tip" onclick="selectType('tip', this)">
+              <span class="type-btn-icon">💡</span>
+              <span class="type-btn-label">여행팁</span>
+            </button>
+            <button type="button" class="type-select-btn " data-type="question" onclick="selectType('question', this)">
+              <span class="type-btn-icon">❓</span>
+              <span class="type-btn-label">질문</span>
+            </button>
+          </div>
+        </div>
+
+        
+        <div class="aside-card">
+          <div class="aside-card-title">지역 선택 <span class="required">*</span></div>
+          <input type="hidden" id="regionInput" name="region" value="asia">
+          <div class="region-select-list">
+            <button type="button" class="region-select-btn active" data-region="asia" onclick="selectRegion('asia', this)">🌏 아시아</button>
+            <button type="button" class="region-select-btn " data-region="europe" onclick="selectRegion('europe', this)">🏕 유럽</button>
+            <button type="button" class="region-select-btn " data-region="africa" onclick="selectRegion('africa', this)">🌎 아프리카</button>
+            <button type="button" class="region-select-btn " data-region="north_america" onclick="selectRegion('north_america', this)">🇺🇸 북아메리카</button>
+            <button type="button" class="region-select-btn " data-region="south_america" onclick="selectRegion('south_america', this)">🇳🇸 남아메리카</button>
+            <button type="button" class="region-select-btn " data-region="oceania" onclick="selectRegion('oceania', this)">🏈 오세아니아</button>
+            <button type="button" class="region-select-btn " data-region="etc" onclick="selectRegion('etc', this)">🌐 기타</button>
+          </div>
+        </div>
+
+        
+        <div class="aside-card guide-card">
+          <div class="aside-card-title">📝 작성 가이드</div>
+          <ul class="guide-list" id="guideList">
+            <li>실제 여행 경험을 솔직하게 공유해주세요.</li>
+            <li>다른 여행자에게 도움이 될 정보를 담아주세요.</li>
+            <li>타인을 비방하거나 광고성 내용은 삭제될 수 있어요.</li>
+            <li>저작권이 있는 이미지 사용은 삼가주세요.</li>
+          </ul>
+        </div>
+
+      </aside>
+    </div>
+  </form>
+</div>
+
+<script>
+var CTX      = '/TripTogether';
+var IS_EDIT  = false;
+var POST_ID  = 0;
+var tags     = [];
+/* 사진 유형 검증용: content 본문에 img 최소 장수 */
+var PHOTO_MIN_IMAGES = 3;
+
+
+function formatMessage(template, value) {
+  return template.replace('{0}', value);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* Summernote HTML → plain text 변환 (글자수 카운트·빈값 검증용) */
+function htmlToPlainText(html) {
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html || '';
+  return (tmp.textContent || tmp.innerText || '').trim();
+}
+
+var writeMessages = {
+  cancelConfirm: '작성 중인 내용이 있습니다. 취소하시겠습니까?',
+  contentPhotoOnly: '사진 유형은 해시태그만 가능해요.',
+  contentPlaceholder: '우리는 목적지에 닿아야 행복해지는 것이 아니라 여행하는 과정에서 행복을 느낀다.',
+  photoCountLabel: '사진 {0}\/{1}',
+  errors: {
+    contentRequired: '내용을 입력해주세요.',
+    generic: '처리 중 오류가 발생했습니다.',
+    photoRequired: '사진 유형은 본문에 이미지 3장 이상 첨부해야 해요.',
+    regionTagLocked: '지역 태그는 삭제할 수 없어요. 지역을 변경하면 자동으로 바뀌어요!',
+    titleRequired: '제목을 입력해주세요.'
+  },
+  guides: {
+    photo: [
+      '본문에 사진을 3장 이상 첨부해주세요.',
+      '사진이 주인공이에요! 멋진 사진을 올려주세요.',
+      '해시태그를 사용하면 더 쉽게 발견될 수 있어요.',
+      '여러 장의 사진으로 여행 순간을 기록해보세요.'
+    ],
+    question: [
+      '질문을 구체적으로 작성해주세요.',
+      '여행 일정과 예산을 함께 알려주면 답변에 도움이 돼요.'
+    ],
+    review: [
+      '실제 여행 경험을 솔직하게 공유해주세요.',
+      '사진과 함께 올리면 더 생생하게 전달할 수 있어요.',
+      '여행 일정, 경비, 팁을 함께 적어주세요.'
+    ],
+    tip: [
+      '구체적이고 실용적인 정보를 써주세요.',
+      '최신 정보인지 확인한 뒤 작성해주세요.',
+      '출처가 있다면 함께 적어주세요.'
+    ]
+  },
+  regionLabels: {
+    africa: '아프리카',
+    asia: '아시아',
+    etc: '기타',
+    europe: '유럽',
+    north_america: '북아메리카',
+    oceania: '오세아니아',
+    south_america: '남아메리카'
+  },
+  resetConfirm: '작성 중인 내용이 모두 초기화됩니다. 새로 시작하시겠습니까?',
+  tipCategories: {
+    food: '맛집',
+    label: '팁 카테고리',
+    money: '환전·예산',
+    other: '기타',
+    safety: '안전',
+    stay: '숙소',
+    transport: '교통'
+  },
+  titles: {
+    photo: { create: '사진 올리기', edit: '사진 수정' },
+    question: { create: '질문하기', edit: '질문 수정' },
+    review: { create: '여행 후기 쓰기', edit: '여행 후기 수정' },
+    tip: { create: '여행 팁 공유하기', edit: '여행 팁 수정' }
+  }
+};
+
+var TYPE_CONFIG = {
+  review: {
+    title: IS_EDIT ? writeMessages.titles.review.edit : writeMessages.titles.review.create,
+    guide: writeMessages.guides.review
+  },
+  photo: {
+    title: IS_EDIT ? writeMessages.titles.photo.edit : writeMessages.titles.photo.create,
+    guide: writeMessages.guides.photo
+  },
+  tip: {
+    title: IS_EDIT ? writeMessages.titles.tip.edit : writeMessages.titles.tip.create,
+    guide: writeMessages.guides.tip
+  },
+  question: {
+    title: IS_EDIT ? writeMessages.titles.question.edit : writeMessages.titles.question.create,
+    guide: writeMessages.guides.question
+  }
+};
+
+var REGION_TAG_VALUE = {
+  asia:          '아시아',
+  europe:        '유럽',
+  africa:        '아프리카',
+  north_america: '북아메리카',
+  south_america: '남아메리카',
+  oceania:       '오세아니아',
+  etc:           '기타'
+};
+
+window.onload = function() {
+  if (IS_EDIT) {
+    /* 수정 모드: 기존 데이터 복원 */
+    var currentType   = document.getElementById('postType').value;
+    var currentRegion = document.getElementById('regionInput').value;
+
+    /* 기존 태그 복원 */
+    var existingTags = '';
+    if (existingTags) {
+      existingTags.split(',').forEach(function(t) {
+        t = t.trim();
+        if (t && tags.indexOf(t) === -1) tags.push(t);
+      });
+    }
+    renderTags();
+
+    /* 기존 이미지는 content 본문 HTML 안에 이미 포함됨 (별도 복원 불필요) */
+
+    /* tip 카테고리 복원 */
+    if (currentType === 'tip') {
+      selectType('tip', document.querySelector('[data-type="tip"]'));
+      setTimeout(function() {
+        var tipCat = '';
+        if (tipCat) {
+          document.getElementById('tipCategoryInput').value = tipCat;
+          document.querySelectorAll('.tip-cat-btn').forEach(function(b) {
+            b.classList.remove('active');
+          });
+          var activeBtn = document.querySelector('[onclick*="' + tipCat + '"]');
+          if (activeBtn) activeBtn.classList.add('active');
+        }
+      }, 100);
+    }
+
+    /* photo 유형 수정 시: 가이드 리스트 및 카운터 배지 갱신 */
+    if (currentType === 'photo') {
+      selectType('photo', document.querySelector('[data-type="photo"]'));
+    }
+
+  } else {
+    /* 글쓰기 모드: 기본 지역 태그(아시아) 자동 추가 */
+    var defaultTag = REGION_TAG_VALUE['asia'];
+    if (defaultTag && tags.indexOf(defaultTag) === -1) {
+      tags.unshift(defaultTag);
+      renderTags();
+    }
+  }
+};
+
+function selectType(type, btn) {
+  document.getElementById('postType').value = type;
+  document.querySelectorAll('.type-select-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+
+  var cfg = TYPE_CONFIG[type];
+  document.getElementById('writePageTitle').textContent = cfg.title;
+
+  /* 모든 유형에서 에디터 활성. photo 유형은 이미지 최소 3장 요구는 submitWrite 에서 검증 */
+  var $editor = (window.jQuery && jQuery('#writeContent').data('summernote')) ? jQuery('#writeContent') : null;
+  if ($editor) $editor.summernote('enable');
+  document.getElementById('guideList').innerHTML =
+      cfg.guide.map(function(g) { return '<li>' + escapeHtml(g) + '</li>'; }).join('');
+
+  var sec = document.getElementById('typeExtraSection');
+  if (type === 'tip') {
+    sec.innerHTML = '<div class="write-section">'
+      + '<label class="section-label">' + escapeHtml(writeMessages.tipCategories.label) + ' <span class="required">*</span></label>'
+      + '<input type="hidden" id="tipCategoryInput" name="tipCategory" value="transport">'
+      + '<div class="tip-cat-grid">'
+      + '<button type="button" class="tip-cat-btn active" onclick="selTipCat(\'transport\',this)">&#9992; ' + escapeHtml(writeMessages.tipCategories.transport) + '</button>'
+      + '<button type="button" class="tip-cat-btn" onclick="selTipCat(\'accom\',this)">&#127968; ' + escapeHtml(writeMessages.tipCategories.stay) + '</button>'
+      + '<button type="button" class="tip-cat-btn" onclick="selTipCat(\'food\',this)">&#127869; ' + escapeHtml(writeMessages.tipCategories.food) + '</button>'
+      + '<button type="button" class="tip-cat-btn" onclick="selTipCat(\'money\',this)">&#128176; ' + escapeHtml(writeMessages.tipCategories.money) + '</button>'
+      + '<button type="button" class="tip-cat-btn" onclick="selTipCat(\'safety\',this)">&#128737; ' + escapeHtml(writeMessages.tipCategories.safety) + '</button>'
+      + '<button type="button" class="tip-cat-btn" onclick="selTipCat(\'other\',this)">&#128161; ' + escapeHtml(writeMessages.tipCategories.other) + '</button>'
+      + '</div></div>';
+  } else if (type === 'question') {
+    sec.innerHTML = '';
+  } else {
+    sec.innerHTML = '';
+  }
+
+  /* 사진 유형: 이미지 카운터 배지 표시 + 현재 카운트 반영 */
+  var badge = document.getElementById('photoCountBadge');
+  if (badge) {
+    if (type === 'photo') {
+      badge.hidden = false;
+      updatePhotoCount();
+    } else {
+      badge.hidden = true;
+    }
+  }
+}
+
+function updatePhotoCount() {
+  var badge = document.getElementById('photoCountBadge');
+  if (!badge || badge.hidden) return;
+  var $editor = (window.jQuery && jQuery('#writeContent').data('summernote')) ? jQuery('#writeContent') : null;
+  var html = $editor ? $editor.summernote('code') : (document.getElementById('writeContent').value || '');
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  var count = tmp.querySelectorAll('img').length;
+  var textEl = document.getElementById('photoCountText');
+  if (textEl) {
+    var tpl = writeMessages.photoCountLabel || 'Photos {0}/{1}';
+    textEl.textContent = tpl.replace('{0}', count).replace('{1}', PHOTO_MIN_IMAGES);
+  }
+  badge.classList.toggle('is-short', count < PHOTO_MIN_IMAGES);
+  badge.classList.toggle('is-ok', count >= PHOTO_MIN_IMAGES);
+}
+
+function selTipCat(cat, btn) {
+  document.getElementById('tipCategoryInput').value = cat;
+  document.querySelectorAll('.tip-cat-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+}
+
+function selectRegion(region, btn) {
+  var prev = document.getElementById('regionInput').value;
+  document.getElementById('regionInput').value = region;
+  document.querySelectorAll('.region-select-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+
+  var prevTag = REGION_TAG_VALUE[prev];
+  if (prevTag) {
+    var idx = tags.indexOf(prevTag);
+    if (idx !== -1) tags.splice(idx, 1);
+  }
+  var newTag = REGION_TAG_VALUE[region];
+  if (newTag && tags.indexOf(newTag) === -1) {
+    tags.unshift(newTag);
+  }
+  renderTags();
+}
+
+/* 사이드바 이미지 업로드 관련 함수(addImages/removeImage/renderImageGrid) 제거됨.
+   이제 이미지는 Summernote 에디터 본문으로만 삽입됨. */
+
+function addTag(event) {
+  if (event.key !== 'Enter') return;
+  var input = document.getElementById('tagInput');
+  var val = input.value.trim().replace(/^#/, '');
+  if (!val || tags.length >= 10 || tags.indexOf(val) !== -1) {
+    input.value = '';
+    return;
+  }
+  tags.push(val);
+  renderTags();
+  input.value = '';
+}
+
+function removeTag(idx) {
+  var region = document.getElementById('regionInput').value;
+  var regionTag = REGION_TAG_VALUE[region];
+  if (tags[idx] === regionTag) {
+    alert(writeMessages.errors.regionTagLocked);
+    return;
+  }
+  tags.splice(idx, 1);
+  renderTags();
+}
+
+function renderTags() {
+  var region = document.getElementById('regionInput').value;
+  var regionTag = REGION_TAG_VALUE[region];
+  var regionLabel = writeMessages.regionLabels[region] || regionTag;
+  document.getElementById('tagList').innerHTML = tags.map(function(t, i) {
+    var isRegionTag = (t === regionTag);
+    var tagLabel = isRegionTag ? regionLabel : t;
+    return '<span class="tag-chip' + (isRegionTag ? ' tag-chip-region' : '') + '">'
+      + '#' + escapeHtml(tagLabel)
+      + '<button type="button" class="tag-chip-remove" onclick="removeTag(' + i + ')">'
+      + (isRegionTag ? '&#128205;' : '&#10005;')
+      + '</button></span>';
+  }).join('');
+  document.getElementById('tagsHidden').value = tags.join(',');
+}
+
+function submitWrite() {
+  var title   = document.getElementById('writeTitle').value.trim();
+  var type    = document.getElementById('postType').value;
+  var region  = document.getElementById('regionInput').value;
+
+  /* Summernote HTML을 textarea에 동기화 (FormData가 최신값을 읽도록) */
+  var $editor = (window.jQuery && jQuery('#writeContent').data('summernote')) ? jQuery('#writeContent') : null;
+  if ($editor) {
+    document.getElementById('writeContent').value = $editor.summernote('code');
+  }
+  var contentHtml = document.getElementById('writeContent').value;
+  var contentText = htmlToPlainText(contentHtml);
+
+  /* 본문에 포함된 <img> 개수 (photo 유형 최소 장수 검증용) */
+  var tmpDiv = document.createElement('div');
+  tmpDiv.innerHTML = contentHtml || '';
+  var imgCount = tmpDiv.querySelectorAll('img').length;
+
+  /* 지역 태그 강제 포함 */
+  var regionTag = REGION_TAG_VALUE[region];
+  if (regionTag && tags.indexOf(regionTag) === -1) {
+    tags.unshift(regionTag);
+    renderTags();
+  }
+
+  if (!title) {
+    alert(writeMessages.errors.titleRequired);
+    document.getElementById('writeTitle').focus();
+    return;
+  }
+  /* 본문 필수: 텍스트나 이미지 중 하나는 있어야 함 */
+  if (!contentText && imgCount === 0) {
+    alert(writeMessages.errors.contentRequired);
+    if ($editor) $editor.summernote('focus');
+    else document.getElementById('writeContent').focus();
+    return;
+  }
+  /* photo 유형: 본문에 이미지 최소 3장 필수 */
+  if (type === 'photo' && imgCount < PHOTO_MIN_IMAGES) {
+    alert(writeMessages.errors.photoRequired);
+    return;
+  }
+
+  var formData = new FormData(document.getElementById('writeForm'));
+
+  var url = IS_EDIT
+    ? CTX + '/community/edit/' + POST_ID
+    : CTX + '/community/write';
+
+  fetch(url, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      location.href = CTX + '/community/' + data.postId;
+    } else {
+      alert(data.message || writeMessages.errors.generic);
+    }
+  });
+}
+
+function resetWrite() {
+  if (!confirm(writeMessages.resetConfirm)) return;
+  location.href = CTX + '/community/write';
+}
+
+function cancelWrite() {
+  var title   = document.getElementById('writeTitle').value;
+  var $editor = (window.jQuery && jQuery('#writeContent').data('summernote')) ? jQuery('#writeContent') : null;
+  var contentHtml = $editor ? $editor.summernote('code') : document.getElementById('writeContent').value;
+  var contentText = htmlToPlainText(contentHtml);
+  if (title || contentText) {
+    if (!confirm(writeMessages.cancelConfirm)) return;
+  }
+  if (IS_EDIT) {
+    location.href = CTX + '/community/' + POST_ID;
+  } else {
+    location.href = CTX + '/community/list';
+  }
+}
+</script>
+
+<script>
+/* =============================================
+   Summernote 에디터 초기화
+   - textarea 초기값(isEdit 시 기존 post.content)은 자동 반영
+   - onChange 콜백에서 plain text 글자수 카운터 갱신
+   - onImageUpload: Phase 1 임시 base64 삽입 (Phase 2에서 Cloudinary 업로드로 교체 예정)
+   ============================================= */
+jQuery(function($) {
+  $('#writeContent').summernote({
+    lang: 'ko-KR',
+    height: 640,
+    minHeight: 480,
+    placeholder: writeMessages.contentPlaceholder,
+    focus: false,
+    disableResizeEditor: false,
+    toolbar: [
+      ['style', ['style']],
+      ['font',  ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+      ['fontsize', ['fontsize']],
+      ['color', ['color']],
+      ['para',  ['ul', 'ol', 'paragraph']],
+      ['insert',['link', 'picture']],
+      ['view',  ['fullscreen', 'codeview']]
+    ],
+    callbacks: {
+      onChange: function(contents) {
+        var plain = htmlToPlainText(contents);
+        document.getElementById('contentCount').textContent = plain.length;
+        updatePhotoCount();
+      },
+      onImageUpload: function(files) {
+        /* Cloudinary 업로드 → 반환된 secure_url 을 <img>로 삽입 */
+        for (var i = 0; i < files.length; i++) {
+          (function(file) {
+            var form = new FormData();
+            form.append('file', file);
+            fetch(CTX + '/community/inline-image', {
+              method: 'POST',
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+              body: form
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data && data.success && data.url) {
+                $('#writeContent').summernote('insertImage', data.url);
+              } else {
+                alert((data && data.message) || '이미지 업로드에 실패했습니다.');
+              }
+            })
+            .catch(function(err) {
+              console.error('inline image upload error', err);
+              alert('이미지 업로드 중 오류가 발생했습니다.');
+            });
+          })(files[i]);
+        }
+      }
+    }
+  });
+
+  /* 초기 글자수 카운터 (isEdit 시 기존 본문 기준) */
+  var initialHtml = document.getElementById('writeContent').value;
+  document.getElementById('contentCount').textContent = htmlToPlainText(initialHtml).length;
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+<script>window.__DEMO_BASE__="../";</script>
+<script src="../assets/demo-mock.js"></script>
+</body></html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>error.blocked.pageTitle</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Noto Sans JP", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+            color: #0f172a;
+        }
+        .blocked-card {
+            width: min(760px, calc(100vw - 32px));
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 28px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+            padding: 34px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: -.01em;
+        }
+        .language-switch {
+            display: inline-flex;
+            gap: 6px;
+            padding: 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            background: #f8fafc;
+        }
+        .language-switch a {
+            min-width: 38px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            text-align: center;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 12px;
+        }
+        .language-switch a.active {
+            background: #1d4ed8;
+            color: #fff;
+        }
+        h1 {
+            margin: 22px 0 10px;
+            font-size: 30px;
+            line-height: 1.25;
+            letter-spacing: -.04em;
+        }
+        .lead {
+            margin: 0 0 12px;
+            color: #475569;
+            line-height: 1.78;
+            font-size: 15px;
+        }
+        .support-box {
+            margin-top: 24px;
+            padding: 18px;
+            border: 1px solid #dbeafe;
+            border-radius: 18px;
+            background: #f8fbff;
+        }
+        .support-title {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 900;
+            color: #1e3a8a;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 155px 1fr;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .info-grid dt,
+        .info-grid dd {
+            margin: 0;
+            padding: 13px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+        .info-grid dt {
+            color: #64748b;
+            font-weight: 800;
+            background: #f8fafc;
+        }
+        .info-grid dd {
+            color: #111827;
+            word-break: break-all;
+        }
+        .info-grid dt:last-of-type,
+        .info-grid dd:last-of-type { border-bottom: 0; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 800;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            background: #fff;
+        }
+        .btn-primary {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: #fff;
+        }
+        .note {
+            margin-top: 18px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.65;
+        }
+        @media (max-width: 640px) {
+            .blocked-card { padding: 24px; }
+            h1 { font-size: 25px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .info-grid dt { border-bottom: 0; padding-bottom: 4px; }
+            .info-grid dd { padding-top: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+<main class="blocked-card">
+    <div class="topbar">
+        <span class="badge">error.blocked.badge</span>
+        <nav class="language-switch" aria-label="error.blocked.language">
+            <a href="blocked-access.html" class="active">KO</a>
+            <a href="blocked-access.html" class="">EN</a>
+            <a href="blocked-access.html" class="">JA</a>
+            <a href="blocked-access.html" class="">ZH</a>
+        </nav>
+    </div>
+
+    <h1>error.blocked.title</h1>
+    <p class="lead">error.blocked.lead</p>
+    <p class="lead">error.blocked.description</p>
+    <p class="lead">error.blocked.contact</p>
+
+    <section class="support-box" aria-labelledby="supportInfoTitle">
+        <p id="supportInfoTitle" class="support-title">error.blocked.supportInfo</p>
+        <dl class="info-grid">
+            <dt>error.blocked.requestId</dt>
+            <dd></dd>
+
+            <dt>error.blocked.restrictionType</dt>
+            <dd>error.blocked.type.access</dd>
+
+            <dt>error.blocked.ip</dt>
+            <dd></dd>
+        </dl>
+    </section>
+
+    <div class="actions">
+        <a class="btn btn-primary" href="security/appeal/new.html">error.blocked.appeal</a>
+        <a class="btn" href="index.html">error.blocked.home</a>
+        <a class="btn" href="inquiry/list.html">error.blocked.support</a>
+    </div>
+
+    <p class="note">error.blocked.notice</p>
+</main>
+
+
+
+<script>window.__DEMO_BASE__="";</script>
+<script src="assets/demo-mock.js"></script>
+</body></html>

@@ -1,0 +1,2136 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="wpNE9p67DXZRir5EDo1ErJiSeGwGooRvXYd-yHEy-7FOli7Vo_IgxPraaUN86dp2aqBwlKzwVQ00ledCPuFMqkRRydN78hzi">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="resources/css/common/reset.css">
+    <link rel="stylesheet" href="resources/css/common/variables.css">
+    <link rel="stylesheet" href="resources/css/common/layout.css">
+    <link rel="stylesheet" href="resources/css/common/header.css">
+    <link rel="stylesheet" href="resources/css/common/notification.css">
+    <link rel="stylesheet" href="resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="resources/css/mypage/mypage.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="wallet.html">내 지갑</a>
+                    <a href="shop.html">아이템샵</a>
+                    <a href="packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+
+<style>
+    /* Grade badge row layout */
+    .mp-grade-row {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+    /* Keep grade badges aligned even when text length differs */
+    .mp-grade-row .mp-grade-badge {
+        flex-shrink: 0;
+        min-width: 120px;        /* ???ル봿??????????(PLATINUM)???轅붽틓?????????숈?????????됲룈 */
+        text-align: center;      /* ????筌뤾쑬已?????ル봿?????????꿔꺂???影??*/
+        box-sizing: border-box;
+    }
+    /* Let the level area fill the remaining horizontal space */
+    .mp-grade-row .mp-level-wrap {
+        flex: 1;
+        min-width: 180px;
+    }
+
+    /* LEVEL badge visual style */
+    .mp-badge-level {
+        background: #ede9fe;
+        color: #5b21b6;
+        border: 1.5px solid #c4b5fd;
+    }
+
+    /* Grade progress section wrapper */
+    .mp-grade-bar-section {
+        padding: 16px 24px 20px;
+    }
+
+    /* Grade progress fill bar */
+    .mp-grade-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        border-radius: 4px;
+        transition: width .4s ease;
+    }
+
+    /* Promotion notice shown when expected grade is higher */
+    .mp-grade-promotion {
+        margin-top: 8px;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 8px;
+        text-align: center;
+        animation: mp-grade-pulse 2s ease-in-out infinite;
+    }
+    @keyframes mp-grade-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.75; }
+    }
+
+    /* Hint for the next grade target */
+    .mp-grade-next-hint {
+        margin-top: 6px;
+        font-size: 11px;
+        color: var(--gray-400, #94a3b8);
+    }
+</style>
+
+<div class="mp-wrap">
+
+    
+
+
+    <div class="mp-banner">
+        <div class="mp-banner-inner">
+            <div class="mp-avatar">👤</div>
+            <div class="mp-banner-info">
+                <div class="mp-banner-nick">여행가김철수</div>
+                <div class="mp-banner-meta">
+                    <span>
+                        
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            🌐 대한민국
+                        
+                    </span>
+                    <span>
+                        
+                            🗣️ 한국어
+                            
+                            
+                            
+                            
+                        
+                    </span>
+                </div>
+            </div>
+            <button class="mp-banner-edit" onclick="location.href='mypage/edit-confirm.html'">
+                ✎ 정보 수정
+            </button>
+        </div>
+    </div>
+
+    <div class="mp-inner" style="padding-top: 48px;">
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title"><span class="mp-card-icon">📊</span> 등급 · 자산 · 레벨</div>
+            </div>
+            <div class="mp-info-grid">
+                <div class="mp-info-item"><div class="mp-info-label">회원 등급</div><div class="mp-info-value">🥇 골드</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">인증 회원</div><div class="mp-info-value"><span style="color:#15803d;">✔ 인증 회원</span></div></div>
+                <div class="mp-info-item"><div class="mp-info-label">캐시</div><div class="mp-info-value">320,000</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">마일리지</div><div class="mp-info-value">1,500</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">포인트</div><div class="mp-info-value">8,900</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">레벨 / 경험치</div><div class="mp-info-value">Lv. 15 / 42,000 XP</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">게시글 수</div><div class="mp-info-value">7</div></div>
+                <div class="mp-info-item"><div class="mp-info-label">댓글 수</div><div class="mp-info-value">21</div></div>
+            </div>
+        </div>
+
+        
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">💰</span> 내 등급 &amp; 재화
+                </div>
+            </div>
+            
+            <div class="mp-grade-bar-section">
+                
+                <div class="mp-grade-row">
+                    
+                    <span class="mp-grade-badge mp-badge-level">⚡ LEVEL</span>
+                    <div class="mp-level-wrap">
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+
+                    <div class="mp-level-header">
+                        <span class="mp-level-label">Lv. 15</span>
+                        <span class="mp-level-xp">
+                            42,000
+                            /
+                            0 XP
+                        </span>
+                    </div>
+                    <div class="mp-xp-bar">
+                        <div class="mp-xp-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                
+                </div>
+            </div>
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+            
+            
+
+            
+            
+
+            
+            
+                
+                    
+                
+                
+            
+
+            
+            
+            
+            
+            
+            
+
+            
+            
+            
+            
+            
+            
+
+            
+            
+            
+            
+            
+            
+
+            <div class="mp-grade-bar-section">
+                
+                <div class="mp-grade-row">
+                    
+                    <span class="mp-grade-badge mp-grade-GOLD">
+    
+        
+        
+        🥇 골드
+        
+        
+        
+    
+</span>
+                    
+                    <div class="mp-level-wrap">
+                        <div class="mp-level-header">
+                            <span class="mp-level-label">회원 등급</span>
+                            <span class="mp-level-xp">
+                                
+                                    
+                                        최고 등급 달성!
+                                    
+                                    
+                                
+                            </span>
+                        </div>
+                        <div class="mp-xp-bar">
+                            <div class="mp-grade-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                    
+                        
+                    
+                    
+                    
+                
+            </div>
+            
+            <div class="mp-currency-grid">
+                <div class="mp-currency-item">
+                    <div class="mp-currency-icon"><img src="resources/data/coin-point.svg" alt="포인트" width="40" height="40"></div>
+                    <div class="mp-currency-label">포인트</div>
+                    <div class="mp-currency-value">8,900</div>
+                </div>
+                <div class="mp-currency-item">
+                    <div class="mp-currency-icon"><img src="resources/data/coin-mileage.svg" alt="마일리지" width="40" height="40"></div>
+                    <div class="mp-currency-label">마일리지</div>
+                    <div class="mp-currency-value">1,500</div>
+                </div>
+                <div class="mp-currency-item">
+                    <div class="mp-currency-icon"><img src="resources/data/coin-cash.svg" alt="캐시" width="40" height="40"></div>
+                    <div class="mp-currency-label">캐시</div>
+                    <div class="mp-currency-value">320,000</div>
+                </div>
+            </div>
+            
+            
+            <div class="mp-stats-grid">
+                <div class="mp-stats-item">
+                    <span class="mp-stats-source mp-stats-src-community">커뮤니티</span>
+                    <div class="mp-stats-value">7</div>
+                    <div class="mp-stats-label">작성 글</div>
+                </div>
+                <div class="mp-stats-item">
+                    <span class="mp-stats-source mp-stats-src-community">커뮤니티</span>
+                    <div class="mp-stats-value">21</div>
+                    <div class="mp-stats-label">작성 댓글</div>
+                </div>
+                <div class="mp-stats-item">
+                    <span class="mp-stats-source mp-stats-src-explore">여행지탐색</span>
+                    <div class="mp-stats-value">0</div>
+                    <div class="mp-stats-label">리뷰</div>
+                </div>
+                <div class="mp-stats-item">
+                    <span class="mp-stats-source mp-stats-src-courses">여행코스</span>
+                    <div class="mp-stats-value">0</div>
+                    <div class="mp-stats-label">여행코스</div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="mp-card mp-level-reward-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🏆</span>
+                    
+                        
+                        
+                        
+                        레벨업 보상
+                    
+                </div>
+            </div>
+            <p class="mp-level-reward-subtitle">
+                
+                    
+                    
+                    
+                    레벨을 달성하면 활동 기반 성장 보상이 자동으로 지급됩니다.
+                
+            </p>
+
+            <div class="mp-level-reward-overview">
+                <div class="mp-level-reward-stat">
+                    <span class="mp-level-reward-stat__label">
+                        
+                            
+                            
+                            
+                            현재 레벨
+                        
+                    </span>
+                    <strong>Lv.15</strong>
+                </div>
+                <div class="mp-level-reward-stat">
+                    <span class="mp-level-reward-stat__label">
+                        
+                            
+                            
+                            
+                            수령 완료 보상
+                        
+                    </span>
+                    <strong>0 / 0</strong>
+                </div>
+                
+            </div>
+
+            
+                
+                
+                    <div class="mp-level-reward-empty">
+                        <span class="mp-level-reward-empty-icon">🎯</span>
+                        <p>표시할 레벨업 보상 정보가 없습니다.</p>
+                    </div>
+                
+            
+        </div>
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">👤</span> 내 정보
+                </div>
+            </div>
+            <div class="mp-info-grid">
+                <div class="mp-info-item">
+                    <div class="mp-info-label">닉네임</div>
+                    <div class="mp-info-value">여행가김철수</div>
+                </div>
+                <div class="mp-info-item">
+                    <div class="mp-info-label">아이디</div>
+                    <div class="mp-info-value">
+                        
+                            kimcs
+                            
+                        
+                    </div>
+                </div>
+                <div class="mp-info-item">
+                    <div class="mp-info-label">국적</div>
+                    <div class="mp-info-value">
+                        
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            🌐 대한민국
+                        
+                    </div>
+                </div>
+                <div class="mp-info-item">
+                    <div class="mp-info-label">선호 언어</div>
+                    <div class="mp-info-value">
+                        
+                            🗣️ 한국어
+                            
+                            
+                            
+                            
+                        
+                    </div>
+                </div>
+                <div class="mp-info-item">
+                    <div class="mp-info-label">이메일</div>
+                    <div class="mp-info-value">
+                        
+                            
+                                kimcs@triptogether.demo
+                                
+                                    <span style="font-size:11px;color:#15803d;margin-left:4px;">✔ 인증됨</span>
+                                
+                            
+                            
+                        
+                    </div>
+                </div>
+                <div class="mp-info-item">
+                    <div class="mp-info-label">계정 상태</div>
+                    <div class="mp-info-value">
+                        
+                            
+                                <span style="color:#15803d;">✔ 정상</span>
+                            
+                            
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <section class="mp-dashboard-tabs" aria-label="마이페이지 기능 탭">
+            <div class="mp-tab-nav" role="tablist">
+                <button type="button" class="mp-tab-btn is-active" data-mp-tab="activity" role="tab" aria-selected="true">
+                    <span>🔔</span>
+                    활동/알림
+                </button>
+                <button type="button" class="mp-tab-btn" data-mp-tab="booking" role="tab" aria-selected="false">
+                    <span>🎫</span>
+                    예약 정보
+                </button>
+                <button type="button" class="mp-tab-btn" data-mp-tab="community" role="tab" aria-selected="false">
+                    <span>💬</span>
+                    커뮤니티
+                </button>
+                <button type="button" class="mp-tab-btn" data-mp-tab="support" role="tab" aria-selected="false">
+                    <span>📝</span>
+                    문의/신고
+                </button>
+                
+                    <button type="button" class="mp-tab-btn" data-mp-tab="business" role="tab" aria-selected="false">
+                        <span>🏢</span>
+                        기업 신청
+                    </button>
+                
+                <button type="button" class="mp-tab-btn" data-mp-tab="items" role="tab" aria-selected="false">
+                    <span>ITEM</span>
+                    아이템
+                </button>
+            </div>
+
+            <div class="mp-tab-panel is-active" data-mp-panel="activity" role="tabpanel">
+
+        
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🔔</span> 새 알림
+                    
+                        <span class="mp-notif-count">1</span>
+                    
+                </div>
+            </div>
+            <div class="mp-notif-list" id="mpNotifList">
+                
+                    
+                    
+
+    
+    
+
+    <div class="mp-notif-item unread" data-notification-id="1" data-target="/TripTogether/community/1">
+        <span class="mp-notif-type">
+            
+                
+                
+                
+                
+                
+                
+                [알림]
+            
+        </span>
+        <span class="mp-notif-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+        <span class="mp-notif-date">
+            2026-06-16
+        </span>
+        <button type="button" class="mp-notif-delete" aria-label="알림 삭제">✕</button>
+    </div>
+
+    
+    
+        
+    
+
+    <div class="mp-notif-item " data-notification-id="2" data-target="/TripTogether/mypage/bookings">
+        <span class="mp-notif-type">
+            
+                
+                
+                
+                
+                
+                
+                [알림]
+            
+        </span>
+        <span class="mp-notif-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+        <span class="mp-notif-date">
+            2026-06-16
+        </span>
+        <button type="button" class="mp-notif-delete" aria-label="알림 삭제">✕</button>
+    </div>
+
+    
+    
+        
+    
+
+    <div class="mp-notif-item " data-notification-id="3" data-target="/TripTogether/mypage/points">
+        <span class="mp-notif-type">
+            
+                
+                
+                
+                
+                
+                
+                [알림]
+            
+        </span>
+        <span class="mp-notif-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+        <span class="mp-notif-date">
+            2026-06-16
+        </span>
+        <button type="button" class="mp-notif-delete" aria-label="알림 삭제">✕</button>
+    </div>
+
+                    
+                
+            </div>
+            
+                <div class="mp-notif-actions">
+                    <button type="button" class="mp-notif-btn" id="mpNotifMarkAll">모두 읽음</button>
+                    <button type="button" class="mp-notif-btn mp-notif-btn-danger" id="mpNotifDeleteAll">전체 삭제</button>
+                </div>
+            
+            <div class="mp-notif-footer">
+                새 알림은 최신순으로 최대 10개까지만 표시됩니다.
+            </div>
+        </div>
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">⭐</span>
+                    내 리뷰
+                    <span class="mp-card-count">3</span>
+                </div>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            <a href="/TripTogether/detail/2" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">부산 해운대 해수욕장</div>
+                                    <div class="mp-list-meta">
+                                        <span class="mp-review-stars">
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    
+                                                    ☆
+                                                
+                                            
+                                        </span>
+                                        
+                                            <span class="mp-review-excerpt">두 번째 방문인데 여전히 좋네요. 회센터도 가성비 굿.</span>
+                                        
+                                        <span>2026-06-16</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-rating">{0}점</span>
+                                </div>
+                            </a>
+                        
+                            <a href="/TripTogether/detail/7" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">파리 에펠탑</div>
+                                    <div class="mp-list-meta">
+                                        <span class="mp-review-stars">
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                        </span>
+                                        
+                                            <span class="mp-review-excerpt">센강 유람선이랑 같이 보면 더 좋아요. 강추!</span>
+                                        
+                                        <span>2026-06-12</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-rating">{0}점</span>
+                                </div>
+                            </a>
+                        
+                            <a href="detail/1.html" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">제주 성산일출봉</div>
+                                    <div class="mp-list-meta">
+                                        <span class="mp-review-stars">
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                                
+                                                    ★
+                                                    
+                                                
+                                            
+                                        </span>
+                                        
+                                            <span class="mp-review-excerpt">일출 보려고 새벽에 올라갔는데 정말 장관이었어요. 제주 가면 무조건 추천...</span>
+                                        
+                                        <span>2026-06-07</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-rating">{0}점</span>
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🗓</span>
+                    내 여행 일정
+                    <span class="mp-card-count">1</span>
+                </div>
+                <a href="/TripTogether/courses/list" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            <a href="courses/detail.html" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">제주 가족여행 3박4일</div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>제주</span>
+                                        
+                                        <span>
+                                            2026-07-10
+                                            ~
+                                            2026-07-13
+                                        </span>
+                                        <span>2026-06-16</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    
+                                        
+                                            <span class="mp-badge mp-badge-public">공개</span>
+                                        
+                                        
+                                    
+                                    
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+        
+        
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🕔</span>
+                    최근 조회 내역
+                    <span class="mp-card-count">5</span>
+                </div>
+                <a href="mypage/history.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            
+                            
+                            
+                                
+                                
+                                
+                                    
+                                
+                            
+                            <a href="courses/detail.html" class="mp-list-item ">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            제주 가족여행 3박4일
+                                            
+                                        
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>제주</span>
+                                        
+                                        <span data-mp-history-ts="1781597304000">방금 전</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-history-type-plan">
+                                        여행 플랜
+                                    </span>
+                                </div>
+                            </a>
+                        
+                            
+                            
+                            
+                                
+                                    
+                                
+                                
+                                
+                            
+                            <a href="community/12.html" class="mp-list-item ">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            여행 초보인데 패키지 vs 자유여행 고민
+                                            
+                                        
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>etc</span>
+                                        
+                                        <span data-mp-history-ts="1781597283000">1분 전</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-history-type-community">
+                                        커뮤니티
+                                    </span>
+                                </div>
+                            </a>
+                        
+                            
+                            
+                            
+                                
+                                    
+                                
+                                
+                                
+                            
+                            <a href="community/1.html" class="mp-list-item ">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            제주 3박4일 다녀온 후기 (사진 많음)
+                                            
+                                        
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>asia</span>
+                                        
+                                        <span data-mp-history-ts="1781597281000">1분 전</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-history-type-community">
+                                        커뮤니티
+                                    </span>
+                                </div>
+                            </a>
+                        
+                            
+                            
+                            
+                                
+                                
+                                    
+                                
+                                
+                            
+                            <a href="detail/10.html" class="mp-list-item ">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            뉴욕 센트럴파크
+                                            
+                                        
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>north_america</span>
+                                        
+                                        <span data-mp-history-ts="1781597275000">1분 전</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-history-type-spot">
+                                        여행지
+                                    </span>
+                                </div>
+                            </a>
+                        
+                            
+                            
+                            
+                                
+                                
+                                    
+                                
+                                
+                            
+                            <a href="detail/1.html" class="mp-list-item ">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            제주 성산일출봉
+                                            
+                                        
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        
+                                            <span>asia</span>
+                                        
+                                        <span data-mp-history-ts="1781597273000">1분 전</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-history-type-spot">
+                                        여행지
+                                    </span>
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+            </div>
+            <div class="mp-tab-panel" data-mp-panel="booking" role="tabpanel" hidden="">
+
+        
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🎫</span>
+                    항공권 예매 정보
+                    <span class="mp-card-count">0</span>
+                </div>
+                <a href="mypage/bookings/flights.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                        <div class="mp-empty">
+                            <div class="mp-empty-icon">🎫</div>
+                            항공권 예매 정보가 없습니다
+                        </div>
+                    
+                    
+                
+            </div>
+        </div>
+
+        
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">🛍</span>
+                    패키지 예약 정보
+                    <span class="mp-card-count">2</span>
+                </div>
+                <a href="mypage/bookings/packages.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                
+                
+                    
+                    
+                        <div class="mp-flight-booking-grid mp-package-booking-grid">
+                        
+                            
+                            
+                            
+                                
+                            
+
+                            <article class="mp-flight-ticket mp-package-ticket">
+                                <div class="mp-flight-ticket-head">
+                                    <div>
+                                        <span class="mp-flight-status mp-package-status">이용완료</span>
+                                        <h4>방콕 4박5일 사원 &amp; 마사지 힐링</h4>
+                                        <p>방콕 왓아룬 鸚?예약번호 {0}</p>
+                                    </div>
+                                    <div class="mp-flight-ticket-price">
+                                        <span>총 결제</span>
+                                        <strong>1,380,000 C</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mp-package-summary-box">
+                                    
+                                        <img src="https://picsum.photos/seed/pkgbangkok/900/600" alt="방콕 4박5일 사원 &amp; 마사지 힐링">
+                                    
+                                    
+                                    <div>
+                                        <strong>{0}명 예약</strong>
+                                        <span>
+                                            2026-08-15
+                                            ~
+                                            2026-08-19
+                                        </span>
+                                        <p>왓아룬·왓포 + 전통 타이마사지</p>
+                                    </div>
+                                </div>
+
+                                <div class="mp-flight-ticket-foot">
+                                    <span>판매자 {0}</span>
+                                    <button type="button" class="mp-flight-detail-link mp-flight-modal-open" data-modal-id="package-booking-6">
+                                        상세보기
+                                    </button>
+                                </div>
+                            </article>
+
+                            <div class="mp-flight-modal" id="package-booking-6">
+                                <button type="button" class="mp-flight-modal-backdrop mp-flight-modal-close" aria-label="닫기"></button>
+                                <div class="mp-flight-modal-card" role="dialog" aria-modal="true">
+                                    <div class="mp-flight-modal-head">
+                                        <div>
+                                            <span class="mp-flight-status mp-package-status">이용완료</span>
+                                            <h3>패키지 예약 상세</h3>
+                                            <p>BK20260609006</p>
+                                        </div>
+                                        <button type="button" class="mp-flight-modal-close mp-flight-modal-x" aria-label="닫기">✕</button>
+                                    </div>
+
+                                    <div class="mp-package-modal-summary">
+                                        
+                                            <img src="https://picsum.photos/seed/pkgbangkok/900/600" alt="방콕 4박5일 사원 &amp; 마사지 힐링">
+                                        
+                                        
+                                        <div>
+                                            <h4>방콕 4박5일 사원 &amp; 마사지 힐링</h4>
+                                            <p>왓아룬·왓포 + 전통 타이마사지</p>
+                                            <a href="/TripTogether/detail/9">{0} 상세로 이동</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="mp-flight-payment">
+                                        <div><span>예약 인원</span><strong>{0}명</strong></div>
+                                        <div><span>1인 단가</span><strong>690,000 C</strong></div>
+                                        <div><span>사용 캐시</span><strong>200,000 C</strong></div>
+                                        <div><span>사용 마일리지</span><strong>0 M</strong></div>
+                                        <div class="total"><span>총 결제금액</span><strong>1,380,000 C</strong></div>
+                                        <div><span>예약일시</span><strong>2026-06-10 16:15</strong></div>
+                                        
+                                    </div>
+
+                                    <p class="mp-flight-mock-note">이 패키지 예약은 실제 여행사 결제가 아닌 TripTogether 포트폴리오용 Mock 예약 정보입니다.</p>
+                                    
+                                    <a class="mp-flight-detail-link full" href="packages.html">패키지 목록으로 이동</a>
+                                </div>
+                            </div>
+                        
+                            
+                            
+                            
+                                
+                            
+
+                            <article class="mp-flight-ticket mp-package-ticket">
+                                <div class="mp-flight-ticket-head">
+                                    <div>
+                                        <span class="mp-flight-status mp-package-status">이용완료</span>
+                                        <h4>제주 2박3일 성산일출봉 &amp; 우도 패키지</h4>
+                                        <p>제주 성산일출봉 鸚?예약번호 {0}</p>
+                                    </div>
+                                    <div class="mp-flight-ticket-price">
+                                        <span>총 결제</span>
+                                        <strong>658,000 C</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mp-package-summary-box">
+                                    
+                                        <img src="https://picsum.photos/seed/pkgjeju/900/600" alt="제주 2박3일 성산일출봉 &amp; 우도 패키지">
+                                    
+                                    
+                                    <div>
+                                        <strong>{0}명 예약</strong>
+                                        <span>
+                                            2026-07-10
+                                            ~
+                                            2026-07-12
+                                        </span>
+                                        <p>제주 동부 핵심 코스, 전일정 가이드 동행</p>
+                                    </div>
+                                </div>
+
+                                <div class="mp-flight-ticket-foot">
+                                    <span>판매자 {0}</span>
+                                    <button type="button" class="mp-flight-detail-link mp-flight-modal-open" data-modal-id="package-booking-1">
+                                        상세보기
+                                    </button>
+                                </div>
+                            </article>
+
+                            <div class="mp-flight-modal" id="package-booking-1">
+                                <button type="button" class="mp-flight-modal-backdrop mp-flight-modal-close" aria-label="닫기"></button>
+                                <div class="mp-flight-modal-card" role="dialog" aria-modal="true">
+                                    <div class="mp-flight-modal-head">
+                                        <div>
+                                            <span class="mp-flight-status mp-package-status">이용완료</span>
+                                            <h3>패키지 예약 상세</h3>
+                                            <p>BK20260605001</p>
+                                        </div>
+                                        <button type="button" class="mp-flight-modal-close mp-flight-modal-x" aria-label="닫기">✕</button>
+                                    </div>
+
+                                    <div class="mp-package-modal-summary">
+                                        
+                                            <img src="https://picsum.photos/seed/pkgjeju/900/600" alt="제주 2박3일 성산일출봉 &amp; 우도 패키지">
+                                        
+                                        
+                                        <div>
+                                            <h4>제주 2박3일 성산일출봉 &amp; 우도 패키지</h4>
+                                            <p>제주 동부 핵심 코스, 전일정 가이드 동행</p>
+                                            <a href="detail/1.html">{0} 상세로 이동</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="mp-flight-payment">
+                                        <div><span>예약 인원</span><strong>{0}명</strong></div>
+                                        <div><span>1인 단가</span><strong>329,000 C</strong></div>
+                                        <div><span>사용 캐시</span><strong>100,000 C</strong></div>
+                                        <div><span>사용 마일리지</span><strong>0 M</strong></div>
+                                        <div class="total"><span>총 결제금액</span><strong>658,000 C</strong></div>
+                                        <div><span>예약일시</span><strong>2026-06-05 16:15</strong></div>
+                                        
+                                    </div>
+
+                                    <p class="mp-flight-mock-note">이 패키지 예약은 실제 여행사 결제가 아닌 TripTogether 포트폴리오용 Mock 예약 정보입니다.</p>
+                                    
+                                    <a class="mp-flight-detail-link full" href="packages.html">패키지 목록으로 이동</a>
+                                </div>
+                            </div>
+                        
+                        </div>
+                    
+                
+            </div>
+        </div>
+
+            </div>
+            <div class="mp-tab-panel" data-mp-panel="community" role="tabpanel" hidden="">
+
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">💬</span>
+                    내 커뮤니티 글
+                    <span class="mp-card-count">2</span>
+                </div>
+                <a href="community/list.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            <a href="community/1.html" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">제주 3박4일 다녀온 후기 (사진 많음)</div>
+                                    <div class="mp-list-meta">
+                                        <span>2026-06-14</span>
+                                        <span>👁 1243</span>
+                                        <span>❤ 86</span>
+                                        <span>💬 4</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-type-review">
+                                        
+                                            후기
+                                            
+                                            
+                                            
+                                            
+                                        
+                                    </span>
+                                </div>
+                            </a>
+                        
+                            <a href="/TripTogether/community/9" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">뉴욕 첫 자유여행 준비물 체크리스트</div>
+                                    <div class="mp-list-meta">
+                                        <span>2026-06-07</span>
+                                        <span>👁 690</span>
+                                        <span>❤ 48</span>
+                                        <span>💬 2</span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-type-tip">
+                                        
+                                            
+                                            
+                                            팁
+                                            
+                                            
+                                        
+                                    </span>
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+            </div>
+            <div class="mp-tab-panel" data-mp-panel="support" role="tabpanel" hidden="">
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">📝</span>
+                    내 문의
+                    <span class="mp-card-count">1</span>
+                </div>
+                <a href="inquiry/list.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            <a href="inquiry/1.html" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">패키지 예약 취소는 어떻게 하나요?</div>
+                                    <div class="mp-list-meta">
+                                        <span>2026-06-08</span>
+                                        <span>
+                                            
+                                                
+                                                
+                                                
+                                                
+                                                기타
+                                            
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-COMPLETED">
+                                        
+                                            
+                                            
+                                            ✔ 답변완료
+                                        
+                                    </span>
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+
+        
+
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">⚠</span>
+                    내 신고내역
+                    <span class="mp-card-count">1</span>
+                </div>
+                <a href="report/list.html" class="mp-card-more">전체보기 →</a>
+            </div>
+            <div class="mp-card-body">
+                
+                    
+                    
+                        
+                            <a href="report/1.html" class="mp-list-item">
+                                <div class="mp-list-content">
+                                    <div class="mp-list-title">
+                                        
+                                            
+                                            
+                                            
+                                            신고
+                                        
+                                        <span style="color:var(--gray-400);font-size:12px;margin-left:4px;">#1</span>
+                                    </div>
+                                    <div class="mp-list-meta">
+                                        <span>2026-06-14</span>
+                                        
+                                            <span>
+                                                
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    SPAM
+                                                
+                                            </span>
+                                        
+                                    </div>
+                                </div>
+                                <div class="mp-list-badges">
+                                    <span class="mp-badge mp-badge-IN_REVIEW">
+                                        
+                                            검토중
+                                            
+                                            
+                                            
+                                        
+                                    </span>
+                                </div>
+                            </a>
+                        
+                    
+                
+            </div>
+        </div>
+
+            </div>
+            
+            <div class="mp-tab-panel" data-mp-panel="business" role="tabpanel" hidden="">
+
+            
+            
+
+
+            <div class="mp-card">
+                <div class="mp-card-head">
+                    <div class="mp-card-title">
+                        <span class="mp-card-icon">🏢</span>
+                        기업 회원 신청
+                    </div>
+                </div>
+
+                
+                
+
+                <div class="mp-business-box">
+                    <div class="mp-business-status">
+                        <div>
+                            <span class="mp-business-kicker">현재 계정 유형</span>
+                            <strong>일반 회원</strong>
+                        </div>
+                        
+                            <span class="mp-business-badge PENDING">
+                                
+                                    검토 대기
+                                    
+                                    
+                                    
+                                
+                            </span>
+                        
+                    </div>
+
+                    
+                        
+                            <p class="mp-business-note">
+                                철수트래블 신청이 관리자 검토를 기다리고 있습니다.
+                                신청일: 2026-06-14 16:18
+                            </p>
+                        
+                        
+                    
+                </div>
+            </div>
+            </div>
+            
+
+            <div class="mp-tab-panel" data-mp-panel="items" role="tabpanel" hidden="">
+
+        <div class="mp-card">
+            <div class="mp-card-head">
+                <div class="mp-card-title">
+                    <span class="mp-card-icon">ITEM</span> 내 꾸미기 아이템
+                </div>
+            </div>
+
+            
+            
+
+            
+                
+                    <div class="mp-empty">
+                        <div class="mp-empty-icon">SHOP</div>
+                        <div>아직 보유한 꾸미기 아이템이 없습니다.</div>
+                        <button class="mp-item-shop-btn" type="button" onclick="location.href='shop.html'">
+                            아이템샵 보러가기
+                        </button>
+                    </div>
+                
+                
+            
+        </div>
+            </div>
+        </section>
+    </div>
+    
+</div>
+
+
+<script>
+    (function () {
+        var tabButtons = document.querySelectorAll('.mp-tab-btn');
+        var tabPanels = document.querySelectorAll('.mp-tab-panel');
+
+        function activateTab(tabName) {
+            tabButtons.forEach(function (button) {
+                var isActive = button.dataset.mpTab === tabName;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            tabPanels.forEach(function (panel) {
+                var isActive = panel.dataset.mpPanel === tabName;
+                panel.classList.toggle('is-active', isActive);
+                panel.hidden = !isActive;
+            });
+        }
+
+        tabButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                activateTab(button.dataset.mpTab);
+            });
+        });
+    })();
+
+    /**
+     * Notification area script.
+     */
+    /* ===== Prevent stale page state when restored from browser cache ===== */
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) location.reload();
+    });
+
+    (function () {
+        const ctx = '/TripTogether';
+        const list = document.getElementById('mpNotifList');
+        const markAllBtn = document.getElementById('mpNotifMarkAll');
+        const deleteAllBtn = document.getElementById('mpNotifDeleteAll');
+        if (!list) return;
+
+        // Event delegation for notification item click and delete button
+        list.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.mp-notif-delete');
+            const item = e.target.closest('.mp-notif-item');
+            if (!item) return;
+            const id = item.dataset.notificationId;
+
+            // Delete a single notification
+            if (deleteBtn) {
+                e.stopPropagation();
+                fetch(ctx + '/api/notifications/' + id, {
+                    method: 'DELETE',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                }).then(r => r.json())
+                  .then(function (data) {
+                      if (data.success) item.remove();
+                  })
+                  .catch(function () {});
+                return;
+            }
+
+            // Mark as read and then move to the target page
+            const fallbackUrl = ctx + '/mypage';
+            fetch(ctx + '/api/notifications/' + id + '/read', {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            }).then(r => r.json())
+              .then(function (data) {
+                  location.href = (data.success && data.targetUrl)
+                      ? ctx + data.targetUrl
+                      : fallbackUrl;
+              })
+              .catch(function () { location.href = fallbackUrl; });
+        });
+
+        // Mark all notifications as read
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function () {
+                fetch(ctx + '/api/notifications/read-all', {
+                    method: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                }).then(r => r.json())
+                  .then(function (data) {
+                      if (!data.success) return;
+                      list.querySelectorAll('.mp-notif-item').forEach(function (el) {
+                          el.classList.remove('unread');
+                      });
+                      const badge = document.querySelector('.mp-notif-count');
+                      if (badge) badge.remove();
+                  })
+                  .catch(function () {});
+            });
+        }
+
+        // Delete all notifications
+        if (deleteAllBtn) {
+            deleteAllBtn.addEventListener('click', function () {
+                if (!confirm("모든 알림을 삭제하시겠습니까?")) return;
+                fetch(ctx + '/api/notifications', {
+                    method: 'DELETE',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                }).then(r => r.json())
+                  .then(function (data) {
+                      if (data.success) location.reload();
+                  })
+                  .catch(function () {});
+            });
+        }
+    })();
+
+    /**
+     * Format date as YYYY-MM-DD.
+     */
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
+</script>
+
+
+
+
+<script>
+    (function () {
+        var openedFlightModal = null;
+
+        function closeFlightBookingModal() {
+            if (!openedFlightModal) return;
+            openedFlightModal.classList.remove('is-open');
+            openedFlightModal = null;
+            document.body.classList.remove('mp-flight-modal-lock');
+        }
+
+        document.querySelectorAll('.mp-flight-modal-open').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var modalId = button.dataset.modalId;
+                var modal = document.getElementById(modalId);
+                if (!modal) return;
+                closeFlightBookingModal();
+                openedFlightModal = modal;
+                openedFlightModal.classList.add('is-open');
+                document.body.classList.add('mp-flight-modal-lock');
+            });
+        });
+
+        document.querySelectorAll('.mp-flight-modal-close').forEach(function (button) {
+            button.addEventListener('click', closeFlightBookingModal);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeFlightBookingModal();
+            }
+        });
+    })();
+</script>
+
+<script>
+/* Relative time labels for recent-view history */
+(function () {
+    var LABELS = {
+        justNow:   '방금 전',
+        minutes:   '{0}분 전',
+        hours:     '{0}시간 전',
+        yesterday: '어제',
+        days:      '{0}일 전'
+    };
+    function relTime(ts) {
+        var now = Date.now();
+        var diffSec = Math.max(0, Math.floor((now - ts) / 1000));
+        if (diffSec < 60)             return LABELS.justNow;
+        if (diffSec < 60 * 60)        return LABELS.minutes.replace('{0}', Math.floor(diffSec / 60));
+        if (diffSec < 60 * 60 * 24)   return LABELS.hours.replace('{0}', Math.floor(diffSec / 3600));
+        if (diffSec < 60 * 60 * 48)   return LABELS.yesterday;
+        return LABELS.days.replace('{0}', Math.floor(diffSec / 86400));
+    }
+    document.querySelectorAll('[data-mp-history-ts]').forEach(function (el) {
+        var ts = parseInt(el.getAttribute('data-mp-history-ts'), 10);
+        if (!isNaN(ts)) el.textContent = relTime(ts);
+    });
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+<script>window.__DEMO_BASE__="";</script>
+<script src="assets/demo-mock.js"></script>
+</body></html>

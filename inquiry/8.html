@@ -1,0 +1,1185 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="GIy1ARClG2SlTSd-gSkJBmyBut8pXgFyxTU8WzEVzY4ClVX4ee3RM3TEf1GILkNM5QQ9Pljjl74baWJfplMOOQR2_-w38WfP">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../resources/css/common/header.css">
+    <link rel="stylesheet" href="../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../resources/css/inquiry/inquiry.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../wallet.html">내 지갑</a>
+                    <a href="../shop.html">아이템샵</a>
+                    <a href="../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+<div class="inq-detail-wrap">
+  <div class="inq-detail-inner">
+
+    
+    <button class="inq-back-btn" onclick="goBackToList()">
+      ← 목록으로
+    </button>
+
+    
+    <div class="inq-detail-card">
+
+      
+      <div class="inq-detail-head">
+        <div class="inq-detail-meta">
+          
+          <span class="inq-category-tag">
+            
+              
+              
+              
+              
+              기타
+            
+          </span>
+
+          
+          <span class="inq-status-badge PENDING">
+            
+              대기중
+              
+              
+              
+              
+              
+              
+              
+            
+          </span>
+
+          
+          
+        </div>
+
+        
+        <h1 class="inq-detail-title">English support available?</h1>
+
+        
+        
+
+        
+        <div class="inq-detail-info">
+          <span class="inq-detail-nick">
+            
+            
+              
+              John Smith
+            
+          </span>
+          <span class="inq-detail-divider">·</span>
+          <span class="inq-detail-date">
+            2026-06-16 11:18
+          </span>
+          <span class="inq-detail-divider">·</span>
+          <span class="inq-detail-views">조회 8</span>
+          
+            <span class="inq-detail-divider">·</span>
+            <span class="inq-detail-edited">수정됨 2026-06-16 16:18</span>
+          
+        </div>
+      </div>
+
+      
+      <div class="inq-detail-body">
+        <pre class="inq-detail-content">Is customer support available in English for foreign users?</pre>
+      </div>
+
+      
+      
+
+    </div>
+
+    
+    
+      
+      
+
+      
+      
+        <div class="inq-no-answer">
+          <div class="inq-no-answer-icon">⏳</div>
+          <div class="inq-no-answer-msg">답변을 준비 중입니다</div>
+          <div class="inq-no-answer-sub">빠른 시일 내에 답변 드리겠습니다</div>
+        </div>
+      
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    <div class="inq-detail-actions">
+      
+      <button class="inq-btn-cancel" onclick="goBackToList()">
+        목록으로
+      </button>
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+    </div>
+
+  </div>
+</div>
+
+
+
+<script>
+var ctx = '/TripTogether';
+function goBackToList() {
+    var params   = new URLSearchParams(window.location.search);
+    var page     = params.get('page')     || '1';
+    var category = params.get('category') || '';
+    var status   = params.get('status')   || '';
+    var keyword  = params.get('keyword')  || '';
+    location.href = ctx + '/inquiry/list?page=' + page
+        + (category ? '&category=' + encodeURIComponent(category) : '')
+        + (status   ? '&status='   + encodeURIComponent(status)   : '')
+        + (keyword  ? '&keyword='  + encodeURIComponent(keyword)  : '');
+}
+</script>
+
+<script>
+(function () {
+  var ctx = '/TripTogether';
+  var inquiryId = 8;
+  var inquiryMessages = {
+    clearBlurConfirm: '이 문의의 BLUR을 해제하시겠습니까?',
+    clearBlurFail: 'BLUR 해제에 실패했습니다.',
+    genericError: '오류가 발생했습니다. 다시 시도해주세요.',
+    requestFail: '요청에 실패했습니다.',
+    statusPendingConfirm: '상태를 \"대기중\"으로 변경하시겠습니까?',
+    statusInProgressConfirm: '상태를 \"처리중\"으로 변경하시겠습니까?',
+    statusCompletedConfirm: '상태를 \"답변완료\"로 변경하시겠습니까?',
+    statusChangeFail: '상태 변경에 실패했습니다.',
+    aiDraftLoading: '⏳ 생성 중...',
+    aiDraftFail: 'AI 초안 생성에 실패했습니다.',
+    answerRequired: '답변 내용을 입력해주세요.',
+    answerRegisterFail: '답변 등록에 실패했습니다.',
+    answerCompleteFail: '처리에 실패했습니다.',
+    deleteApproveConfirm: '삭제 요청을 수락하고 문의를 삭제하시겠습니까?',
+    deleteApproveFail: '처리에 실패했습니다.',
+    publicApproveConfirm: '공개 요청을 수락하시겠습니까?',
+    publicApproveFail: '처리에 실패했습니다.',
+    privateApproveConfirm: '비공개 요청을 수락하시겠습니까?',
+    privateApproveFail: '처리에 실패했습니다.',
+    answerEditFail: '답변 수정에 실패했습니다.',
+    editOpen: '✏️ 수정',
+    editClose: '취소',
+    editFail: '수정에 실패했습니다.',
+    attachmentDeleteConfirm: '첨부파일을 삭제하시겠습니까?',
+    attachmentDeleteFail: '삭제에 실패했습니다.',
+    deleteConfirm: '정말 삭제하시겠습니까?',
+    deleteFail: '삭제에 실패했습니다.',
+    userCompleteConfirm: '문의가 해결되었나요? 완료 처리하시겠습니까?',
+    userCompleteFail: '처리에 실패했습니다.',
+    cancelConfirm: '문의를 취소하시겠습니까?',
+    cancelFail: '취소에 실패했습니다.',
+    deleteRequestConfirm: '삭제를 요청하시겠습니까?',
+    deleteRequestFail: '삭제 요청에 실패했습니다.',
+    deleteCancelConfirm: '삭제 요청을 취소하시겠습니까?',
+    deleteCancelFail: '취소에 실패했습니다.',
+    privateRequestConfirm: '비공개로 전환을 요청하시겠습니까?',
+    privateRequestFail: '요청에 실패했습니다.',
+    publicRequestConfirm: '공개로 전환을 요청하시겠습니까?',
+    publicRequestFail: '요청에 실패했습니다.',
+    titleRequired: '제목을 입력해주세요.',
+    contentRequired: '내용을 입력해주세요.',
+    historyToggle: '수정 이력 보기',
+    historyTitle: '답변 수정 이력',
+    historyEmpty: '수정 이력이 없습니다.',
+    historyTypeUpdate: '수정',
+    historyTypeDelete: '삭제',
+    historyChangedBy: '변경자',
+    historyPrevContent: '이전 본문',
+    historyLoadFail: '이력을 불러오지 못했습니다.'
+  };
+
+  /* =============================================
+     공통 유틸: POST fetch
+     ============================================= */
+  async function postJson(url, params) {
+    var res = await fetch(ctx + url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(params)
+    });
+    return res.json();
+  }
+
+  /* =============================================
+     어드민: 답변 수정/삭제 이력 토글
+     - 정책: ADR-0008 / answer 변경 추적 (INQUIRY_ANSWER_HISTORY)
+     ============================================= */
+  var historyBtn = document.getElementById('answerHistoryToggleBtn');
+  var historyList = document.getElementById('answerHistoryList');
+  if (historyBtn && historyList) {
+    historyBtn.addEventListener('click', async function () {
+      if (!historyList.hidden) {
+        historyList.hidden = true;
+        return;
+      }
+      try {
+        var res = await fetch(ctx + '/inquiry/' + inquiryId + '/answer/history');
+        var data = await res.json();
+        if (!data.success) { alert(inquiryMessages.historyLoadFail); return; }
+        renderAnswerHistory(historyList, data.list);
+        historyList.hidden = false;
+      } catch (e) {
+        alert(inquiryMessages.historyLoadFail);
+      }
+    });
+  }
+
+  function inqEscape(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function inqFormatDate(s) {
+    if (!s) return '';
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function renderAnswerHistory(target, list) {
+    if (!list || list.length === 0) {
+      target.innerHTML = '<div class="inq-answer-history-empty">'
+          + inqEscape(inquiryMessages.historyEmpty) + '</div>';
+      return;
+    }
+    var html = '<div class="inq-answer-history-title">' + inqEscape(inquiryMessages.historyTitle) + '</div>';
+    list.forEach(function (item) {
+      var typeLabel = item.changeType === 'UPDATE'
+          ? inquiryMessages.historyTypeUpdate
+          : inquiryMessages.historyTypeDelete;
+      html += '<div class="inq-answer-history-item">'
+          + '<div class="inq-answer-history-meta">'
+          + '<span class="inq-answer-history-type inq-answer-history-type-' + inqEscape(item.changeType) + '">'
+          + inqEscape(typeLabel) + '</span> · '
+          + inqEscape(inquiryMessages.historyChangedBy) + ': ' + inqEscape(item.changedByNickname) + ' · '
+          + inqEscape(inqFormatDate(item.changedAt))
+          + '</div>'
+          + '<div class="inq-answer-history-prev-label">' + inqEscape(inquiryMessages.historyPrevContent) + '</div>'
+          + '<pre class="inq-answer-history-prev">' + inqEscape(item.prevContent) + '</pre>'
+          + '</div>';
+    });
+    target.innerHTML = html;
+  }
+
+  /* =============================================
+     관리자: BLUR 해제 버튼
+     ============================================= */
+  var postClearBlurBtn = document.getElementById('postClearBlurBtn');
+  if (postClearBlurBtn) {
+    postClearBlurBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.clearBlurConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/clear-blur', {});
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.clearBlurFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     어드민: 상태 변경 (대기중 / 처리중 / 답변완료)
+     ============================================= */
+  var btnPending    = document.getElementById('btnStatusPending');
+  var btnInProgress = document.getElementById('btnStatusInProgress');
+  var btnCompleted  = document.getElementById('btnStatusCompleted');
+
+  if (btnPending) {
+    btnPending.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.statusPendingConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/status', { status: 'PENDING' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.statusChangeFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  if (btnInProgress) {
+    btnInProgress.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.statusInProgressConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/status', { status: 'IN_PROGRESS' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.statusChangeFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  if (btnCompleted) {
+    btnCompleted.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.statusCompletedConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/status', { status: 'COMPLETED' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.statusChangeFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     어드민: AI 답변 초안 생성
+     ============================================= */
+  var aiDraftBtn = document.getElementById('aiDraftBtn');
+  if (aiDraftBtn) {
+    aiDraftBtn.addEventListener('click', async function () {
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = inquiryMessages.aiDraftLoading;
+      try {
+        var res  = await fetch(ctx + '/inquiry/' + inquiryId + '/ai-draft', { method: 'POST' });
+        var data = await res.json();
+        if (data.success) {
+          document.getElementById('adminContent').value = data.draft;
+        } else {
+          alert(data.message || inquiryMessages.aiDraftFail);
+        }
+      } catch (e) {
+        alert(inquiryMessages.genericError);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'AI 초안';
+      }
+    });
+  }
+
+  /* =============================================
+     어드민: 답변 등록
+     ============================================= */
+  var answerBtn = document.getElementById('answerBtn');
+  if (answerBtn) {
+    answerBtn.addEventListener('click', async function () {
+      var content = document.getElementById('adminContent').value.trim();
+      if (!content) { alert(inquiryMessages.answerRequired); return; }
+      this.disabled = true;
+      this.classList.add('loading');
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/answer', { content: content, complete: 'false' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.answerRegisterFail); this.disabled = false; this.classList.remove('loading'); }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; this.classList.remove('loading'); }
+    });
+  }
+
+  /* =============================================
+     어드민: 답변 + 완료 동시 처리
+     ============================================= */
+  var answerAndCompleteBtn = document.getElementById('answerAndCompleteBtn');
+  if (answerAndCompleteBtn) {
+    answerAndCompleteBtn.addEventListener('click', async function () {
+      var content = document.getElementById('adminContent').value.trim();
+      if (!content) { alert(inquiryMessages.answerRequired); return; }
+      this.disabled = true;
+      this.classList.add('loading');
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/answer', { content: content, complete: 'true' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.answerCompleteFail); this.disabled = false; this.classList.remove('loading'); }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; this.classList.remove('loading'); }
+    });
+  }
+
+  /* =============================================
+     어드민: 공개/비공개 요청 수락
+     ============================================= */
+  var btnApproveDelete  = document.getElementById('btnApproveDelete');
+  var btnApprovePublic  = document.getElementById('btnApprovePublic');
+  var btnApprovePrivate = document.getElementById('btnApprovePrivate');
+
+  if (btnApproveDelete) {
+    btnApproveDelete.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.deleteApproveConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/delete-approve', {});
+        if (data.success) { location.href = ctx + '/inquiry/list'; }
+        else { alert(data.message || inquiryMessages.deleteApproveFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  if (btnApprovePublic) {
+    btnApprovePublic.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.publicApproveConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/visibility-approve', { type: 'public' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.publicApproveFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  if (btnApprovePrivate) {
+    btnApprovePrivate.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.privateApproveConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/visibility-approve', { type: 'private' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.privateApproveFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     어드민: 답변 수정 토글
+     ============================================= */
+  var answerEditToggleBtn = document.getElementById('answerEditToggleBtn');
+  var answerEditSaveBtn   = document.getElementById('answerEditSaveBtn');
+  var answerEditCancelBtn = document.getElementById('answerEditCancelBtn');
+  var adminContent        = document.getElementById('adminContent');
+
+  if (answerEditToggleBtn) {
+    answerEditToggleBtn.addEventListener('click', function () {
+      adminContent.disabled = false;
+      adminContent.focus();
+      answerEditToggleBtn.style.display = 'none';
+      answerEditSaveBtn.style.display   = 'inline-block';
+      answerEditCancelBtn.style.display = 'inline-block';
+    });
+
+    answerEditCancelBtn.addEventListener('click', function () {
+      adminContent.disabled = true;
+      answerEditToggleBtn.style.display = 'inline-block';
+      answerEditSaveBtn.style.display   = 'none';
+      answerEditCancelBtn.style.display = 'none';
+    });
+
+    answerEditSaveBtn.addEventListener('click', async function () {
+      var content = adminContent.value.trim();
+      if (!content) { alert(inquiryMessages.answerRequired); return; }
+      this.disabled = true;
+      this.classList.add('loading');
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/answer/edit', { content: content });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.answerEditFail); this.disabled = false; this.classList.remove('loading'); }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; this.classList.remove('loading'); }
+    });
+  }
+
+  /* =============================================
+     수정 / 삭제 (본인 또는 어드민 + PENDING)
+     ============================================= */
+  var editBtn    = document.getElementById('editBtn');
+  var deleteBtn  = document.getElementById('deleteBtn');
+  var editForm   = document.getElementById('editForm');
+
+  if (editBtn) {
+    var editCancel = document.getElementById('editCancelBtn');
+    var editSave   = document.getElementById('editSaveBtn');
+
+    editBtn.addEventListener('click', function () {
+      var isShown = editForm.style.display !== 'none';
+      editForm.style.display = isShown ? 'none' : 'block';
+      editBtn.textContent = isShown ? inquiryMessages.editOpen : inquiryMessages.editClose;
+    });
+
+    editCancel.addEventListener('click', function () {
+      editForm.style.display = 'none';
+      editBtn.textContent = inquiryMessages.editOpen;
+    });
+
+    editSave.addEventListener('click', async function () {
+      var title     = document.getElementById('editTitle').value.trim();
+      var content   = document.getElementById('editContent').value.trim();
+      var category  = document.getElementById('editCategory').value;
+      var isPrivate = document.getElementById('editIsPrivate').checked ? 1 : 0;
+      if (!title)   { alert(inquiryMessages.titleRequired); return; }
+      if (!content) { alert(inquiryMessages.contentRequired); return; }
+      this.disabled = true;
+      this.classList.add('loading');
+      try {
+        // FormData로 텍스트 + 새 파일 동시 전송
+        var formData = new FormData();
+        formData.append('title',     title);
+        formData.append('content',   content);
+        formData.append('category',  category);
+        formData.append('isPrivate', isPrivate);
+
+        var fileInput = document.getElementById('editAttachFile');
+        if (fileInput) {
+          Array.from(fileInput.files).forEach(function (file) {
+            formData.append('images', file);
+          });
+        }
+
+        var res = await fetch(ctx + '/inquiry/' + inquiryId + '/edit', {
+          method: 'POST',
+          body: formData
+        });
+        var data = await res.json();
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.editFail); this.disabled = false; this.classList.remove('loading'); }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; this.classList.remove('loading'); }
+    });
+
+    // 첨부파일 개별 삭제 버튼
+    document.querySelectorAll('.inq-attach-delete-btn').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var attachmentId = this.getAttribute('data-id');
+        if (!confirm(inquiryMessages.attachmentDeleteConfirm)) return;
+        try {
+          var data = await postJson('/inquiry/attachment/' + attachmentId + '/delete', {});
+          if (data.success) { this.closest('.inq-attachment-edit-item').remove(); }
+          else { alert(data.message || inquiryMessages.attachmentDeleteFail); }
+        } catch (e) { alert(inquiryMessages.genericError); }
+      });
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.deleteConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/delete', {});
+        if (data.success) { location.href = ctx + '/inquiry/list'; }
+        else { alert(data.message || inquiryMessages.deleteFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     유저: 문의 취소
+     ============================================= */
+  /* =============================================
+     유저: 해결됐어요 (직접 완료 처리)
+     ============================================= */
+  var userCompleteBtn = document.getElementById('userCompleteBtn');
+  if (userCompleteBtn) {
+    userCompleteBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.userCompleteConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/user-complete', {});
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.userCompleteFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     유저: 문의 취소
+     ============================================= */
+  var cancelInquiryBtn = document.getElementById('cancelInquiryBtn');
+  if (cancelInquiryBtn) {
+    cancelInquiryBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.cancelConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/cancel', {});
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.cancelFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     유저: 삭제 요청
+     ============================================= */
+  var deleteRequestBtn = document.getElementById('deleteRequestBtn');
+  if (deleteRequestBtn) {
+    deleteRequestBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.deleteRequestConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/delete-request', {});
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.deleteRequestFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     유저: 삭제 요청 취소
+     ============================================= */
+  var deleteCancelBtn = document.getElementById('deleteCancelBtn');
+  if (deleteCancelBtn) {
+    deleteCancelBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.deleteCancelConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/delete-cancel', {});
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.deleteCancelFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  /* =============================================
+     유저: 비공개 / 공개 요청
+     ============================================= */
+  var privateRequestBtn = document.getElementById('privateRequestBtn');
+  var publicRequestBtn  = document.getElementById('publicRequestBtn');
+
+  if (privateRequestBtn) {
+    privateRequestBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.privateRequestConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/visibility-request', { type: 'private' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.privateRequestFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+  if (publicRequestBtn) {
+    publicRequestBtn.addEventListener('click', async function () {
+      if (!confirm(inquiryMessages.publicRequestConfirm)) return;
+      this.disabled = true;
+      try {
+        var data = await postJson('/inquiry/' + inquiryId + '/visibility-request', { type: 'public' });
+        if (data.success) { location.reload(); }
+        else { alert(data.message || inquiryMessages.publicRequestFail); this.disabled = false; }
+      } catch (e) { alert(inquiryMessages.genericError); this.disabled = false; }
+    });
+  }
+
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+<script>window.__DEMO_BASE__="../";</script>
+<script src="../assets/demo-mock.js"></script>
+</body></html>

@@ -1,0 +1,3451 @@
+<html><head><style>.gm-err-container{height:100%;width:100%;display:table;background-color:#e8eaed;position:relative;left:0;top:0}.gm-err-content{border-radius:1px;padding-top:0;padding-left:10%;padding-right:10%;position:static;vertical-align:middle;display:table-cell}.gm-err-content a{color:#3c4043}.gm-err-icon{text-align:center}.gm-err-title{margin:5px;margin-bottom:20px;color:#3c4043;font-family:Roboto,Arial,sans-serif;text-align:center;font-size:24px}.gm-err-message{margin:5px;color:#3c4043;font-family:Roboto,Arial,sans-serif;text-align:center;font-size:12px}.gm-err-autocomplete{padding-left:20px;background-repeat:no-repeat;-webkit-background-size:15px 15px;background-size:15px 15px}sentinel{}
+</style><style>.gm-style-moc{background-color:rgba(0,0,0,.59);pointer-events:none;text-align:center;-webkit-transition:opacity ease-in-out;transition:opacity ease-in-out}.gm-style-mot{color:white;font-family:Roboto,Arial,sans-serif;font-size:22px;margin:0;position:relative;top:50%;transform:translateY(-50%);-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%)}sentinel{}
+</style><style>.gm-style img{max-width: none;}.gm-style {font: 400 11px Roboto, Arial, sans-serif; text-decoration: none;}</style><script src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/main.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/common.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/util.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/map.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/marker.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/overlay.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/geometry.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/poly.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/log.js"></script><script type="text/javascript" charset="UTF-8" src="https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/ko_ALL/onion.js"></script><style type="text/css">@-webkit-keyframes _gm4397 {
+0% { -webkit-transform: translate3d(0px,-500px,0); -webkit-animation-timing-function: ease-in; }
+50% { -webkit-transform: translate3d(0px,0px,0); -webkit-animation-timing-function: ease-out; }
+75% { -webkit-transform: translate3d(0px,-20px,0); -webkit-animation-timing-function: ease-in; }
+100% { -webkit-transform: translate3d(0px,0px,0); -webkit-animation-timing-function: ease-out; }
+}
+</style></head><body>﻿
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="z13VtSsA_4-Q83ZQrdCIKELoZF7voVj3sJ8fO-VYxy-vb0jOrjyxh09hm7q9kBJiyf28EHaKST_dljva0_ktWdA79U2aC3r5">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../resources/css/common/header.css">
+    <link rel="stylesheet" href="../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../resources/css/explore/explore.css">
+    
+
+<header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../wallet.html">내 지갑</a>
+                    <a href="../shop.html">아이템샵</a>
+                    <a href="../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+
+<style>
+html { scrollbar-gutter: stable; }
+/* 히어로 영역 */
+.det-hero { position:relative; height:420px; overflow:hidden; background:var(--gray-200); }
+.det-hero img { width:100%; height:100%; object-fit:cover; display:block; }
+.det-hero-ov { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,.1),rgba(0,0,0,.55)); }
+.det-hero-content { position:absolute; bottom:36px; left:36px; right:36px; color:#fff; }
+.det-hero-content h1 { font-size:2.4rem; font-weight:700; text-shadow:0 2px 8px rgba(0,0,0,.4); margin-bottom:8px; }
+.det-hero-meta { display:flex; align-items:center; gap:16px; font-size:15px; font-weight:500; text-shadow:0 1px 4px rgba(0,0,0,.4); }
+.det-hero-rat .star { color:#fbbf24; font-size:18px; }
+
+/* 본문 레이아웃 */
+.det-body {
+  max-width:960px;
+  width:100%;
+  margin:0 auto;
+  padding:40px 24px 80px;
+  box-sizing:border-box;
+}
+
+/* 액션 버튼 영역 */
+.det-actions { display:flex; gap:12px; margin-bottom:36px; flex-wrap:wrap; }
+.det-action-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 20px; border-radius:10px;
+  border:1.5px solid var(--gray-200); background:#fff;
+  font-family:inherit; font-size:14px; font-weight:500; color:var(--gray-700);
+  cursor:pointer; transition:all .2s; box-shadow:var(--shadow-sm);
+}
+.det-action-btn:hover { border-color:var(--blue); color:var(--blue); }
+.det-action-btn.active { background:var(--blue-light); color:var(--blue); border-color:var(--blue); }
+.det-action-icon { font-size:18px; line-height:1; color:var(--gray-400); }
+.det-action-label { line-height:1.2; }
+.det-action-btn.active .det-action-icon { color:var(--blue); }
+.det-action-btn.fav-btn.active .det-action-icon { color:#f59e0b; }
+.det-action-btn.like-btn.active .det-action-icon { color:#ef4444; }
+.det-back-btn {
+  background:none; border:none; color:var(--gray-500); font-family:inherit;
+  font-size:14px; font-weight:500; cursor:pointer; padding:0;
+  display:flex; align-items:center; gap:4px; margin-bottom:24px; transition:color .15s;
+}
+.det-back-btn:hover { color:var(--blue); }
+
+/* 섹션 카드 공통 */
+.det-section {
+  background:#fff; border-radius:var(--radius);
+  padding:28px 32px; margin-bottom:24px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--gray-100);
+  width:100%;
+  box-sizing:border-box;
+}
+.det-section h2 {
+  font-size:1.1rem; font-weight:700; color:var(--gray-800);
+  margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--gray-100);
+}
+
+/* 기본 정보 그리드 */
+.info-grid { display:grid; gap:14px; }
+.info-row { display:flex; align-items:flex-start; gap:12px; font-size:14px; }
+.info-label { width:70px; flex-shrink:0; color:var(--gray-500); font-weight:500; }
+.info-value { color:var(--gray-700); line-height:1.6; }
+.det-desc { font-size:15px; color:var(--gray-700); line-height:1.8; }
+.det-tags { display:flex; flex-wrap:wrap; gap:8px; }
+
+/* 지도 플레이스홀더 */
+.map-placeholder {
+  width:100%; height:220px;
+  background:linear-gradient(135deg,var(--blue-light),#f5f3ff);
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:var(--gray-500); flex-direction:column; gap:8px;
+}
+.map-placeholder .map-icon { font-size:36px; }
+.flight-map-wrap { position:relative; }
+.flight-price-chip {
+  position:absolute; left:18px; bottom:18px; z-index:5;
+  border:0; border-radius:999px; padding:11px 16px;
+  background:#111827; color:#fff; font-family:inherit; cursor:pointer;
+  box-shadow:0 12px 28px rgba(17,24,39,.26);
+  display:flex; align-items:center; gap:10px; transition:transform .16s, box-shadow .16s;
+}
+.flight-price-chip:hover { transform:translateY(-2px); box-shadow:0 16px 32px rgba(17,24,39,.32); }
+.flight-price-chip .flight-chip-icon { font-size:18px; }
+.flight-price-chip .flight-chip-label { display:block; font-size:11px; opacity:.78; line-height:1.1; }
+.flight-price-chip .flight-chip-price { display:block; font-size:15px; font-weight:800; line-height:1.2; }
+.flight-modal {
+  display:none; position:fixed; inset:0; z-index:10000;
+  background:rgba(15,23,42,.58); align-items:center; justify-content:center;
+  padding:20px; box-sizing:border-box;
+}
+.flight-modal.show { display:flex; }
+.flight-modal-card {
+  width:min(640px, 100%); max-height:90vh; overflow:auto;
+  background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(15,23,42,.28);
+}
+.flight-modal-head {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+  padding:24px 26px; border-bottom:1px solid var(--gray-100);
+}
+.flight-modal-title { font-size:20px; font-weight:800; color:var(--gray-900); margin:0 0 6px; }
+.flight-modal-sub { font-size:13px; color:var(--gray-500); line-height:1.5; }
+.flight-modal-close { border:0; background:none; font-size:24px; color:var(--gray-400); cursor:pointer; line-height:1; }
+.flight-modal-body { padding:24px 26px 28px; }
+.flight-date-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+.flight-date-field { display:flex; flex-direction:column; gap:7px; }
+.flight-date-field label { font-size:12px; font-weight:800; color:var(--gray-600); }
+.flight-date-field input {
+  width:100%; box-sizing:border-box; border:1.5px solid var(--gray-200);
+  border-radius:10px; padding:10px 12px; font-family:inherit; font-weight:700; color:var(--gray-800);
+}
+.flight-offer-list { display:grid; gap:12px; margin-bottom:22px; }
+.flight-offer-card {
+  border:1.5px solid var(--gray-200); border-radius:14px; padding:16px;
+  cursor:pointer; transition:border-color .16s, box-shadow .16s, background .16s;
+}
+.flight-offer-card.active {
+  border-color:var(--blue); background:var(--blue-light); box-shadow:0 8px 20px rgba(37,99,235,.12);
+}
+.flight-offer-top { display:flex; justify-content:space-between; gap:16px; margin-bottom:10px; }
+.flight-airline { font-weight:800; color:var(--gray-900); }
+.flight-no { font-size:12px; color:var(--gray-500); margin-top:2px; }
+.flight-price { font-weight:900; color:var(--blue); white-space:nowrap; }
+.flight-route { display:flex; align-items:center; gap:10px; color:var(--gray-700); font-size:14px; }
+.flight-route strong { color:var(--gray-900); }
+.flight-pay-box { border:1px solid var(--gray-100); background:var(--gray-50); border-radius:14px; padding:18px; }
+.flight-pay-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; font-size:14px; }
+.flight-pay-row strong { color:var(--gray-900); }
+.flight-pay-input {
+  width:160px; max-width:50%; padding:9px 10px; border:1.5px solid var(--gray-200);
+  border-radius:9px; text-align:right; font-family:inherit; font-weight:700;
+}
+.flight-pay-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.flight-pay-btn {
+  border:0; border-radius:10px; padding:10px 18px; font-family:inherit; font-weight:700; cursor:pointer;
+}
+.flight-pay-btn.secondary { background:#fff; color:var(--gray-700); border:1px solid var(--gray-200); }
+.flight-pay-btn.primary { background:var(--blue); color:#fff; }
+.flight-pay-msg { margin-top:12px; font-size:13px; color:var(--gray-600); min-height:18px; }
+@media (max-width:640px) {
+  .flight-date-grid { grid-template-columns:1fr; }
+}
+
+/* 연결 패키지 상품 */
+.detail-package-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--gray-100);
+}
+.detail-package-head h2 {
+  margin:0;
+  padding:0;
+  border:0;
+}
+.detail-package-controls {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.detail-package-page {
+  min-width:58px;
+  color:var(--gray-500);
+  font-size:13px;
+  font-weight:800;
+  text-align:center;
+}
+.detail-package-nav {
+  width:34px;
+  height:34px;
+  border:1px solid var(--gray-200);
+  border-radius:50%;
+  background:#fff;
+  color:var(--gray-700);
+  font-size:18px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:var(--shadow-sm);
+  transition:background .15s, color .15s, border-color .15s, opacity .15s;
+}
+.detail-package-nav:hover:not(:disabled) {
+  border-color:var(--blue);
+  background:var(--blue);
+  color:#fff;
+}
+.detail-package-nav:disabled {
+  opacity:.35;
+  cursor:not-allowed;
+}
+.detail-package-carousel {
+  position:relative;
+  overflow:hidden;
+}
+.detail-package-grid {
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-behavior:smooth;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  padding:2px 2px 10px;
+}
+.detail-package-grid::-webkit-scrollbar {
+  display:none;
+}
+.detail-package-card {
+  overflow:hidden;
+  flex:0 0 280px;
+  scroll-snap-align:start;
+  border:1px solid var(--gray-200);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:var(--shadow-sm);
+  cursor:pointer;
+  transition:transform .16s, box-shadow .16s, border-color .16s;
+}
+.detail-package-card:hover {
+  transform:translateY(-2px);
+  border-color:#bfdbfe;
+  box-shadow:0 14px 28px rgba(15,23,42,.12);
+}
+.detail-package-thumb {
+  position:relative;
+  overflow:hidden;
+  height:132px;
+  background:linear-gradient(135deg,var(--blue-light),#fff7ed);
+  display:grid;
+  place-items:center;
+  color:var(--blue);
+  font-weight:800;
+}
+.detail-package-thumb img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.detail-package-body {
+  padding:16px;
+}
+.detail-package-spot {
+  margin:0 0 6px;
+  color:var(--blue);
+  font-size:12px;
+  font-weight:800;
+}
+.detail-package-title {
+  margin:0;
+  color:var(--gray-900);
+  font-size:16px;
+  font-weight:800;
+  line-height:1.35;
+}
+.detail-package-summary {
+  min-height:40px;
+  margin:8px 0 14px;
+  color:var(--gray-500);
+  font-size:13px;
+  line-height:1.55;
+}
+.detail-package-meta {
+  display:grid;
+  gap:8px;
+  margin:0;
+}
+.detail-package-meta div {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border-radius:10px;
+  padding:8px 10px;
+  background:var(--gray-50);
+  font-size:13px;
+}
+.detail-package-meta dt { color:var(--gray-500); font-weight:700; }
+.detail-package-meta dd { margin:0; color:var(--gray-800); font-weight:800; text-align:right; }
+.detail-package-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10020;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(15,23,42,.62);
+  box-sizing:border-box;
+}
+.detail-package-modal.show {
+  display:flex;
+}
+.detail-package-modal-card {
+  width:min(680px,100%);
+  max-height:90vh;
+  overflow:auto;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 24px 64px rgba(15,23,42,.3);
+}
+.detail-package-modal-hero {
+  position:relative;
+  overflow:hidden;
+  height:220px;
+  background:linear-gradient(135deg,var(--blue-light),#fff7ed);
+  display:grid;
+  place-items:center;
+  color:var(--blue);
+  font-weight:900;
+}
+.detail-package-modal-hero img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.detail-package-modal-close {
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:2;
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  background:rgba(15,23,42,.72);
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+}
+.detail-package-modal-body {
+  padding:24px 26px 28px;
+}
+.detail-package-modal-kicker {
+  margin:0 0 8px;
+  color:var(--blue);
+  font-size:12px;
+  font-weight:900;
+}
+.detail-package-modal-title {
+  margin:0;
+  color:var(--gray-900);
+  font-size:24px;
+  font-weight:900;
+  line-height:1.35;
+}
+.detail-package-modal-summary {
+  margin:12px 0 18px;
+  color:var(--gray-600);
+  line-height:1.7;
+  white-space:pre-wrap;
+}
+.detail-package-modal-meta {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:0;
+}
+.detail-package-modal-meta div {
+  border-radius:14px;
+  padding:12px 14px;
+  background:var(--gray-50);
+}
+.detail-package-modal-meta dt {
+  margin-bottom:5px;
+  color:var(--gray-500);
+  font-size:12px;
+  font-weight:800;
+}
+.detail-package-modal-meta dd {
+  margin:0;
+  color:var(--gray-900);
+  font-weight:900;
+}
+.detail-package-booking {
+  margin-top:18px;
+  border:1px solid #bfdbfe;
+  border-radius:16px;
+  padding:16px;
+  background:#eff6ff;
+}
+.detail-package-booking h4 {
+  margin:0 0 12px;
+  color:var(--gray-900);
+  font-size:15px;
+  font-weight:900;
+}
+.detail-package-booking-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.detail-package-booking-field {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.detail-package-booking-field label {
+  color:var(--gray-600);
+  font-size:12px;
+  font-weight:800;
+}
+.detail-package-booking-field input {
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:10px 12px;
+  font-family:inherit;
+  font-weight:800;
+  box-sizing:border-box;
+}
+.detail-package-pay-summary {
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.detail-package-pay-summary div {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  color:var(--gray-700);
+  font-size:13px;
+}
+.detail-package-pay-summary strong {
+  color:var(--gray-900);
+}
+.detail-package-booking-actions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+.detail-package-booking-message {
+  min-height:18px;
+  color:var(--gray-600);
+  font-size:13px;
+  font-weight:700;
+}
+.detail-package-booking-message.is-error {
+  color:#dc2626;
+}
+.detail-package-booking-message.is-success {
+  color:#166534;
+}
+.detail-package-booking-btn {
+  border:0;
+  border-radius:10px;
+  padding:10px 18px;
+  background:var(--blue);
+  color:#fff;
+  font-family:inherit;
+  font-weight:900;
+  cursor:pointer;
+}
+.detail-package-booking-btn:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
+@media (max-width:640px) {
+  .detail-package-head {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .detail-package-controls {
+    align-self:flex-end;
+  }
+  .detail-package-card {
+    flex-basis:82%;
+  }
+  .detail-package-modal-meta {
+    grid-template-columns:1fr;
+  }
+  .detail-package-booking-grid {
+    grid-template-columns:1fr;
+  }
+  .detail-package-modal-hero {
+    height:180px;
+  }
+}
+
+/* 리뷰 요약 헤더 */
+.review-summary-wrap {
+  display:flex; align-items:center; gap:32px;
+  padding-bottom:24px; margin-bottom:24px;
+  border-bottom:1px solid var(--gray-100); flex-wrap:wrap;
+}
+.review-big-score { font-size:3.2rem; font-weight:800; color:var(--blue); line-height:1; }
+.review-stars-big { font-size:22px; letter-spacing:3px; margin:6px 0 4px; }
+.review-sub { font-size:13px; color:var(--gray-400); }
+
+/* 별점 선택기 */
+.star-picker { display:flex; gap:6px; margin-bottom:12px; }
+.star-picker .sp { font-size:28px; cursor:pointer; color:var(--gray-200); transition:color .1s; }
+.star-picker .sp.on { color:#f59e0b; }
+
+/* 리뷰 작성 폼 */
+.review-form-box {
+  background:var(--gray-50); border-radius:10px;
+  padding:20px; margin-bottom:28px;
+  border:1.5px solid var(--gray-200);
+}
+.review-form-box h3 { font-size:15px; font-weight:700; margin-bottom:14px; color:var(--gray-800); }
+.review-textarea {
+  width:100%; min-height:90px;
+  padding:12px 14px; border:1.5px solid var(--gray-200);
+  border-radius:9px; font-family:inherit; font-size:14px;
+  resize:vertical; outline:none; transition:border-color .2s;
+  background:#fff;
+}
+.review-textarea:focus { border-color:var(--blue); }
+.review-form-foot { display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:8px; }
+.review-char { font-size:12px; color:var(--gray-400); }
+.review-submit-btn {
+  padding:9px 22px; border-radius:9px; border:none;
+  background:var(--blue); color:#fff; font-family:inherit;
+  font-size:14px; font-weight:600; cursor:pointer; transition:background .2s;
+}
+.review-submit-btn:hover { background:#1d4ed8; }
+.review-submit-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+/* 로그인 유도 박스 */
+.review-login-box {
+  background:var(--blue-light); border-radius:10px;
+  padding:20px 24px; margin-bottom:28px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  border:1.5px solid #bfdbfe;
+}
+.review-login-box p { font-size:14px; color:var(--blue); font-weight:500; margin:0; }
+.review-login-link {
+  padding:8px 18px; border-radius:8px;
+  background:var(--blue); color:#fff; font-size:14px; font-weight:600;
+  text-decoration:none; transition:background .2s;
+  white-space:nowrap;
+}
+.review-login-link:hover { background:#1d4ed8; }
+
+/* 리뷰 카드 목록 */
+.review-list { display:flex; flex-direction:column; gap:16px; }
+.review-admin-tools {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+  padding:12px 14px;
+  border:1px solid #fed7aa;
+  border-radius:10px;
+  background:#fff7ed;
+  flex-wrap:wrap;
+}
+.review-admin-left {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.review-admin-select-all {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color:#9a3412;
+}
+.review-admin-bulk-btn {
+  padding:8px 14px;
+  border-radius:8px;
+  border:1px solid #fdba74;
+  background:#fff;
+  color:#c2410c;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.review-admin-bulk-btn:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+.review-card {
+  padding:18px 20px; border-radius:10px;
+  background:var(--gray-50); border:1px solid var(--gray-200);
+}
+.review-card.admin-selecting {
+  border-color:#fdba74;
+  background:#fff7ed;
+}
+.review-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px; }
+.review-author-info { display:flex; align-items:center; gap:10px; }
+.review-admin-check {
+  width:18px;
+  height:18px;
+  accent-color:#ea580c;
+  cursor:pointer;
+}
+.review-avatar {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:700; font-size:14px; flex-shrink:0;
+}
+.review-nickname { font-size:14px; font-weight:600; color:var(--gray-800); }
+.review-date { font-size:12px; color:var(--gray-400); margin-top:1px; }
+.review-stars-small { font-size:14px; letter-spacing:1px; }
+.review-content { font-size:14px; color:var(--gray-700); line-height:1.65; margin-top:8px; }
+.review-delete-btn {
+  background:none; border:none; color:var(--gray-400);
+  font-size:12px; cursor:pointer; padding:4px 8px;
+  border-radius:6px; transition:all .15s;
+}
+.review-delete-btn:hover { background:#fee2e2; color:#ef4444; }
+.review-action-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.review-like-btn,
+.review-report-btn {
+  background:none;
+  border:1px solid var(--gray-200);
+  color:var(--gray-500);
+  font-size:12px;
+  cursor:pointer;
+  padding:5px 9px;
+  border-radius:999px;
+  transition:all .15s;
+}
+.review-like-btn:hover,
+.review-report-btn:hover { border-color:var(--blue); color:var(--blue); }
+.review-like-btn.active { border-color:#fca5a5; color:#ef4444; background:#fff1f2; }
+.review-user-report-link {
+  font-size:11px;
+  color:var(--gray-400);
+  cursor:pointer;
+  text-decoration:underline;
+}
+.review-user-report-link:hover { color:var(--blue); }
+.review-empty { text-align:center; padding:36px; color:var(--gray-400); font-size:14px; }
+.ai-rec-content {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ai-rec-state {
+  text-align: center;
+  padding: 32px;
+  color: var(--gray-400);
+  font-size: 14px;
+}
+
+/* 관리자 편집 영역 */
+.det-admin-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 18px;
+  margin-bottom:24px;
+  border:1px solid #bfdbfe;
+  border-radius:14px;
+  background:#eff6ff;
+  flex-wrap:wrap;
+}
+.det-admin-copy { font-size:13px; color:#1d4ed8; line-height:1.6; }
+.det-admin-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.det-admin-btn {
+  padding:10px 16px;
+  border-radius:10px;
+  border:1px solid #93c5fd;
+  background:#fff;
+  color:#1d4ed8;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.det-admin-btn.danger {
+  border-color:#fecaca;
+  color:#dc2626;
+}
+.det-admin-review-btn {
+  background:#fff7ed;
+  border:1px solid #fdba74;
+  color:#c2410c;
+  font-size:12px;
+  cursor:pointer;
+  padding:5px 9px;
+  border-radius:6px;
+}
+.det-admin-modal {
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(15, 23, 42, .56);
+  z-index:1200;
+  padding:20px;
+}
+.det-admin-modal.show { display:flex; }
+.det-admin-dialog {
+  width:min(920px, 100%);
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 24px 60px rgba(15, 23, 42, .28);
+  padding:24px;
+}
+.det-admin-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+}
+.det-admin-head h3 { margin:0 0 6px; font-size:1.2rem; color:var(--gray-800); }
+.det-admin-head p { margin:0; font-size:13px; color:var(--gray-500); }
+.det-admin-close {
+  width:36px; height:36px; border:none; border-radius:50%;
+  background:var(--gray-100); color:var(--gray-600); font-size:22px; cursor:pointer;
+}
+.det-admin-alert {
+  padding:12px 14px;
+  border-radius:12px;
+  margin-bottom:16px;
+  font-size:13px;
+}
+.det-admin-alert.error {
+  background:#fef2f2;
+  color:#b91c1c;
+  border:1px solid #fecaca;
+}
+.det-admin-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.det-admin-field {
+  display:grid;
+  gap:8px;
+}
+.det-admin-field.full { grid-column:1 / -1; }
+.det-admin-field label {
+  font-size:13px;
+  font-weight:700;
+  color:var(--gray-700);
+}
+.det-admin-field input[type="text"],
+.det-admin-field input[type="number"],
+.det-admin-field textarea,
+.det-admin-field input[type="file"] {
+  width:100%;
+  border:1.5px solid var(--gray-200);
+  border-radius:12px;
+  padding:12px 13px;
+  font-family:inherit;
+  font-size:14px;
+  color:var(--gray-800);
+  background:#fff;
+  box-sizing:border-box;
+}
+.det-admin-field textarea {
+  min-height:160px;
+  resize:vertical;
+}
+.det-admin-tag-box {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding:14px;
+  border:1.5px solid var(--gray-200);
+  border-radius:14px;
+  background:var(--gray-50);
+}
+.det-admin-tag {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:999px;
+  font-size:13px;
+  color:var(--gray-700);
+}
+.det-admin-foot {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:22px;
+  flex-wrap:wrap;
+}
+
+/* 반응형 대응 */
+@media (max-width:640px) {
+  .det-hero { height:280px; }
+  .det-hero-content h1 { font-size:1.6rem; }
+  .det-hero-content { left:20px; right:20px; bottom:20px; }
+  .det-body { padding:24px 16px 60px; }
+  .det-section { padding:20px; }
+  .det-admin-grid { grid-template-columns:1fr; }
+}
+</style>
+
+<!-- 히어로 이미지 -->
+<div class="det-hero">
+  <img src="https://picsum.photos/seed/newyork1/800/600" alt="뉴욕 센트럴파크" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&amp;q=80'">
+  <div class="det-hero-ov"></div>
+  <div class="det-hero-content">
+    <h1>뉴욕 센트럴파크</h1>
+    <div class="det-hero-meta">
+      
+        <span>north_america</span>
+      
+      <span class="det-hero-rat">
+        <span class="star">⭐</span>
+        5.0
+        <span style="font-size:13px;opacity:.8">(1개 리뷰)</span>
+      </span>
+      <span>❤ 1 좋아요</span>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 본문 -->
+<div class="det-body">
+
+  <button class="det-back-btn" onclick="history.back()">
+    ← 여행지 목록으로 돌아가기
+  </button>
+
+  <!-- 액션 버튼 -->
+  <div class="det-actions">
+    <button class="det-action-btn fav-btn " data-spot-idx="10">
+      <span class="det-action-icon">☆</span>
+      <span class="det-action-label">
+        
+          
+          찜하기
+        
+      </span>
+    </button>
+    <button class="det-action-btn like-btn " data-spot-idx="10">
+      <span class="det-action-icon">🤍</span>
+      <span class="det-action-label">
+        
+          
+          좋아요
+        
+      </span>
+    </button>
+    <button class="det-action-btn" onclick="location.href='/TripTogether/assistant'">
+      ✨ AI에게 여행 계획 짜기
+    </button>
+  </div>
+
+  
+
+  
+
+  <!-- 기본 정보 -->
+  <div class="det-section">
+    <h2>🌐 기본 정보</h2>
+    <div class="info-grid">
+      
+        <div class="info-row">
+          <span class="info-label">지역</span>
+          <span class="info-value">north_america</span>
+        </div>
+      
+      
+        <div class="info-row">
+          <span class="info-label">주소</span>
+          <span class="info-value">미국 뉴욕 맨해튼</span>
+        </div>
+      
+      <div class="info-row">
+        <span class="info-label">평점</span>
+        <span class="info-value">
+          ⭐
+          
+            
+              5.0 / 5.0
+              &nbsp;(리뷰 1개의 여행지)
+            
+            
+          
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">좋아요</span>
+        <span class="info-value">❤ 1개의 여행지</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 소개 -->
+  
+    <div class="det-section">
+      <h2>📖 여행지 소개</h2>
+      <p class="det-desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    </div>
+  
+
+  <!-- 태그 -->
+  
+
+  <!-- 연결 패키지 상품 -->
+  
+    <div class="det-section">
+      <div class="detail-package-head">
+        <h2>🎁 연결 패키지 상품</h2>
+        <div class="detail-package-controls" aria-label="패키지 상품 이동">
+          <button type="button" class="detail-package-nav" id="packagePrevBtn" aria-label="이전 패키지" disabled="">&lt;</button>
+          <span class="detail-package-page" id="packagePageText">1 / 1</span>
+          <button type="button" class="detail-package-nav" id="packageNextBtn" aria-label="다음 패키지" disabled="">&gt;</button>
+        </div>
+      </div>
+      <div class="detail-package-carousel">
+        <div class="detail-package-grid" id="detailPackageRail">
+          
+            
+            
+              
+                
+              
+              
+            
+            
+            
+            <article class="detail-package-card" tabindex="0" role="button" aria-label="뉴욕 6일 자유여행 핵심 패키지 상세 보기" data-title="뉴욕 6일 자유여행 핵심 패키지" data-summary="센트럴파크·타임스퀘어·MoMA" data-content="&lt;h3&gt;뉴욕 핵심 6일&lt;/h3&gt;&lt;p&gt;센트럴파크 산책, 타임스퀘어 야경, MoMA 입장권, 브루클린 브릿지 투어가 포함된 패키지.&lt;/p&gt;" data-image="https://picsum.photos/seed/pkgny/900/600" data-package-idx="8" data-unit-price="3290000" data-min-people="2" data-max-people="10" data-region="north_america" data-spot="뉴욕 센트럴파크" data-price="3,290,000 KRW" data-period="2026-09-01 ~ 2026-09-06" data-people="" data-seller="글로벌패키지">
+              <div class="detail-package-thumb">
+                
+                  
+                    <img src="https://picsum.photos/seed/pkgny/900/600" alt="뉴욕 6일 자유여행 핵심 패키지">
+                  
+                  
+                
+              </div>
+              <div class="detail-package-body">
+                <p class="detail-package-spot">north_america · 뉴욕 센트럴파크</p>
+                <h3 class="detail-package-title">뉴욕 6일 자유여행 핵심 패키지</h3>
+                <p class="detail-package-summary">
+                  
+                    센트럴파크·타임스퀘어·MoMA
+                    
+                  
+                </p>
+                <dl class="detail-package-meta">
+                  <div>
+                    <dt>가격</dt>
+                    <dd>3,290,000 KRW</dd>
+                  </div>
+                  <div>
+                    <dt>일정</dt>
+                    <dd>
+                      
+                        
+                          2026-09-01 ~ 2026-09-06
+                        
+                        
+                      
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>인원</dt>
+                    <dd></dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+          
+        </div>
+      </div>
+    </div>
+    <div class="detail-package-modal" id="packageDetailModal" aria-hidden="true">
+      <div class="detail-package-modal-card" role="dialog" aria-modal="true" aria-labelledby="packageModalTitle">
+        <div class="detail-package-modal-hero" id="packageModalHero">
+          <span id="packageModalHeroFallback">TripTogether</span>
+          <button type="button" class="detail-package-modal-close" id="packageModalCloseBtn" aria-label="닫기">×</button>
+        </div>
+        <div class="detail-package-modal-body">
+          <p class="detail-package-modal-kicker" id="packageModalKicker"></p>
+          <h3 class="detail-package-modal-title" id="packageModalTitle"></h3>
+          <p class="detail-package-modal-summary" id="packageModalSummary"></p>
+          <dl class="detail-package-modal-meta">
+            <div>
+              <dt>가격</dt>
+              <dd id="packageModalPrice"></dd>
+            </div>
+            <div>
+              <dt>일정</dt>
+              <dd id="packageModalPeriod"></dd>
+            </div>
+            <div>
+              <dt>인원</dt>
+              <dd id="packageModalPeople"></dd>
+            </div>
+            <div>
+              <dt>판매자</dt>
+              <dd id="packageModalSeller"></dd>
+            </div>
+          </dl>
+          <div class="detail-package-booking">
+            <h4>예약/결제 시뮬레이션</h4>
+            <div class="detail-package-booking-grid">
+              <div class="detail-package-booking-field">
+                <label for="packagePeopleCount">예약 인원</label>
+                <input type="number" id="packagePeopleCount" min="1" step="1" value="1">
+              </div>
+              <div class="detail-package-booking-field">
+                <label for="packageMileageAmount">사용 마일리지</label>
+                <input type="number" id="packageMileageAmount" min="0" step="1000" value="0">
+              </div>
+            </div>
+            <div class="detail-package-pay-summary">
+              <div><span>총 결제 금액</span><strong id="packageBookingTotal">0 C</strong></div>
+              <div><span>마일리지 최대 사용</span><strong id="packageBookingMaxMileage">0 M</strong></div>
+              <div><span>캐시 결제 예정</span><strong id="packageBookingCash">0 C</strong></div>
+              <div><span>내 보유 캐시/마일리지</span><strong id="packageBookingBalance">0 C / 0 M</strong></div>
+            </div>
+            <div class="detail-package-booking-actions">
+              <span class="detail-package-booking-message" id="packageBookingMessage"></span>
+              <button type="button" class="detail-package-booking-btn" id="packageBookingBtn">예약하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+    (function () {
+      var rail = document.getElementById('detailPackageRail');
+      var prevBtn = document.getElementById('packagePrevBtn');
+      var nextBtn = document.getElementById('packageNextBtn');
+      var pageText = document.getElementById('packagePageText');
+      var modal = document.getElementById('packageDetailModal');
+      var modalHero = document.getElementById('packageModalHero');
+      var modalCloseBtn = document.getElementById('packageModalCloseBtn');
+      if (!rail || !prevBtn || !nextBtn || !pageText) return;
+
+      var pageSize = 3;
+      var contextPath = '/TripTogether';
+      var isLoggedIn = true;
+      var userCashBalance = Number('320000');
+      var userMileageBalance = Number('1500');
+      var currentPackage = null;
+
+      function getMoveSize() {
+        var firstCard = rail.querySelector('.detail-package-card');
+        if (!firstCard) return rail.clientWidth;
+        return (firstCard.getBoundingClientRect().width + 14) * pageSize;
+      }
+
+      function getCardStepSize() {
+        var firstCard = rail.querySelector('.detail-package-card');
+        if (!firstCard) return rail.clientWidth;
+        return firstCard.getBoundingClientRect().width + 14;
+      }
+
+      function getPageCount() {
+        var cardCount = rail.querySelectorAll('.detail-package-card').length;
+        return Math.max(1, Math.ceil(cardCount / pageSize));
+      }
+
+      function getCurrentPage() {
+        var pageWidth = getCardStepSize() * pageSize;
+        if (pageWidth <= 0) return 1;
+        return Math.min(getPageCount(), Math.floor((rail.scrollLeft + pageWidth / 2) / pageWidth) + 1);
+      }
+
+      function updateButtons() {
+        var maxScrollLeft = rail.scrollWidth - rail.clientWidth - 2;
+        prevBtn.disabled = rail.scrollLeft <= 2;
+        nextBtn.disabled = rail.scrollLeft >= maxScrollLeft;
+        pageText.textContent = getCurrentPage() + ' / ' + getPageCount();
+      }
+
+      prevBtn.addEventListener('click', function () {
+        rail.scrollBy({ left: -getMoveSize(), behavior: 'smooth' });
+      });
+      nextBtn.addEventListener('click', function () {
+        rail.scrollBy({ left: getMoveSize(), behavior: 'smooth' });
+      });
+      rail.addEventListener('scroll', updateButtons);
+      window.addEventListener('resize', updateButtons);
+      updateButtons();
+
+      function setText(id, value) {
+        var element = document.getElementById(id);
+        if (element) element.textContent = value || '-';
+      }
+
+      function formatAmount(value) {
+        return Number(value || 0).toLocaleString();
+      }
+
+      function floorToThousand(value) {
+        return Math.floor(Number(value || 0) / 1000) * 1000;
+      }
+
+      function setBookingMessage(message, type) {
+        var messageEl = document.getElementById('packageBookingMessage');
+        if (!messageEl) return;
+        messageEl.textContent = message || '';
+        messageEl.classList.toggle('is-error', type === 'error');
+        messageEl.classList.toggle('is-success', type === 'success');
+      }
+
+      function updatePackageBookingPreview() {
+        if (!currentPackage) return;
+        var peopleInput = document.getElementById('packagePeopleCount');
+        var mileageInput = document.getElementById('packageMileageAmount');
+        var bookingBtn = document.getElementById('packageBookingBtn');
+        if (!peopleInput || !mileageInput || !bookingBtn) return;
+
+        var unitPrice = Number(currentPackage.unitPrice || 0);
+        var minPeople = Number(currentPackage.minPeople || 1);
+        var maxPeople = Number(currentPackage.maxPeople || 0);
+        var peopleCount = Number(peopleInput.value || minPeople);
+        if (peopleCount < minPeople) peopleCount = minPeople;
+        if (maxPeople > 0 && peopleCount > maxPeople) peopleCount = maxPeople;
+        peopleInput.value = peopleCount;
+
+        var totalPrice = unitPrice * peopleCount;
+        var maxMileageUse = floorToThousand(totalPrice * 30 / 100);
+        var mileageAmount = Number(mileageInput.value || 0);
+        if (mileageAmount < 0) mileageAmount = 0;
+        if (mileageAmount > maxMileageUse) mileageAmount = maxMileageUse;
+        if (mileageAmount > userMileageBalance) mileageAmount = floorToThousand(userMileageBalance);
+        mileageInput.value = mileageAmount;
+
+        var cashAmount = totalPrice - mileageAmount;
+        setText('packageBookingTotal', formatAmount(totalPrice) + ' C');
+        setText('packageBookingMaxMileage', formatAmount(maxMileageUse) + ' M');
+        setText('packageBookingCash', formatAmount(cashAmount) + ' C');
+        setText('packageBookingBalance', formatAmount(userCashBalance) + ' C / ' + formatAmount(userMileageBalance) + ' M');
+
+        if (!isLoggedIn) {
+          bookingBtn.textContent = detailMessages.packageLoginAction;
+          bookingBtn.disabled = false;
+          setBookingMessage(detailMessages.packageLoginRequired, '');
+          return;
+        }
+        bookingBtn.textContent = detailMessages.packageBookingAction;
+        if (userCashBalance < cashAmount) {
+          bookingBtn.disabled = true;
+          setBookingMessage(detailMessages.packageInsufficientCash, 'error');
+          return;
+        }
+        bookingBtn.disabled = false;
+        setBookingMessage('', '');
+      }
+
+      function openPackageModal(card) {
+        if (!modal || !modalHero) return;
+        var data = card.dataset;
+        var imagePath = data.image || '';
+        currentPackage = {
+          packageIdx: data.packageIdx,
+          unitPrice: Number(data.unitPrice || 0),
+          minPeople: Number(data.minPeople || 1),
+          maxPeople: Number(data.maxPeople || 0)
+        };
+
+        modalHero.querySelectorAll('img').forEach(function (img) {
+          img.remove();
+        });
+        if (imagePath) {
+          var image = document.createElement('img');
+          image.src = imagePath;
+          image.alt = data.title || '패키지 이미지';
+          modalHero.prepend(image);
+        }
+
+        setText('packageModalKicker', (data.region || '') + ' · ' + (data.spot || ''));
+        setText('packageModalTitle', data.title);
+        setText('packageModalSummary', data.content || data.summary);
+        setText('packageModalPrice', data.price);
+        setText('packageModalPeriod', data.period);
+        setText('packageModalPeople', data.people);
+        setText('packageModalSeller', data.seller);
+
+        var peopleInput = document.getElementById('packagePeopleCount');
+        var mileageInput = document.getElementById('packageMileageAmount');
+        if (peopleInput) {
+          peopleInput.min = currentPackage.minPeople || 1;
+          if (currentPackage.maxPeople > 0) {
+            peopleInput.max = currentPackage.maxPeople;
+          } else {
+            peopleInput.removeAttribute('max');
+          }
+          peopleInput.value = currentPackage.minPeople || 1;
+        }
+        if (mileageInput) {
+          mileageInput.value = 0;
+        }
+        updatePackageBookingPreview();
+
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closePackageModal() {
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      rail.querySelectorAll('.detail-package-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+          openPackageModal(card);
+        });
+        card.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openPackageModal(card);
+          }
+        });
+      });
+
+      // 광고에서 ?openPackage={pkgId}로 진입 시 해당 패키지 모달 자동 오픈
+      try {
+        var pkgIdParam = new URLSearchParams(window.location.search).get('openPackage');
+        if (pkgIdParam) {
+          var targetCard = rail.querySelector('.detail-package-card[data-package-idx="' + pkgIdParam + '"]');
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function () { openPackageModal(targetCard); }, 250);
+          }
+        }
+      } catch (e) { /* URL 파싱 실패는 조용히 무시 */ }
+
+      if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closePackageModal);
+      }
+      var peopleInput = document.getElementById('packagePeopleCount');
+      var mileageInput = document.getElementById('packageMileageAmount');
+      var bookingBtn = document.getElementById('packageBookingBtn');
+      if (peopleInput) peopleInput.addEventListener('input', updatePackageBookingPreview);
+      if (mileageInput) mileageInput.addEventListener('input', updatePackageBookingPreview);
+      if (bookingBtn) {
+        bookingBtn.addEventListener('click', function () {
+          if (!currentPackage) return;
+          if (!isLoggedIn) {
+            window.location.href = contextPath + '/auth/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+            return;
+          }
+          bookingBtn.disabled = true;
+          setBookingMessage(detailMessages.packageProcessing, '');
+          fetch(contextPath + '/packages/' + currentPackage.packageIdx + '/book', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+              peopleCount: Number(peopleInput.value || 1),
+              mileageAmount: Number(mileageInput.value || 0)
+            })
+          })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (!data.success) {
+              if (data.loginRequired) {
+                window.location.href = contextPath + '/auth/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+              }
+              bookingBtn.disabled = false;
+              setBookingMessage(data.message || detailMessages.packageError, 'error');
+              return;
+            }
+            userCashBalance = Number(data.cashBalance || 0);
+            userMileageBalance = Number(data.mileageBalance || 0);
+            setBookingMessage(formatMessage(detailMessages.packageSuccessTemplate, data.bookingNo), 'success');
+            updatePackageBookingPreview();
+          })
+          .catch(function () {
+            bookingBtn.disabled = false;
+            setBookingMessage(detailMessages.packageError, 'error');
+          });
+        });
+      }
+      if (modal) {
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) closePackageModal();
+        });
+      }
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal && modal.classList.contains('show')) {
+          closePackageModal();
+        }
+      });
+    })();
+    </script>
+  
+
+  <!-- 위치 -->
+  
+    <div class="det-section">
+      <h2>🗺 위치</h2>
+
+      <!-- 지도 컨테이너 -->
+      <div class="flight-map-wrap">
+        <div id="googleMap" style="width: 100%; height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--gray-200); background: var(--gray-100); position: relative;"><div style="height: 100%; width: 100%; position: absolute; top: 0px; left: 0px; background-color: rgb(229, 227, 223);"><div class="gm-err-container"><div class="gm-err-content"><div class="gm-err-icon"><img src="https://maps.gstatic.com/mapfiles/api-3/images/icon_error.png" alt="" draggable="false" style="user-select: none;"></div><div class="gm-err-title">죄송합니다. 문제가 발생했습니다.</div><div class="gm-err-message">Google 지도가 제대로 로드되지 않았습니다. 자바스크립트 콘솔에서 자세한 기술 정보를 확인하세요.</div></div></div></div></div>
+
+        
+          <button type="button" class="flight-price-chip" id="openFlightModalBtn" data-spot-idx="10">
+            <span class="flight-chip-icon">✈</span>
+            <span>
+              <span class="flight-chip-label">서울 출발 최저가</span>
+              <span class="flight-chip-price">
+                  2,385,000 C
+              </span>
+            </span>
+          </button>
+        
+      </div>
+
+    </div>
+  
+
+  
+    <div class="flight-modal" id="flightModal" aria-hidden="true">
+      <div class="flight-modal-card" role="dialog" aria-modal="true" aria-labelledby="flightModalTitle">
+        <div class="flight-modal-head">
+          <div>
+            <h3 class="flight-modal-title" id="flightModalTitle">서울 출발 항공권</h3>
+            <div class="flight-modal-sub">
+              Mock 항공권 견적입니다. 실제 외부 결제는 진행되지 않고 보유 캐시/마일리지 잔액만 차감됩니다.
+            </div>
+          </div>
+          <button type="button" class="flight-modal-close" id="closeFlightModalBtn" aria-label="닫기">×</button>
+        </div>
+        <div class="flight-modal-body">
+          <div class="flight-date-grid">
+            <div class="flight-date-field">
+              <label for="flightDepartureDate">출발일</label>
+              <input type="date" id="flightDepartureDate" min="2026-06-17">
+            </div>
+            <div class="flight-date-field">
+              <label for="flightReturnDate">귀국일</label>
+              <input type="date" id="flightReturnDate" min="2026-07-01">
+            </div>
+          </div>
+
+          <div class="flight-offer-list" id="flightOfferList">
+            <div class="flight-pay-msg">항공권 정보를 불러오는 중입니다.</div>
+          </div>
+
+          <div class="flight-pay-box">
+            <div class="flight-pay-row">
+              <span>할인 전 금액</span>
+              <strong id="flightOriginalPrice">-</strong>
+            </div>
+            <div class="flight-pay-row">
+              <span>등급 할인</span>
+              <strong id="flightGradeDiscount">-</strong>
+            </div>
+            <div class="flight-pay-row">
+              <span>최종 결제 금액</span>
+              <strong id="flightTotalPrice">-</strong>
+            </div>
+            <div class="flight-pay-row">
+              <span>보유 캐시</span>
+              <strong id="flightCashBalance">
+                320,000 C
+              </strong>
+            </div>
+            <div class="flight-pay-row">
+              <span>보유 마일리지</span>
+              <strong id="flightMileageBalance">
+                1,500 M
+              </strong>
+            </div>
+            <div class="flight-pay-row">
+              <span>사용 마일리지 <small id="flightMileageLimitText"></small></span>
+              <input type="number" id="flightMileageInput" class="flight-pay-input" min="0" step="1000" value="0">
+            </div>
+            <div class="flight-pay-row">
+              <span>사용 캐시</span>
+              <input type="number" id="flightCashInput" class="flight-pay-input" min="0" step="1000" value="0" readonly="">
+            </div>
+            <div class="flight-pay-actions">
+              <button type="button" class="flight-pay-btn secondary" id="flightUseMaxMileageBtn">마일리지 최대 사용</button>
+              <button type="button" class="flight-pay-btn primary" id="flightPurchaseBtn">구매하기</button>
+            </div>
+            <div class="flight-pay-msg" id="flightPayMessage"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+  <!-- 리뷰 섹션 -->
+  <div class="det-section">
+    <h2>💬 리뷰</h2>
+
+    <!-- 리뷰 요약 -->
+    <div class="review-summary-wrap">
+      <div>
+        <div class="review-big-score">
+          
+            
+              5.0
+            
+            
+          
+        </div>
+        <div class="review-stars-big">
+          
+            ⭐⭐⭐⭐⭐
+            
+            
+            
+            
+            
+          
+        </div>
+        <div class="review-sub">총 {0}개의 리뷰</div>
+      </div>
+    </div>
+
+    <!-- 리뷰 작성 영역 -->
+    <div id="reviewWriteArea">
+    
+      
+      
+        <div class="review-form-box" id="reviewFormBox">
+          <h3>✍ 리뷰 작성</h3>
+          <div class="star-picker" id="starPicker">
+            <span class="sp" data-v="1">★</span>
+            <span class="sp" data-v="2">★</span>
+            <span class="sp" data-v="3">★</span>
+            <span class="sp" data-v="4">★</span>
+            <span class="sp" data-v="5">★</span>
+          </div>
+          <textarea class="review-textarea" id="reviewContent" maxlength="500" placeholder="여행지에 대한 솔직한 후기를 남겨주세요. (최대 500자)"></textarea>
+          <div class="review-form-foot">
+            <span class="review-char"><span id="charCount">0</span> / 500</span>
+            <button class="review-submit-btn" id="reviewSubmitBtn" disabled="">등록하기</button>
+          </div>
+        </div>
+      
+      
+      
+      
+      
+    
+    </div>
+
+    <!-- 리뷰 목록 -->
+    
+
+    <div class="review-list" id="reviewList">
+      
+        
+          
+            <div class="review-card " id="rv-10">
+              <div class="review-card-top">
+                <div class="review-author-info">
+                  
+                  <div class="review-avatar">
+                    장
+                  </div>
+                  <div>
+                    <div class="review-nickname">
+                      <span class="tt-nickname  ">장미네VIP</span>
+                      
+                      
+                        <span class="review-user-report-link rpt-user-link" data-user-idx="16" data-source-type="review" data-source-id="10">(유저신고)</span>
+                      
+                    </div>
+                    <div class="review-date">
+                      2026.06.13
+                    </div>
+                  </div>
+                </div>
+                <div class="review-action-row">
+                  <span class="review-stars-small">
+                    
+                      
+                        ⭐
+                        
+                      
+                    
+                      
+                        ⭐
+                        
+                      
+                    
+                      
+                        ⭐
+                        
+                      
+                    
+                      
+                        ⭐
+                        
+                      
+                    
+                      
+                        ⭐
+                        
+                      
+                    
+                    (5/5)
+                  </span>
+                  
+                    <button type="button" class="review-like-btn " data-review-like-idx="10" data-spot-idx="10">
+                      <span class="review-like-icon">🤍</span>
+                      <span class="review-like-count">0</span>
+                    </button>
+                  
+                  
+                    <button type="button" class="review-report-btn" data-review-report-idx="10">⚠ 신고</button>
+                  
+                  
+                  
+                </div>
+              </div>
+              <p class="review-content">센트럴파크 산책 너무 좋았어요. 뉴욕 가면 꼭 들르세요.</p>
+            </div>
+          
+        
+        
+      
+    </div>
+
+  </div><!-- /리뷰 섹션 -->
+
+  <!-- AI 맞춤 여행지 추천 섹션 <로그인 사용자만> -->
+  
+  <div class="det-section" id="aiRecommendSection">
+    <h2 id="aiRecTitle">🤖 AI 맞춤 추천 여행지</h2>
+    <p id="aiRecDesc" style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">회원님의 관심 여행지를 분석해 비슷한 취향의 여행지를 추천해드립니다.</p>
+    <div class="ai-rec-content">
+      <div id="recLoadingMsg" class="ai-rec-state" style="display: none;">
+        <span style="font-size:24px;display:block;margin-bottom:8px;">🤖</span>
+        AI가 맞춤 여행지를 분석 중입니다...
+      </div>
+      <div class="spot-grid" id="recGrid" style=""><div class="spot-card" style="cursor:pointer;" onclick="location.href='/TripTogether/detail/5'"><div class="spot-card__img-wrap"><img class="spot-card__img" src="https://picsum.photos/seed/gangneung1/800/600" alt="강릉 안목해변 카페거리" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&amp;q=80'"><span class="spot-card__region-badge">asia</span></div><div class="spot-card__body"><div class="spot-card__top"><div class="spot-card__name">강릉 안목해변 카페거리</div><div class="spot-card__rating"><span class="star">⭐</span>4.0<span class="spot-card__review-cnt">(1)</span></div></div><p style="font-size:12px;color:var(--blue);margin-top:6px;">🤖 취향반영</p><div class="spot-card__tags" style="margin-top:8px;"></div></div></div><div class="spot-card" style="cursor:pointer;" onclick="location.href='/TripTogether/detail/3'"><div class="spot-card__img-wrap"><img class="spot-card__img" src="https://picsum.photos/seed/gyeongju1/800/600" alt="경주 불국사" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&amp;q=80'"><span class="spot-card__region-badge">asia</span></div><div class="spot-card__body"><div class="spot-card__top"><div class="spot-card__name">경주 불국사</div><div class="spot-card__rating"><span class="star">⭐</span>4.0<span class="spot-card__review-cnt">(1)</span></div></div><p style="font-size:12px;color:var(--blue);margin-top:6px;">🤖 취향반영</p><div class="spot-card__tags" style="margin-top:8px;"></div></div></div><div class="spot-card" style="cursor:pointer;" onclick="location.href='/TripTogether/detail/8'"><div class="spot-card__img-wrap"><img class="spot-card__img" src="https://picsum.photos/seed/tokyo1/800/600" alt="도쿄 시부야" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&amp;q=80'"><span class="spot-card__region-badge">asia</span></div><div class="spot-card__body"><div class="spot-card__top"><div class="spot-card__name">도쿄 시부야</div><div class="spot-card__rating"><span class="star">⭐</span>4.0<span class="spot-card__review-cnt">(1)</span></div></div><p style="font-size:12px;color:var(--blue);margin-top:6px;">🤖 취향반영</p><div class="spot-card__tags" style="margin-top:8px;"></div></div></div></div>
+      <div id="recEmptyMsg" class="ai-rec-state" style="display:none;">
+        아직 방문 기록이 부족합니다. 여행지를 둘러보시면 맞춤 추천이 더 정확해져요! 😊
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- 탐색 버튼 -->
+  <div style="text-align:center;margin-top:32px;">
+    <button class="det-action-btn" onclick="location.href='../explore.html'" style="margin:0 auto;">
+      🔍 다른 여행지 탐색하기
+    </button>
+  </div>
+
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+<div id="adminEditSuccessMsg" data-message="" style="display:none;"></div>
+
+<div id="rpt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:320px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:20px;">⚠ 신고하기</div>
+    <input type="hidden" id="rptTargetType" value="">
+    <input type="hidden" id="rptTargetId" value="">
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:6px;">신고 사유 <span style="color:#ef4444;">*</span></label>
+      <select id="rptReason" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;">
+        <option value="">선택해주세요</option>
+        <option value="spam">스팸/광고</option>
+        <option value="abuse">욕설/비방</option>
+        <option value="privacy">개인정보 노출</option>
+        <option value="illegal">불법 정보</option>
+        <option value="etc">기타</option>
+      </select>
+      <div id="rptReasonMsg" style="font-size:12px;color:#ef4444;margin-top:6px;"></div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:6px;">상세 사유 (선택)</label>
+      <textarea id="rptDescription" rows="5" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;resize:vertical;" placeholder="상세 사유를 입력해주세요..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button type="button" id="rptCancelBtn" class="det-action-btn">취소</button>
+      <button type="button" id="rptSubmitBtn" class="det-action-btn active">신고하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="rpt-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:320px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:8px;">🚫 유저 신고</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">신고 사유를 상세히 적어주세요 (최소 10자)</div>
+    <input type="hidden" id="rptUserTargetIdx" value="">
+    <input type="hidden" id="rptUserSourceType" value="">
+    <input type="hidden" id="rptUserSourceId" value="">
+    <div style="margin-bottom:20px;">
+      <textarea id="rptUserDescription" rows="6" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;resize:vertical;" placeholder="신고 사유를 입력해주세요..."></textarea>
+      <div id="rptUserDescMsg" style="font-size:12px;color:#ef4444;margin-top:6px;"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button type="button" id="rptUserCancelBtn" class="det-action-btn">취소</button>
+      <button type="button" id="rptUserSubmitBtn" class="det-action-btn active">신고하기</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../resources/js/common/chatbot.js" defer=""></script>
+
+
+<script>
+(function () {
+  'use strict';
+
+  const ctx      = '/TripTogether';
+  const spotIdx  = '10';
+  const loginUserIdx = '7';
+  const detailMessages = window.detailMessages = {
+    genericError: '처리 중 오류가 발생했습니다.',
+    loginRequired: '로그인이 필요합니다 🔐',
+    tagLimit: '태그는 최대 4개까지 선택할 수 있습니다.',
+    favAdded: '⭐ 찜 추가',
+    favRemoved: '찜 취소',
+    likeAdded: '❤️ 좋아요',
+    likeRemoved: '좋아요 취소',
+    reviewSubmitLoading: '등록 중...',
+    reviewSubmitFail: '등록 실패',
+    reviewSubmitSuccess: '리뷰가 등록되었습니다.',
+    reviewDeleteConfirm: '리뷰를 삭제하시겠습니까?',
+    reviewDeleteFail: '삭제 실패',
+    reviewDeleteSuccess: '리뷰가 삭제되었습니다.',
+    reviewEmptyVisible: '현재 노출 가능한 리뷰가 없습니다.',
+    reviewBlockConfirm: '이 리뷰를 차단하시겠습니까? 차단 후 상세 화면에서 더 이상 노출되지 않습니다.',
+    reviewBlockFail: '차단 실패',
+    reviewBlockSuccess: '리뷰가 차단되었습니다.',
+    reviewBlockNone: '차단할 리뷰를 선택해주세요.',
+    reviewBlockBulkConfirmAll: '현재 보이는 리뷰를 모두 차단하시겠습니까?',
+    reviewBlockBulkConfirmSelected: '선택한 리뷰를 차단하시겠습니까?',
+    reviewBlockBulkSuccessTemplate: '{0}개의 리뷰가 차단되었습니다.',
+    reviewBlockSelectedLabel: '선택 차단',
+    reviewLikeSuccess: '리뷰 좋아요가 반영되었습니다.',
+    reviewWriteTitle: '리뷰 작성',
+    reviewSubmitLabel: '등록하기',
+    reviewEmptyHtml: '아직 작성된 리뷰가 없습니다. 첫 번째 리뷰를 남겨보세요! 😊',
+    packageLoginAction: '로그인 후 예약',
+    packageBookingAction: '예약하기',
+    packageLoginRequired: '로그인 후 패키지 예약이 가능합니다.',
+    packageInsufficientCash: '캐시 잔액이 부족합니다.',
+    packageProcessing: '예약 처리 중입니다...',
+    packageError: '예약 처리 중 오류가 발생했습니다.',
+    packageSuccessTemplate: '예약 완료: {0}',
+    flightDateRequired: '출발일과 귀국일을 선택해주세요.',
+    flightReturnInvalid: '귀국일은 출발일 이후 날짜로 선택해주세요.',
+    flightNoDiscount: '할인 없음',
+    flightLoading: '항공권 정보를 불러오는 중입니다.',
+    flightEmpty: '표시할 항공권 정보가 없습니다.',
+    flightLoadFail: '항공권 정보를 불러오지 못했습니다.',
+    flightOutboundLabel: '가는 편',
+    flightReturnLabel: '오는 편',
+    flightDepartLabel: '출발',
+    flightArriveLabel: '도착',
+    flightMileageLimitTemplate: '(최대 {0})',
+    flightLoginRequired: '로그인 후 항공권을 구매할 수 있습니다.',
+    flightSelectOffer: '구매할 항공권을 선택해주세요.',
+    flightPurchaseFail: '항공권 구매에 실패했습니다.',
+    flightPurchaseError: '항공권 구매 중 오류가 발생했습니다.',
+    flightPurchaseSuccessTemplate: '구매 완료 · 예매번호 {0}',
+    locationNoCoordinates: '좌표 정보가 없습니다.',
+    aiLoadFail: '추천 정보를 불러오지 못했습니다.',
+    reportReasonRequired: '신고 사유를 선택해주세요.',
+    reportSubmitted: '신고가 접수되었습니다.',
+    requestFail: '요청 중 오류가 발생했습니다.',
+    userReportMinLength: '신고 사유를 10자 이상 입력해주세요.'
+  };
+  function formatMessage(template) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return String(template || '').replace(/\{(\d+)\}/g, function (_, index) {
+      return typeof args[index] !== 'undefined' ? args[index] : '';
+    });
+  }
+  const adminEditModal = document.getElementById('adminEditModal');
+  if (adminEditModal && adminEditModal.classList.contains('show')) {
+    document.body.classList.add('modal-open');
+  }
+
+  /* 토스트 */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  const successMsg = document.getElementById('adminEditSuccessMsg');
+  if (successMsg && successMsg.dataset.message) {
+    showToast(successMsg.dataset.message);
+  }
+
+  /* 관리자 여행지 수정 모달 */
+  function openAdminModal() {
+    if (!adminEditModal) return;
+    adminEditModal.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeAdminModal() {
+    if (!adminEditModal) return;
+    adminEditModal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  const openAdminEditBtn = document.getElementById('openAdminEditBtn');
+  const closeAdminEditBtn = document.getElementById('closeAdminEditBtn');
+  const cancelAdminEditBtn = document.getElementById('cancelAdminEditBtn');
+
+  openAdminEditBtn && openAdminEditBtn.addEventListener('click', openAdminModal);
+  closeAdminEditBtn && closeAdminEditBtn.addEventListener('click', closeAdminModal);
+  cancelAdminEditBtn && cancelAdminEditBtn.addEventListener('click', closeAdminModal);
+
+  adminEditModal && adminEditModal.addEventListener('click', function (e) {
+    if (e.target === adminEditModal) {
+      closeAdminModal();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && adminEditModal && adminEditModal.classList.contains('show')) {
+      closeAdminModal();
+    }
+  });
+
+  const adminTagCheckboxes = document.querySelectorAll('#adminEditForm input[name="tags"]');
+  adminTagCheckboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
+      const checked = document.querySelectorAll('#adminEditForm input[name="tags"]:checked');
+      if (checked.length > 4) {
+        this.checked = false;
+        showToast(detailMessages.tagLimit);
+      }
+    });
+  });
+
+  /* 찜 / 좋아요 토글 */
+  function toggleAction(endpoint, btn, onText, offText, onMsg, offMsg, key) {
+    fetch(ctx + endpoint, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          showToast(detailMessages.loginRequired);
+          setTimeout(() => { window.location.href = ctx + '/auth/login'; }, 1500);
+          return;
+        }
+        const active = data[key];
+        btn.classList.toggle('active', active);
+        btn.querySelector('.det-action-label').textContent = active ? onText : offText;
+        btn.querySelector('.det-action-icon').textContent =
+            active ? (key === 'favorited' ? '⭐' : '❤️') : (key === 'favorited' ? '☆' : '🤍');
+        showToast(active ? onMsg : offMsg);
+      })
+      .catch(() => showToast(detailMessages.genericError));
+  }
+
+  const favBtn  = document.querySelector('.fav-btn');
+  const likeBtn = document.querySelector('.like-btn');
+
+  favBtn && favBtn.addEventListener('click', function () {
+    toggleAction('/explore/favorite/' + spotIdx, this,
+                 '찜 완료',
+                 '찜하기',
+                 detailMessages.favAdded, detailMessages.favRemoved, 'favorited');
+  });
+
+  likeBtn && likeBtn.addEventListener('click', function () {
+    toggleAction('/explore/like/' + spotIdx, this,
+                 '좋아요 완료',
+                 '좋아요',
+                 detailMessages.likeAdded, detailMessages.likeRemoved, 'liked');
+  });
+
+  /* 별점 선택기 */
+  let selectedRating = 0;
+
+  function bindStarPicker() {
+    const stars = document.querySelectorAll('#starPicker .sp');
+    function renderStars(n) {
+      stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= n));
+    }
+    stars.forEach(s => {
+      s.addEventListener('mouseover', function () { renderStars(parseInt(this.dataset.v)); });
+      s.addEventListener('mouseout',  function () { renderStars(selectedRating); });
+      s.addEventListener('click',     function () {
+        selectedRating = parseInt(this.dataset.v);
+        renderStars(selectedRating);
+        checkSubmit();
+      });
+    });
+  }
+
+  function checkSubmit() {
+    const btn  = document.getElementById('reviewSubmitBtn');
+    const area = document.getElementById('reviewContent');
+    if (!btn || !area) return;
+    btn.disabled = !(selectedRating > 0 && area.value.trim().length > 0);
+  }
+
+  /* 리뷰 등록 */
+  function bindSubmitBtn() {
+    const textarea  = document.getElementById('reviewContent');
+    const submitBtn = document.getElementById('reviewSubmitBtn');
+    const charCount = document.getElementById('charCount');
+
+    textarea && textarea.addEventListener('input', function () {
+      if (charCount) charCount.textContent = this.value.length;
+      checkSubmit();
+    });
+
+    submitBtn && submitBtn.addEventListener('click', function () {
+      const content = textarea ? textarea.value.trim() : '';
+      if (selectedRating === 0 || !content) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = detailMessages.reviewSubmitLoading;
+
+      fetch(ctx + '/detail/' + spotIdx + '/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: selectedRating, content: content })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          showToast(data.message || detailMessages.reviewSubmitFail);
+          submitBtn.disabled = false;
+          submitBtn.textContent = detailMessages.reviewSubmitLabel;
+          return;
+        }
+        showToast(detailMessages.reviewSubmitSuccess);
+        setTimeout(() => location.reload(), 800);
+      })
+      .catch(() => {
+        showToast(detailMessages.genericError);
+        submitBtn.disabled = false;
+        submitBtn.textContent = detailMessages.reviewSubmitLabel;
+      });
+    });
+  }
+
+  // 페이지 최초 로드 시 폼이 있으면 바인딩
+  if (document.getElementById('starPicker'))   bindStarPicker();
+  if (document.getElementById('reviewSubmitBtn')) bindSubmitBtn();
+
+  /* 리뷰 삭제 */
+  function bindDeleteBtns() {
+    document.querySelectorAll('.review-delete-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        if (!confirm(detailMessages.reviewDeleteConfirm)) return;
+        const rIdx = this.dataset.reviewIdx;
+        const sIdx = this.dataset.spotIdx;
+
+        fetch(ctx + '/detail/' + sIdx + '/review/' + rIdx, { method: 'DELETE' })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) { showToast(data.message || detailMessages.reviewDeleteFail); return; }
+
+            // 1. 카드 제거
+            const card = document.getElementById('rv-' + rIdx);
+            card && card.remove();
+            showToast(detailMessages.reviewDeleteSuccess);
+
+            // 2. 리뷰 목록이 비었으면 빈 상태 메시지 표시
+            const list = document.getElementById('reviewList');
+            if (list && list.querySelectorAll('.review-card').length === 0) {
+              list.innerHTML = '<div class="review-empty">' + detailMessages.reviewEmptyHtml + '</div>';
+            }
+
+            // 3. "이미 작성" 안내 박스를 지우고 작성 폼 복원
+            const alreadyBox = document.getElementById('alreadyReviewBox');
+            if (alreadyBox) alreadyBox.remove();
+            showWriteForm();
+          })
+          .catch(() => showToast(detailMessages.genericError));
+      });
+    });
+  }
+
+  /* 관리자 리뷰 차단 */
+  function bindBlockBtns() {
+    document.querySelectorAll('[data-block-review-idx]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        if (!confirm(detailMessages.reviewBlockConfirm)) return;
+
+        const reviewIdx = this.dataset.blockReviewIdx;
+        const currentSpotIdx = this.dataset.blockSpotIdx;
+
+        fetch(ctx + '/detail/' + currentSpotIdx + '/review/' + reviewIdx + '/block', {
+          method: 'POST'
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+              showToast(data.message || detailMessages.reviewBlockFail);
+              return;
+            }
+
+            const card = document.getElementById('rv-' + reviewIdx);
+            card && card.remove();
+            showToast(detailMessages.reviewBlockSuccess);
+
+            const list = document.getElementById('reviewList');
+            if (list && list.querySelectorAll('.review-card').length === 0) {
+              list.innerHTML = '<div class="review-empty">' + detailMessages.reviewEmptyVisible + '</div>';
+            }
+          })
+          .catch(() => showToast(detailMessages.genericError));
+      });
+    });
+  }
+
+  /* 관리자 리뷰 선택 / 전체선택 / 선택 차단 */
+  const reviewSelectAll = document.getElementById('reviewSelectAll');
+  const blockSelectedReviewsBtn = document.getElementById('blockSelectedReviewsBtn');
+
+  function getSelectedReviewCheckboxes() {
+    return Array.from(document.querySelectorAll('[data-review-select]:checked'));
+  }
+
+  function syncReviewSelectionUi() {
+    const allCheckboxes = Array.from(document.querySelectorAll('[data-review-select]'));
+    const checkedCheckboxes = getSelectedReviewCheckboxes();
+
+    allCheckboxes.forEach(function (checkbox) {
+      const card = checkbox.closest('.review-card');
+      if (card) {
+        card.classList.toggle('admin-selecting', checkbox.checked);
+      }
+    });
+
+    if (reviewSelectAll) {
+      reviewSelectAll.checked = allCheckboxes.length > 0 && checkedCheckboxes.length === allCheckboxes.length;
+      reviewSelectAll.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
+    }
+
+    if (blockSelectedReviewsBtn) {
+      blockSelectedReviewsBtn.disabled = checkedCheckboxes.length === 0;
+      blockSelectedReviewsBtn.textContent = checkedCheckboxes.length > 0
+        ? detailMessages.reviewBlockSelectedLabel + ' (' + checkedCheckboxes.length + ')'
+        : detailMessages.reviewBlockSelectedLabel;
+    }
+  }
+
+  function bindReviewSelection() {
+    document.querySelectorAll('[data-review-select]').forEach(function (checkbox) {
+      checkbox.addEventListener('change', syncReviewSelectionUi);
+    });
+
+    reviewSelectAll && reviewSelectAll.addEventListener('change', function () {
+      const checked = this.checked;
+      document.querySelectorAll('[data-review-select]').forEach(function (checkbox) {
+        checkbox.checked = checked;
+      });
+      syncReviewSelectionUi();
+    });
+
+    blockSelectedReviewsBtn && blockSelectedReviewsBtn.addEventListener('click', function () {
+      const selectedIds = getSelectedReviewCheckboxes().map(function (checkbox) {
+        return Number(checkbox.dataset.reviewSelect);
+      });
+
+      if (selectedIds.length === 0) {
+        showToast(detailMessages.reviewBlockNone);
+        return;
+      }
+
+      const isAllSelected = document.querySelectorAll('[data-review-select]').length === selectedIds.length;
+      const confirmMessage = isAllSelected
+        ? detailMessages.reviewBlockBulkConfirmAll
+        : detailMessages.reviewBlockBulkConfirmSelected;
+      if (!confirm(confirmMessage)) return;
+
+      fetch(ctx + '/detail/' + spotIdx + '/review/block-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewIdxList: selectedIds })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.success) {
+            showToast(data.message || detailMessages.reviewBlockFail);
+            return;
+          }
+
+          selectedIds.forEach(function (reviewId) {
+            const card = document.getElementById('rv-' + reviewId);
+            card && card.remove();
+          });
+
+          if (reviewSelectAll) {
+            reviewSelectAll.checked = false;
+            reviewSelectAll.indeterminate = false;
+          }
+
+          syncReviewSelectionUi();
+          showToast(formatMessage(detailMessages.reviewBlockBulkSuccessTemplate, data.blockedCount || selectedIds.length));
+
+          const list = document.getElementById('reviewList');
+          if (list && list.querySelectorAll('.review-card').length === 0) {
+            const tools = document.querySelector('.review-admin-tools');
+            tools && tools.remove();
+            list.innerHTML = '<div class="review-empty">' + detailMessages.reviewEmptyVisible + '</div>';
+          }
+        })
+        .catch(function () {
+          showToast(detailMessages.genericError);
+        });
+    });
+
+    syncReviewSelectionUi();
+  }
+
+  /* 리뷰 작성 폼을 #reviewWriteArea 안에 동적으로 생성 */
+  function showWriteForm() {
+    const area = document.getElementById('reviewWriteArea');
+    if (!area) return;
+    // 이미 폼이 있으면 중복 생성 방지
+    if (area.querySelector('#reviewFormBox')) return;
+
+    area.innerHTML = `
+      <div class="review-form-box" id="reviewFormBox">
+        <h3>✍ </h3>
+        <div class="star-picker" id="starPicker">
+          <span class="sp" data-v="1">★</span>
+          <span class="sp" data-v="2">★</span>
+          <span class="sp" data-v="3">★</span>
+          <span class="sp" data-v="4">★</span>
+          <span class="sp" data-v="5">★</span>
+        </div>
+        <textarea class="review-textarea" id="reviewContent"
+                  maxlength="500" placeholder="여행지에 대한 솔직한 후기를 남겨주세요. (최대 500자)"></textarea>
+        <div class="review-form-foot">
+          <span class="review-char"><span id="charCount">0</span> / 500</span>
+          <button class="review-submit-btn" id="reviewSubmitBtn" disabled></button>
+        </div>
+      </div>`;
+
+    // 새로 생성된 폼에 이벤트 재바인딩
+    selectedRating = 0;
+    bindStarPicker();
+    bindSubmitBtn();
+  }
+
+  bindDeleteBtns();
+  bindBlockBtns();
+  bindReviewSelection();
+
+  function openReportModal(targetType, targetId) {
+    document.getElementById('rptTargetType').value = targetType;
+    document.getElementById('rptTargetId').value = targetId;
+    document.getElementById('rptReason').value = '';
+    document.getElementById('rptDescription').value = '';
+    document.getElementById('rptReasonMsg').textContent = '';
+    document.getElementById('rpt-modal').style.display = 'flex';
+  }
+
+  function openUserReportModal(targetUserIdx, sourceType, sourceId) {
+    document.getElementById('rptUserTargetIdx').value = targetUserIdx;
+    document.getElementById('rptUserSourceType').value = sourceType || '';
+    document.getElementById('rptUserSourceId').value = sourceId || '';
+    document.getElementById('rptUserDescription').value = '';
+    document.getElementById('rptUserDescMsg').textContent = '';
+    document.getElementById('rpt-user-modal').style.display = 'flex';
+  }
+
+  function bindReviewLikeBtns() {
+    document.querySelectorAll('[data-review-like-idx]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const reviewIdx = this.dataset.reviewLikeIdx;
+        const currentSpotIdx = this.dataset.spotIdx;
+
+        fetch(ctx + '/detail/' + currentSpotIdx + '/review/' + reviewIdx + '/like', {
+          method: 'POST'
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+              showToast(data.message || detailMessages.genericError);
+              return;
+            }
+
+            this.classList.toggle('active', !!data.liked);
+            const icon = this.querySelector('.review-like-icon');
+            const count = this.querySelector('.review-like-count');
+            if (icon) icon.textContent = data.liked ? '❤️' : '🤍';
+            if (count) count.textContent = data.likeCount;
+            showToast(data.message || detailMessages.reviewLikeSuccess);
+          })
+          .catch(() => showToast(detailMessages.genericError));
+      });
+    });
+  }
+
+  function bindReviewReportBtns() {
+    document.querySelectorAll('[data-review-report-idx]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        openReportModal('review', this.dataset.reviewReportIdx);
+      });
+    });
+  }
+
+  const rptModal = document.getElementById('rpt-modal');
+  const rptCancelBtn = document.getElementById('rptCancelBtn');
+  const rptSubmitBtn = document.getElementById('rptSubmitBtn');
+  const rptReasonSel = document.getElementById('rptReason');
+  const rptReasonMsg = document.getElementById('rptReasonMsg');
+
+  rptCancelBtn && rptCancelBtn.addEventListener('click', function () {
+    rptModal.style.display = 'none';
+  });
+  rptModal && rptModal.addEventListener('click', function (e) {
+    if (e.target === rptModal) rptModal.style.display = 'none';
+  });
+  rptSubmitBtn && rptSubmitBtn.addEventListener('click', function () {
+    const targetType = document.getElementById('rptTargetType').value;
+    const targetId = document.getElementById('rptTargetId').value;
+    const reason = rptReasonSel.value;
+    const description = document.getElementById('rptDescription').value.trim();
+
+    if (!reason) {
+      rptReasonMsg.textContent = detailMessages.reportReasonRequired;
+      return;
+    }
+    rptReasonMsg.textContent = '';
+
+    rptSubmitBtn.disabled = true;
+    fetch(ctx + '/report/' + targetType + '/' + targetId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
+    })
+      .then(r => r.json())
+      .then(data => {
+        rptModal.style.display = 'none';
+        showToast(data.message || detailMessages.reportSubmitted);
+      })
+      .catch(() => showToast(detailMessages.requestFail))
+      .finally(() => { rptSubmitBtn.disabled = false; });
+  });
+
+  const rptUserModal = document.getElementById('rpt-user-modal');
+  const rptUserCancelBtn = document.getElementById('rptUserCancelBtn');
+  const rptUserSubmitBtn = document.getElementById('rptUserSubmitBtn');
+  const rptUserDescArea = document.getElementById('rptUserDescription');
+  const rptUserDescMsg = document.getElementById('rptUserDescMsg');
+
+  rptUserCancelBtn && rptUserCancelBtn.addEventListener('click', function () {
+    rptUserModal.style.display = 'none';
+  });
+  rptUserModal && rptUserModal.addEventListener('click', function (e) {
+    if (e.target === rptUserModal) rptUserModal.style.display = 'none';
+  });
+  rptUserSubmitBtn && rptUserSubmitBtn.addEventListener('click', function () {
+    const targetUserIdx = document.getElementById('rptUserTargetIdx').value;
+    const sourceType = document.getElementById('rptUserSourceType').value;
+    const sourceId = document.getElementById('rptUserSourceId').value;
+    const description = rptUserDescArea.value.trim();
+
+    if (description.length < 10) {
+      rptUserDescMsg.textContent = detailMessages.userReportMinLength;
+      return;
+    }
+    rptUserDescMsg.textContent = '';
+
+    let body = 'description=' + encodeURIComponent(description);
+    if (sourceType) body += '&sourceType=' + encodeURIComponent(sourceType);
+    if (sourceId) body += '&sourceId=' + encodeURIComponent(sourceId);
+
+    rptUserSubmitBtn.disabled = true;
+    fetch(ctx + '/report/user/' + targetUserIdx, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body
+    })
+      .then(r => r.json())
+      .then(data => {
+        rptUserModal.style.display = 'none';
+        showToast(data.message || detailMessages.reportSubmitted);
+      })
+      .catch(() => showToast(detailMessages.requestFail))
+      .finally(() => { rptUserSubmitBtn.disabled = false; });
+  });
+
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('.rpt-user-link[data-user-idx]');
+    if (!el) return;
+    e.preventDefault();
+    openUserReportModal(
+      el.getAttribute('data-user-idx'),
+      el.getAttribute('data-source-type'),
+      el.getAttribute('data-source-id')
+    );
+  });
+
+  bindReviewLikeBtns();
+  bindReviewReportBtns();
+
+})();
+</script>
+
+
+<script>
+(function () {
+  var detailMessages = window.detailMessages || {};
+  function formatMessage(template) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return String(template || '').replace(/\{(\d+)\}/g, function (_, index) {
+      return typeof args[index] !== 'undefined' ? args[index] : '';
+    });
+  }
+  var flightModal = document.getElementById('flightModal');
+  var openBtn = document.getElementById('openFlightModalBtn');
+  var closeBtn = document.getElementById('closeFlightModalBtn');
+  var offerList = document.getElementById('flightOfferList');
+  var originalPriceEl = document.getElementById('flightOriginalPrice');
+  var gradeDiscountEl = document.getElementById('flightGradeDiscount');
+  var totalPriceEl = document.getElementById('flightTotalPrice');
+  var cashBalanceEl = document.getElementById('flightCashBalance');
+  var mileageBalanceEl = document.getElementById('flightMileageBalance');
+  var mileageLimitText = document.getElementById('flightMileageLimitText');
+  var mileageInput = document.getElementById('flightMileageInput');
+  var cashInput = document.getElementById('flightCashInput');
+  var departureDateInput = document.getElementById('flightDepartureDate');
+  var returnDateInput = document.getElementById('flightReturnDate');
+  var useMaxMileageBtn = document.getElementById('flightUseMaxMileageBtn');
+  var purchaseBtn = document.getElementById('flightPurchaseBtn');
+  var messageEl = document.getElementById('flightPayMessage');
+
+  var ctx = '/TripTogether';
+  var spotIdx = '10';
+  var isLoggedIn = true;
+  var cashBalance = Number('320000');
+  var mileageBalance = Number('1500');
+  var offers = [];
+  var selectedOffer = null;
+
+  function toDateValue(date) {
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  }
+
+  function initializeDateInputs() {
+    if (!departureDateInput || !returnDateInput) return;
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var defaultDeparture = new Date();
+    defaultDeparture.setDate(defaultDeparture.getDate() + 14);
+    var defaultReturn = new Date();
+    defaultReturn.setDate(defaultReturn.getDate() + 19);
+    departureDateInput.min = toDateValue(tomorrow);
+    departureDateInput.value = toDateValue(defaultDeparture);
+    returnDateInput.min = toDateValue(new Date(defaultDeparture.getTime() + 24 * 60 * 60 * 1000));
+    returnDateInput.value = toDateValue(defaultReturn);
+  }
+
+  function getSelectedDates() {
+    return {
+      departureDate: departureDateInput ? departureDateInput.value : '',
+      returnDate: returnDateInput ? returnDateInput.value : ''
+    };
+  }
+
+  function validateSelectedDates() {
+    var dates = getSelectedDates();
+    if (!dates.departureDate || !dates.returnDate) {
+      messageEl.textContent = detailMessages.flightDateRequired;
+      return false;
+    }
+    if (dates.returnDate <= dates.departureDate) {
+      messageEl.textContent = detailMessages.flightReturnInvalid;
+      return false;
+    }
+    return true;
+  }
+
+  function formatMoney(value, suffix) {
+    return Number(value || 0).toLocaleString('ko-KR') + ' ' + suffix;
+  }
+
+  function getFinalPrice(offer) {
+    return Number(offer.finalPrice || offer.totalPrice || 0);
+  }
+
+  function getDiscountText(offer) {
+    var discountRate = Number(offer.discountRate || 0);
+    var discountAmount = Number(offer.discountAmount || 0);
+    if (discountRate <= 0 || discountAmount <= 0) {
+      return detailMessages.flightNoDiscount;
+    }
+    return escapeHtml(offer.memberGrade || 'BRONZE') + ' ' + discountRate.toFixed(2) + '% · -' + formatMoney(discountAmount, 'C');
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '-';
+    if (Array.isArray(value)) {
+      var month = String(value[1]).padStart(2, '0');
+      var day = String(value[2]).padStart(2, '0');
+      var hour = String(value[3]).padStart(2, '0');
+      var minute = String(value[4]).padStart(2, '0');
+      return value[0] + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+    }
+    return String(value).replace('T', ' ').substring(0, 16);
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function openFlightModal() {
+    if (!isLoggedIn) {
+      location.href = ctx + '/auth/login?redirect=' + encodeURIComponent('/detail/' + spotIdx);
+      return;
+    }
+    if (!flightModal) return;
+    flightModal.classList.add('show');
+    flightModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    loadOffers();
+  }
+
+  function closeFlightModal() {
+    if (!flightModal) return;
+    flightModal.classList.remove('show');
+    flightModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function loadOffers() {
+    if (!validateSelectedDates()) return;
+    if (offers.length > 0) return;
+    var dates = getSelectedDates();
+    offerList.innerHTML = '<div class="flight-pay-msg">' + detailMessages.flightLoading + '</div>';
+
+    fetch(ctx + '/flight/offers?spotIdx=' + encodeURIComponent(spotIdx)
+      + '&departureDate=' + encodeURIComponent(dates.departureDate)
+      + '&returnDate=' + encodeURIComponent(dates.returnDate))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.success || !data.available || !data.offers || data.offers.length === 0) {
+          offerList.innerHTML = '<div class="flight-pay-msg">' + detailMessages.flightEmpty + '</div>';
+          return;
+        }
+        offers = data.offers;
+        renderOffers();
+        selectOffer(offers[0].offerId);
+      })
+      .catch(function () {
+        offerList.innerHTML = '<div class="flight-pay-msg">' + detailMessages.flightLoadFail + '</div>';
+      });
+  }
+
+  function renderOffers() {
+    offerList.innerHTML = offers.map(function (offer) {
+      return [
+        '<div class="flight-offer-card" data-offer-id="' + escapeHtml(offer.offerId) + '">',
+        '  <div class="flight-offer-top">',
+        '    <div>',
+        '      <div class="flight-airline">' + escapeHtml(offer.airlineName) + '</div>',
+        '      <div class="flight-no">' + escapeHtml(offer.flightNo) + ' · ' + escapeHtml(offer.seatClass) + '</div>',
+        '    </div>',
+        '    <div class="flight-price">' + formatMoney(getFinalPrice(offer), 'C') + '</div>',
+        '  </div>',
+        '  <div class="flight-route">',
+        '    <strong>' + escapeHtml(offer.originAirportCode) + '</strong>',
+        '    <span>→</span>',
+        '    <strong>' + escapeHtml(offer.destinationAirportCode) + '</strong>',
+        '    <span>' + escapeHtml(offer.durationText) + '</span>',
+        '  </div>',
+        '  <div class="flight-no">' + detailMessages.flightOutboundLabel + ' ' + formatDateTime(offer.departureTime) + ' ' + detailMessages.flightDepartLabel + ' · ' + formatDateTime(offer.arrivalTime) + ' ' + detailMessages.flightArriveLabel + '</div>',
+        '  <div class="flight-no">' + detailMessages.flightReturnLabel + ' ' + escapeHtml(offer.returnOriginAirportCode) + ' → ' + escapeHtml(offer.returnDestinationAirportCode) + ' · ' + formatDateTime(offer.returnDepartureTime) + ' ' + detailMessages.flightDepartLabel + ' · ' + formatDateTime(offer.returnArrivalTime) + ' ' + detailMessages.flightArriveLabel + '</div>',
+        '</div>'
+      ].join('');
+    }).join('');
+
+    offerList.querySelectorAll('.flight-offer-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        selectOffer(card.dataset.offerId);
+      });
+    });
+  }
+
+  function selectOffer(offerId) {
+    selectedOffer = offers.find(function (offer) { return offer.offerId === offerId; });
+    if (!selectedOffer) return;
+
+    offerList.querySelectorAll('.flight-offer-card').forEach(function (card) {
+      card.classList.toggle('active', card.dataset.offerId === offerId);
+    });
+
+    originalPriceEl.textContent = formatMoney(selectedOffer.totalPrice, 'C');
+    gradeDiscountEl.textContent = getDiscountText(selectedOffer);
+    totalPriceEl.textContent = formatMoney(getFinalPrice(selectedOffer), 'C');
+    mileageLimitText.textContent = formatMessage(detailMessages.flightMileageLimitTemplate, formatMoney(selectedOffer.maxMileageUse, 'M'));
+    mileageInput.max = Math.min(selectedOffer.maxMileageUse, mileageBalance);
+    mileageInput.value = 0;
+    updateCashAmount();
+    messageEl.textContent = '';
+  }
+
+  function updateCashAmount() {
+    if (!selectedOffer) return;
+    var mileage = Math.max(0, Number(mileageInput.value || 0));
+    var maxMileage = Math.min(selectedOffer.maxMileageUse, mileageBalance);
+    if (mileage > maxMileage) {
+      mileage = maxMileage;
+      mileageInput.value = mileage;
+    }
+    cashInput.value = getFinalPrice(selectedOffer) - mileage;
+  }
+
+  function purchaseFlight() {
+    if (!isLoggedIn) {
+      messageEl.textContent = detailMessages.flightLoginRequired;
+      return;
+    }
+    if (!selectedOffer) {
+      messageEl.textContent = detailMessages.flightSelectOffer;
+      return;
+    }
+    if (!validateSelectedDates()) return;
+
+    var mileageAmount = Number(mileageInput.value || 0);
+    var cashAmount = Number(cashInput.value || 0);
+    var dates = getSelectedDates();
+    if (cashAmount > cashBalance) {
+      messageEl.textContent = detailMessages.packageInsufficientCash;
+      return;
+    }
+
+    purchaseBtn.disabled = true;
+    messageEl.textContent = detailMessages.packageProcessing;
+
+    fetch(ctx + '/flight/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        spotIdx: Number(spotIdx),
+        offerId: selectedOffer.offerId,
+        departureDate: dates.departureDate,
+        returnDate: dates.returnDate,
+        cashAmount: cashAmount,
+        mileageAmount: mileageAmount
+      })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          messageEl.textContent = data.message || detailMessages.flightPurchaseFail;
+          return;
+        }
+        cashBalance = Number(data.cashBalance || 0);
+        mileageBalance = Number(data.mileageBalance || 0);
+        cashBalanceEl.textContent = formatMoney(cashBalance, 'C');
+        mileageBalanceEl.textContent = formatMoney(mileageBalance, 'M');
+        messageEl.textContent = formatMessage(detailMessages.flightPurchaseSuccessTemplate, data.purchaseNo);
+        updateCashAmount();
+      })
+      .catch(function () {
+        messageEl.textContent = detailMessages.flightPurchaseError;
+      })
+      .finally(function () {
+        purchaseBtn.disabled = false;
+      });
+  }
+
+  openBtn && openBtn.addEventListener('click', openFlightModal);
+  closeBtn && closeBtn.addEventListener('click', closeFlightModal);
+  flightModal && flightModal.addEventListener('click', function (e) {
+    if (e.target === flightModal) closeFlightModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && flightModal && flightModal.classList.contains('show')) {
+      closeFlightModal();
+    }
+  });
+  mileageInput && mileageInput.addEventListener('input', updateCashAmount);
+  useMaxMileageBtn && useMaxMileageBtn.addEventListener('click', function () {
+    if (!selectedOffer) return;
+    mileageInput.value = Math.min(selectedOffer.maxMileageUse, mileageBalance);
+    updateCashAmount();
+  });
+  departureDateInput && departureDateInput.addEventListener('change', function () {
+    if (!departureDateInput.value || !returnDateInput) return;
+    var nextReturnDate = new Date(departureDateInput.value);
+    nextReturnDate.setDate(nextReturnDate.getDate() + 1);
+    returnDateInput.min = toDateValue(nextReturnDate);
+    if (returnDateInput.value <= departureDateInput.value) {
+      returnDateInput.value = toDateValue(nextReturnDate);
+    }
+    offers = [];
+    selectedOffer = null;
+    loadOffers();
+  });
+  returnDateInput && returnDateInput.addEventListener('change', function () {
+    offers = [];
+    selectedOffer = null;
+    loadOffers();
+  });
+  purchaseBtn && purchaseBtn.addEventListener('click', purchaseFlight);
+
+  initializeDateInputs();
+  window.openFlightTicketModal = openFlightModal;
+})();
+</script>
+
+
+
+
+<script>
+var detailMessages = window.detailMessages || {};
+/* 여행지 좌표와 이름 */
+var SPOT_LAT  = parseFloat('40.7829');
+var SPOT_LNG  = parseFloat('-73.9654');
+var SPOT_NAME = '뉴욕 센트럴파크';
+
+/* 서울 기준 좌표 */
+var SEOUL_LAT = 37.5665;
+var SEOUL_LNG = 126.9780;
+
+var googleMap, destinationMarker, seoulMarker, routeLine, labelOverlay;
+var lineVisible = false;
+
+/* 1. 도시명 라벨 (OverlayView 커스텀 표시) */
+function CityLabel(position, map) {
+  this.position_ = position;
+  this.div_      = null;
+  this.setMap(map);
+}
+
+function cityLabel_onAdd() {
+  var div = document.createElement('div');
+  div.style.cssText = [
+    'position:absolute',
+    'background:#fff',
+    'border:1.5px solid #ef4444',
+    'border-radius:7px',
+    'padding:4px 10px',
+    'box-shadow:0 2px 6px rgba(0,0,0,.20)',
+    'pointer-events:none',
+    'white-space:nowrap',
+    'text-align:center',
+    'transform:translateX(-50%)',
+    'font-size:13px',
+    'font-weight:700',
+    'color:#1f2937',
+    'font-family:"Noto Sans KR",sans-serif'
+  ].join(';');
+  div.textContent = SPOT_NAME;
+
+  /* 말풍선 꼬리 */
+  var tail = document.createElement('div');
+  tail.style.cssText = [
+    'position:absolute',
+    'bottom:-7px',
+    'left:50%',
+    'transform:translateX(-50%)',
+    'width:0',
+    'height:0',
+    'border-left:5px solid transparent',
+    'border-right:5px solid transparent',
+    'border-top:7px solid #ef4444'
+  ].join(';');
+  div.appendChild(tail);
+
+  this.div_ = div;
+  this.getPanes().floatPane.appendChild(div);
+}
+
+function cityLabel_draw() {
+  var pos = this.getProjection().fromLatLngToDivPixel(this.position_);
+  if (pos && this.div_) {
+    this.div_.style.left = pos.x + 'px';
+    this.div_.style.top  = (pos.y - 48) + 'px';
+  }
+}
+
+function cityLabel_onRemove() {
+  if (this.div_ && this.div_.parentNode) {
+    this.div_.parentNode.removeChild(this.div_);
+    this.div_ = null;
+  }
+}
+
+/* 2. Google Maps 초기화 */
+function initMap() {
+  if (isNaN(SPOT_LAT) || isNaN(SPOT_LNG)) {
+    document.getElementById('googleMap').innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b7280;font-size:14px;">'
+      + detailMessages.locationNoCoordinates + '</div>';
+    return;
+  }
+
+  /* google.maps 로드 후 OverlayView 연결 */
+  CityLabel.prototype = Object.create(google.maps.OverlayView.prototype);
+  CityLabel.prototype.constructor = CityLabel;
+  CityLabel.prototype.onAdd    = cityLabel_onAdd;
+  CityLabel.prototype.draw     = cityLabel_draw;
+  CityLabel.prototype.onRemove = cityLabel_onRemove;
+
+  var destLatLng  = { lat: SPOT_LAT,  lng: SPOT_LNG  };
+  var seoulLatLng = { lat: SEOUL_LAT, lng: SEOUL_LNG };
+
+  /* 지도 생성 */
+  googleMap = new google.maps.Map(document.getElementById('googleMap'), {
+    center:            destLatLng,
+    zoom:              5,
+    mapTypeId:         'roadmap',
+    zoomControl:       true,
+    mapTypeControl:    false,
+    streetViewControl: false,
+    fullscreenControl: true
+  });
+
+  /* 목적지 포함 Bounds */
+  var bounds = new google.maps.LatLngBounds();
+  bounds.extend(new google.maps.LatLng(SPOT_LAT,  SPOT_LNG));
+  bounds.extend(new google.maps.LatLng(SEOUL_LAT, SEOUL_LNG));
+  googleMap.fitBounds(bounds, { top: 100, right: 60, bottom: 60, left: 60 });
+
+  /* 목적지 여행지 마커 (빨간 핀) */
+  destinationMarker = new google.maps.Marker({
+    position:  destLatLng,
+    map:       googleMap,
+    title:     SPOT_NAME,
+    icon: {
+      path:         google.maps.SymbolPath.CIRCLE,
+      scale:        8,
+      fillColor:    '#ef4444',
+      fillOpacity:  1,
+      strokeColor:  '#ffffff',
+      strokeWeight: 2
+    },
+    zIndex:    10,
+    animation: google.maps.Animation.DROP
+  });
+
+  /* 서울 기준 마커 (파란 핀) */
+  seoulMarker = new google.maps.Marker({
+    position:  seoulLatLng,
+    map:       googleMap,
+    title:     '\uc11c\uc6b8',
+    icon: {
+      path:         google.maps.SymbolPath.CIRCLE,
+      scale:        7,
+      fillColor:    '#2563eb',
+      fillOpacity:  1,
+      strokeColor:  '#ffffff',
+      strokeWeight: 2
+    },
+    zIndex:    9,
+    animation: google.maps.Animation.DROP
+  });
+
+  /* 서울 라벨 */
+  new google.maps.Marker({
+    position: { lat: SEOUL_LAT + 1.6, lng: SEOUL_LNG },
+    map:      googleMap,
+    icon:     { path: google.maps.SymbolPath.CIRCLE, scale: 0 },
+    label: {
+      text:       '\uc11c\uc6b8',
+      color:      '#1e40af',
+      fontSize:   '12px',
+      fontWeight: '700'
+    }
+  });
+
+  /* 목적지 도시명 라벨 (항상 표시) */
+  labelOverlay = new CityLabel(
+    new google.maps.LatLng(SPOT_LAT, SPOT_LNG),
+    googleMap
+  );
+
+  /* 목적지 연결선 Polyline (초기 숨김) */
+  routeLine = new google.maps.Polyline({
+    path:          [seoulLatLng, destLatLng],
+    geodesic:      true,
+    strokeColor:   '#2563eb',
+    strokeOpacity: 0,
+    strokeWeight:  2,
+    icons: [{
+      icon:   { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3 },
+      offset: '0',
+      repeat: '16px'
+    }],
+    map: googleMap
+  });
+
+  /* 여행지 마커 클릭: 항공권이 있으면 모달을 열고, 없으면 연결선을 토글 */
+  destinationMarker.addListener('click', function () {
+    if (typeof window.openFlightTicketModal === 'function') {
+      window.openFlightTicketModal();
+      destinationMarker.setAnimation(google.maps.Animation.BOUNCE);
+      setTimeout(function() { destinationMarker.setAnimation(null); }, 1200);
+      return;
+    }
+
+    if (lineVisible) {
+      routeLine.setOptions({ strokeOpacity: 0 });
+      lineVisible = false;
+    } else {
+      var opacity = 0;
+      var fadeIn = setInterval(function() {
+        opacity += 0.1;
+        routeLine.setOptions({ strokeOpacity: Math.min(opacity, 0.85) });
+        if (opacity >= 0.85) clearInterval(fadeIn);
+      }, 25);
+      lineVisible = true;
+    }
+    destinationMarker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(function() { destinationMarker.setAnimation(null); }, 1200);
+  });
+
+  /* 지도 클릭 시 연결선 닫기 */
+  googleMap.addListener('click', function () {
+    routeLine.setOptions({ strokeOpacity: 0 });
+    lineVisible = false;
+  });
+}
+</script>
+
+<!-- Google Maps JavaScript API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=DEMO_MAPS_KEY_DISABLED&amp;callback=initMap&amp;loading=async&amp;language=ko&amp;region=KR" async="" defer=""></script>
+
+
+
+
+<script>
+(function() {
+  var CTX_REC      = '/TripTogether';
+  var SPOT_IDX_REC = '10';
+  var AI_DEFAULT_TITLE = '🤖 AI 맞춤 추천 여행지';
+  var AI_DEFAULT_DESC = '회원님의 관심 여행지를 분석해 비슷한 취향의 여행지를 추천해드립니다.';
+  var AI_TRENDING_TITLE = '🔥 인기 추천 여행지';
+  var AI_TRENDING_DESC = '최근 가장 많은 관심을 받고 있는 여행지를 소개해드립니다.';
+  var pageEnter    = Date.now();
+  var logSent      = false;
+
+  /* 체류 시간 전송: fetch + keepalive 사용 */
+  function sendViewLog() {
+    if (logSent) return;
+    var staySeconds = Math.round((Date.now() - pageEnter) / 1000);
+    if (staySeconds < 2) return;
+    logSent = true;
+    fetch(CTX_REC + '/recommend/view-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ spotIdx: SPOT_IDX_REC, staySeconds: staySeconds }),
+      keepalive: true
+    }).then(function() {
+      /* 체류 시간 전송 완료 후 추천 섹션 즉시 새로고침 */
+      refreshRecommendations();
+    }).catch(function() { /* 무시 */ });
+  }
+  window.addEventListener('beforeunload', sendViewLog);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') sendViewLog();
+  });
+
+  /* 추천 카드 HTML 생성 */
+  function buildRecCard(spot) {
+    var thumb = spot.thumbUrl ||
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80';
+    var tags  = (spot.tags || []).slice(0, 3).map(function(t) {
+      return '<span class="spot-tag">' + escHtml(t) + '</span>';
+    }).join('');
+    var rating = (spot.ratingAvg || 0).toFixed(1);
+    var reason = spot.recReason ? '<p style="font-size:12px;color:var(--blue);margin-top:6px;">&#x1F916; ' + escHtml(spot.recReason) + '</p>' : '';
+
+    return '<div class="spot-card" style="cursor:pointer;" onclick="location.href=\'' +
+           CTX_REC + '/detail/' + spot.spotIdx + '\'">' +
+      '<div class="spot-card__img-wrap">' +
+        '<img class="spot-card__img" src="' + escHtml(thumb) + '" alt="' + escHtml(spot.spotName) + '"' +
+             ' onerror="this.src=\'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80\'">' +
+        (spot.region ? '<span class="spot-card__region-badge">' + escHtml(spot.region) + '</span>' : '') +
+      '</div>' +
+      '<div class="spot-card__body">' +
+        '<div class="spot-card__top">' +
+          '<div class="spot-card__name">' + escHtml(spot.spotName) + '</div>' +
+          '<div class="spot-card__rating"><span class="star">&#11088;</span>' + rating +
+            '<span class="spot-card__review-cnt">(' + (spot.reviewCount || 0) + ')</span></div>' +
+        '</div>' +
+        reason +
+        '<div class="spot-card__tags" style="margin-top:8px;">' + tags + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* AI 추천 조회 (최초 로드) */
+  function loadRecommendations() {
+    fetch(CTX_REC + '/recommend/spots?currentSpotIdx=' + SPOT_IDX_REC)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var loadMsg  = document.getElementById('recLoadingMsg');
+        var grid     = document.getElementById('recGrid');
+        var emptyMsg = document.getElementById('recEmptyMsg');
+
+        if (!data.success || !data.spots || data.spots.length === 0) {
+          if (loadMsg)  loadMsg.style.display  = 'none';
+          if (emptyMsg) emptyMsg.style.display = 'block';
+          return;
+        }
+        /* 인기 추천 응답이면 섹션 제목 변경 */
+        var title = document.getElementById('aiRecTitle');
+        var desc  = document.getElementById('aiRecDesc');
+        if (data.isTrending) {
+          if (title) title.textContent = AI_TRENDING_TITLE;
+          if (desc)  desc.textContent  = AI_TRENDING_DESC;
+        } else {
+          if (title) title.textContent = AI_DEFAULT_TITLE;
+          if (desc)  desc.textContent = AI_DEFAULT_DESC;
+        }
+        if (grid) {
+          grid.innerHTML     = data.spots.map(buildRecCard).join('');
+          grid.style.display = '';
+        }
+        if (loadMsg) loadMsg.style.display = 'none';
+        if (emptyMsg) emptyMsg.style.display = 'none';
+      })
+      .catch(function() {
+        var loadMsg = document.getElementById('recLoadingMsg');
+        if (loadMsg) loadMsg.textContent = detailMessages.aiLoadFail;
+      });
+  }
+
+  /* 추천만 조용히 새로고침 (체류 기록 전송 후) */
+  function refreshRecommendations() {
+    fetch(CTX_REC + '/recommend/spots?currentSpotIdx=' + SPOT_IDX_REC)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var grid     = document.getElementById('recGrid');
+        var emptyMsg = document.getElementById('recEmptyMsg');
+        if (!data.success || !data.spots || data.spots.length === 0) return;
+        if (grid) {
+          grid.innerHTML     = data.spots.map(buildRecCard).join('');
+          grid.style.display = '';
+        }
+        if (emptyMsg) emptyMsg.style.display = 'none';
+      })
+      .catch(function() { /* 새로고침 실패는 조용히 무시 */ });
+  }
+
+  /* 페이지 로드 후 1초 뒤 최초 추천 조회 */
+  setTimeout(loadRecommendations, 1000);
+})();
+</script>
+
+
+
+
+
+<div style="position: absolute; left: 0px; top: -2px; height: 1px; overflow: hidden; visibility: hidden; width: 1px;"><span style="position: absolute; font-size: 300px; width: auto; height: auto; margin: 0px; padding: 0px; font-family: Roboto, Arial, sans-serif;">BESbswy</span></div>
+<script>window.__DEMO_BASE__="../";</script>
+<script src="../assets/demo-mock.js"></script>
+</body></html>

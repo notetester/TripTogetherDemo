@@ -1,0 +1,812 @@
+<html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="fIrcZ0du61VAUOwPaxdcsNLo73ZHZ9kuovUJiVKc4e8je7C2Heu4VSMPj2BtM4g9DzpoiOaKwhd1ULoDwZM762f_040WH4KB">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../../resources/css/common/header.css">
+    <link rel="stylesheet" href="../../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../../resources/css/common/dark-theme.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../../wallet.html">내 지갑</a>
+                    <a href="../../shop.html">아이템샵</a>
+                    <a href="../../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+
+
+  <meta charset="UTF-8">
+  <title>AI 여행 일정 생성</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f7fb;
+      color: #222;
+    }
+
+    .container {
+      width: 900px;
+      margin: 50px auto;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 40px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+    }
+
+    .sub-text {
+      margin-bottom: 30px;
+      color: #666;
+      font-size: 15px;
+    }
+
+    .error-box {
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #fff2f2;
+      color: #d93025;
+      border: 1px solid #f4c7c3;
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full {
+      grid-column: 1 / 3;
+    }
+
+    label {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #222;
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .btn-area {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn-area.full {
+      grid-column: 1 / 3;
+    }
+
+    .submit-btn {
+      border: none;
+      background: #111827;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.92;
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: #888;
+      font-size: 12px;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(17, 24, 39, 0.45);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loading-card {
+      width: 320px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    }
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #111827;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .loading-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #64748b;
+      text-decoration: none;
+      margin-bottom: 16px;
+    }
+    .back-link:hover {
+      color: #2563eb;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+
+<div class="container">
+
+  <a href="/TripTogether/courses/list" class="back-link">
+    ← 일정 목록으로 돌아가기
+  </a>
+
+  <h1>AI 여행 일정 생성</h1>
+  <div class="sub-text">
+    여행 조건을 입력하면 AI가 여행 일정 초안을 생성합니다. <br>
+    AI 여행 일정은 기본적으로 비공개 일정으로 생성됩니다. 일정 생성 후 '수정하기'에서 공개 여부를 바꿀 수 있습니다.
+  </div>
+
+  
+
+  <form id="aiPlanForm" method="post" action="/TripTogether/courses/ai/generate">
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label for="destination">여행지</label>
+        <input type="text" id="destination" name="destination" value="" placeholder="예: 제주, 부산, 도쿄">
+      </div>
+
+      <div class="form-group">
+        <label for="companion">동행</label>
+        <select id="companion" name="companion">
+          <option value="">선택해주세요</option>
+          <option value="혼자">혼자</option>
+          <option value="친구">친구</option>
+          <option value="연인">연인</option>
+          <option value="가족">가족</option>
+          <option value="부모님">부모님</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="startDate">시작일</label>
+        <input type="date" id="startDate" name="startDate" value="">
+        <div class="hint">날짜 형식: 연도-월-일</div>
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">종료일</label>
+        <input type="date" id="endDate" name="endDate" value="">
+        <div class="hint">날짜 형식: 연도-월-일</div>
+      </div>
+
+      <div class="form-group">
+        <label for="style">여행 스타일</label>
+        <select id="style" name="style">
+          <option value="">선택해주세요</option>
+          <option value="맛집 중심">맛집 중심</option>
+          <option value="감성 카페">감성 카페</option>
+          <option value="힐링 여행">힐링 여행</option>
+          <option value="액티비티">액티비티</option>
+          <option value="관광지 중심">관광지 중심</option>
+          <option value="사진/포토스팟">사진/포토스팟</option>
+          <option value="여유로운 일정">여유로운 일정</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="budget">예산</label>
+        <select id="budget" name="budget">
+          <option value="">선택해주세요</option>
+          <option value="낮음">낮음</option>
+          <option value="중간">중간</option>
+          <option value="높음">높음</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label for="requestText">추가 요청사항</label>
+        <textarea id="requestText" name="requestText" placeholder="예: 바다는 꼭 보고 싶고, 이동이 너무 길지 않았으면 좋겠어요."></textarea>
+        <div class="hint">
+          원하는 분위기, 꼭 가고 싶은 곳, 피하고 싶은 요소 등을 자유롭게 적어주세요.
+        </div>
+      </div>
+
+      <div class="btn-area full">
+        <button type="submit" class="submit-btn">AI 일정 생성</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <div class="loading-title">AI 일정 생성 중</div>
+    <div class="loading-text">
+      여행 조건을 바탕으로 일정을 만들고 있어요.<br>
+      잠시만 기다려주세요.
+    </div>
+  </div>
+</div>
+
+<script>
+  const aiPlanForm = document.getElementById('aiPlanForm');
+
+  aiPlanForm.addEventListener('submit', function () {
+    const overlay = document.getElementById('loadingOverlay');
+    const submitBtn = document.querySelector('.submit-btn');
+
+    overlay.style.display = 'flex';
+    submitBtn.disabled = true;
+    submitBtn.textContent = '생성 중...';
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../../resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+<script>window.__DEMO_BASE__="../../";</script>
+<script src="../../assets/demo-mock.js"></script>
+</body></html>

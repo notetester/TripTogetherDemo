@@ -1,0 +1,255 @@
+/* =============================================
+   TRIPTOGETHER - 다크 테마 공통 오버라이드
+   common/dark-theme.css
+
+   적용 방식:
+   - <html class="dark"> 가 걸리면 활성화
+   - FOUC 방지: header.jsp <head> 최상단 inline script가 localStorage('tt_theme')
+     값을 읽어 dark 면 html에 'dark' 클래스를 선반영함
+   - 어드민 페이지(body.sa-light)는 독자 CSS 사용하므로 이 파일과 무관
+   ============================================= */
+
+/* ===== 토글 버튼 (header.jsp 공통) ===== */
+.tt-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--gray-700);
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, transform .1s;
+}
+.tt-theme-btn:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+.tt-theme-btn:active { transform: scale(.96); }
+.tt-theme-icon { font-size: 14px; line-height: 1; }
+
+/* ===== 다크 모드 기본 ===== */
+html.dark {
+    color-scheme: dark;
+    background: #0f1115;
+}
+html.dark body {
+    background: #0f1115;
+    color: #e5e7eb;
+}
+
+/* ----- 헤더 ----- */
+html.dark header {
+    background: #151922;
+    border-bottom-color: #232935;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+}
+html.dark .nb { color: #d1d5db; }
+html.dark .nb:hover { background: #1f2432; color: #93c5fd; }
+html.dark .nb.active { background: #1e293b; color: #93c5fd; }
+html.dark .lang-sel {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .btn-out {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .btn-out:hover { border-color: #60a5fa; color: #93c5fd; }
+
+html.dark .tt-theme-btn {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #fde68a;
+}
+html.dark .tt-theme-btn:hover { background: #232935; border-color: #3b4556; }
+
+/* ----- 드롭다운 네비 ----- */
+html.dark .nb-drop-menu {
+    background: #151922;
+    border-color: #232935;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+}
+html.dark .nb-drop-menu a { color: #d1d5db; }
+html.dark .nb-drop-menu a:hover { background: #1f2432; color: #93c5fd; }
+
+html.dark .admin-mode-btn.user {
+    background: #1f2432;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .admin-mode-btn.user:hover { background: #2b3241; }
+
+/* ----- 공통 레이아웃 ----- */
+html.dark .cs.bg { background: #151922; }
+html.dark .vm { color: #cbd5e1; }
+html.dark .vm:hover { background: #1f2432; color: #93c5fd; }
+html.dark .st { color: #f1f5f9; }
+
+html.dark .tl { background: #1a1f2b; }
+html.dark .tb { color: #cbd5e1; }
+html.dark .tb.active { background: #0f1115; color: #f1f5f9; }
+
+html.dark .ft {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .ft:hover { border-color: #60a5fa; color: #93c5fd; }
+
+html.dark .ph {
+    background: #151922;
+    border-bottom-color: #232935;
+}
+
+html.dark .sinput {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .sinput::placeholder { color: #6b7280; }
+html.dark .sinput:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, .15);
+}
+
+html.dark .tag {
+    background: #1e293b;
+    color: #93c5fd;
+}
+
+html.dark .back-btn { color: #cbd5e1; }
+html.dark .back-btn:hover { color: #93c5fd; }
+
+/* ----- 챗봇 (footer 위젯) ----- */
+html.dark #chatbot-box {
+    background: #151922;
+    border-color: #232935;
+}
+
+/* 사이드바 */
+html.dark .cb-sidebar {
+    background: #0f1115;
+    border-right-color: #232935;
+}
+html.dark .cb-new-btn {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .cb-new-btn:hover {
+    border-color: #60a5fa;
+    color: #93c5fd;
+}
+html.dark .cb-new-btn--reset:hover {
+    border-color: #f87171;
+    color: #f87171;
+}
+html.dark .cb-conv-list::-webkit-scrollbar-thumb { background: #2b3241; }
+html.dark .cb-conv-item:hover { background: #1f2432; }
+html.dark .cb-conv-item.active { background: #1e293b; }
+html.dark .cb-conv-title { color: #cbd5e1; }
+html.dark .cb-conv-item.active .cb-conv-title { color: #93c5fd; }
+html.dark .cb-conv-menu { color: #64748b; }
+html.dark .cb-conv-menu:hover { background: #2b3241; color: #cbd5e1; }
+
+/* 본문 */
+html.dark .cb-body {
+    background: #0f1115;
+}
+html.dark .cb-body::-webkit-scrollbar-thumb { background: #2b3241; }
+
+/* 웰컴 박스 */
+html.dark .cb-welcome {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .cb-welcome-title { color: #f1f5f9; }
+
+/* 봇 메시지 (유저 메시지는 파란색 유지) */
+html.dark .cb-msg.bot {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark .cb-time { color: #64748b; }
+
+/* 빠른 답변 칩 */
+html.dark .cb-suggest-chip {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .cb-suggest-chip:hover {
+    background: #1e293b;
+    border-color: #60a5fa;
+    color: #93c5fd;
+}
+
+/* 푸터 + 입력창 */
+html.dark .cb-footer {
+    background: #151922;
+    border-top-color: #232935;
+}
+html.dark #cb-input {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #e5e7eb;
+}
+html.dark #cb-input::placeholder { color: #6b7280; }
+html.dark #cb-input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, .15);
+}
+
+/* ----- 알림 드롭다운 ----- */
+html.dark .noti-bell { color: #e5e7eb; }
+html.dark .noti-dropdown {
+    background: #151922;
+    border: 1px solid #232935;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+html.dark .noti-dropdown-head,
+html.dark .noti-dropdown-foot {
+    background: #1a1f2b;
+    border-color: #232935;
+}
+html.dark .noti-dropdown-title { color: #f1f5f9; }
+html.dark .noti-mark-all { color: #93c5fd; }
+html.dark .noti-row { border-bottom-color: #232935; }
+html.dark .noti-row:hover { background: #1f2432; }
+html.dark .noti-row.is-read { opacity: .65; }
+html.dark .noti-type { color: #93c5fd; }
+html.dark .noti-msg { color: #e5e7eb; }
+html.dark .noti-date { color: #9ca3af; }
+html.dark .noti-empty { color: #9ca3af; }
+html.dark .noti-dropdown-foot a { color: #93c5fd; }
+
+/* ----- 푸터 ----- */
+html.dark .site-footer { background: #0a0d13; }
+html.dark .footer-copy { color: #9ca3af; }
+html.dark .footer-inquiry-link { color: #9ca3af; }
+html.dark .footer-inquiry-link:hover { color: #f1f5f9; }
+
+/* ----- 사용자 닉네임 ----- */
+html.dark .user-nick { color: #e5e7eb; }
+
+/* ----- 햄버거 / 모바일 드로어 ----- */
+html.dark .nav-toggle:hover { background: #1f2432; }
+html.dark .nav-toggle-bar { background: #e5e7eb; }
+
+@media (max-width: 767px) {
+    html.dark header nav {
+        background: #151922;
+        border-right-color: #232935;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, .5);
+    }
+}

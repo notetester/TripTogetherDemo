@@ -1,0 +1,707 @@
+/* =============================================
+   TRIPTOGETHER - 챗봇 위젯
+   common/chatbot.css
+   ============================================= */
+
+/* ── 토글 버튼 ── */
+#chatbot-toggle {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--blue), #7c3aed);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    box-shadow: 0 4px 20px rgba(37,99,235,.4);
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+    z-index: 300;
+    border: none;
+    outline: none;
+}
+#chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(37,99,235,.5);
+}
+#chatbot-toggle.open { transform: rotate(45deg) scale(1.05); }
+
+/* 알림 뱃지 */
+#chatbot-badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    width: 18px; height: 18px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    display: none;
+}
+#chatbot-badge.show { display: flex; }
+
+/* ── 챗봇 창 ── */
+#chatbot-box {
+    position: fixed;
+    bottom: 96px;
+    right: 28px;
+    width: 360px;
+    height: 520px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 299;
+    transform-origin: bottom right;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+    transform: scale(0.85);
+    opacity: 0;
+    pointer-events: none;
+}
+#chatbot-box.open {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ── 헤더 ── */
+.cb-header {
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.cb-avatar {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+.cb-header-info { flex: 1; }
+.cb-header-name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+.cb-header-status {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: rgba(255,255,255,.75); margin-top: 2px;
+}
+.cb-dot {
+    width: 6px; height: 6px;
+    background: #4ade80; border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.6; transform:scale(.85); }
+}
+.cb-close {
+    background: none; border: none;
+    color: rgba(255,255,255,.7); cursor: pointer; font-size: 18px;
+    padding: 4px; border-radius: 6px; line-height:1;
+    transition: color .15s, background .15s;
+}
+.cb-close:hover { color:#fff; background:rgba(255,255,255,.15); }
+
+/* ── 본문 ── */
+.cb-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 14px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+}
+.cb-body::-webkit-scrollbar { width: 4px; }
+.cb-body::-webkit-scrollbar-track { background: transparent; }
+.cb-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+
+/* ── 메시지 ── */
+.cb-msg-wrap { display: flex; flex-direction: column; gap: 4px; }
+.cb-msg-wrap.user { align-items: flex-end; }
+.cb-msg-wrap.bot  { align-items: flex-start; }
+
+.cb-msg {
+    max-width: 82%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-word;
+}
+.cb-msg.user {
+    background: linear-gradient(135deg, var(--blue), #7c3aed);
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+}
+.cb-msg.bot {
+    background: #fff;
+    color: var(--gray-800);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+/* ── 링크 버튼 그룹 ── */
+.cb-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 82%;
+    align-self: flex-start;
+}
+.cb-link-row {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+.cb-link-row .cb-link-btn { flex: 1; min-width: 0; }
+.cb-link-newtab {
+    flex-shrink: 0;
+    width: 32px;
+    background: #fff;
+    border: 1.5px solid var(--blue);
+    border-radius: 10px;
+    color: var(--blue);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, color .15s, box-shadow .15s, transform .1s;
+    font-family: inherit;
+}
+.cb-link-newtab:hover {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(37,99,235,.25);
+}
+.cb-link-newtab:active { transform: scale(.96); }
+
+.cb-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1.5px solid var(--blue);
+    border-radius: 10px;
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .18s;
+    font-family: inherit;
+}
+.cb-link-btn:hover {
+    background: var(--blue);
+    color: #fff;
+    transform: translateX(3px);
+    box-shadow: 0 3px 10px rgba(37,99,235,.25);
+}
+.cb-link-icon { font-size: 15px; flex-shrink: 0; }
+
+/* ── 빠른 답변 칩 ── */
+.cb-quick-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 0;
+}
+.cb-quick-chip {
+    padding: 5px 12px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #0369a1;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+}
+.cb-quick-chip:hover {
+    background: #0369a1;
+    color: #fff;
+    border-color: #0369a1;
+}
+
+/* ── 타이핑 애니메이션 ── */
+.cb-typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px 16px 16px 4px;
+    width: fit-content;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.cb-typing span {
+    width: 7px; height: 7px;
+    background: #93c5fd;
+    border-radius: 50%;
+    animation: typingBounce 1.2s infinite;
+}
+.cb-typing span:nth-child(2) { animation-delay: .2s; }
+.cb-typing span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes typingBounce {
+    0%,60%,100% { transform: translateY(0); background: #93c5fd; }
+    30%          { transform: translateY(-6px); background: #3b82f6; }
+}
+
+/* ── 타임스탬프 ── */
+.cb-time {
+    font-size: 10px;
+    color: var(--gray-400);
+    padding: 0 4px;
+}
+
+/* ── 구분선 날짜 ── */
+.cb-date-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--gray-400);
+    margin: 4px 0;
+}
+.cb-date-divider::before,
+.cb-date-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e5e7eb;
+}
+
+/* ── 입력창 ── */
+.cb-footer {
+    border-top: 1px solid #f1f5f9;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+/* 빠른 입력 버튼바 (접혀있다가 펼침) */
+.cb-suggestions {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.cb-suggestions::-webkit-scrollbar { display: none; }
+.cb-suggest-chip {
+    padding: 4px 10px;
+    background: var(--gray-100);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s;
+    border: none; font-family: inherit;
+}
+.cb-suggest-chip:hover { background: var(--blue-light); color: var(--blue); }
+
+.cb-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 8px 12px 12px;
+}
+#cb-input {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    resize: none;
+    max-height: 80px;
+    line-height: 1.5;
+    transition: border-color .2s, box-shadow .2s;
+    overflow-y: auto;
+}
+#cb-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+#cb-send {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--blue), #7c3aed);
+    border: none; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    transition: opacity .2s, transform .2s;
+    font-size: 15px;
+    color: #fff;
+}
+#cb-send:hover { opacity: .88; transform: translateY(-1px); }
+#cb-send:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* ── 웰컴 카드 ── */
+.cb-welcome {
+    background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.6;
+}
+.cb-welcome-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 479px) {
+    #chatbot-box { width: calc(100vw - 24px); right: 12px; bottom: 80px; }
+    #chatbot-toggle { right: 16px; bottom: 16px; }
+}
+
+/* =============================================
+   대화 그룹 사이드바 (ChatGPT 스타일)
+   로그인 유저에게만 표시
+   ============================================= */
+
+/* 사이드바가 있을 때 박스 가로 확장 */
+#chatbot-box:has(#cb-sidebar) {
+    width: 520px;
+    flex-direction: row;
+}
+
+.cb-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+}
+
+.cb-sidebar {
+    width: 160px;
+    background: #f3f4f6;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.cb-new-btn {
+    margin: 10px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+}
+.cb-new-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+/* ＋새 대화 버튼 하단 형제 (현재 대화 초기화). + 새 대화와 동일 톤, hover 시 위험 강조 */
+.cb-new-btn--reset {
+    margin-top: 0;
+}
+.cb-new-btn--reset:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+.cb-new-btn--reset[hidden] { display: none; }
+
+/* 비로그인 유저용 — cb-footer 상단 (suggestions 위) 에 배치 */
+.cb-reset-inline {
+    margin: 0 12px 8px;
+    width: calc(100% - 24px);
+    align-self: center;
+}
+
+.cb-conv-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 10px 10px;
+}
+.cb-conv-list::-webkit-scrollbar { width: 4px; }
+.cb-conv-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+
+.cb-conv-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: grab;
+    margin-bottom: 2px;
+    transition: background .12s, opacity .12s;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+}
+.cb-conv-item:hover {
+    background: #e5e7eb;
+}
+.cb-conv-item.active {
+    background: #dbeafe;
+}
+.cb-conv-item.is-dragging {
+    opacity: .5;
+    cursor: grabbing;
+}
+.cb-conv-item.is-drop-before {
+    border-top-color: var(--blue);
+}
+.cb-conv-item.is-drop-after {
+    border-bottom-color: var(--blue);
+}
+
+.cb-conv-title {
+    flex: 1;
+    font-size: 12px;
+    color: var(--gray-700);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+.cb-conv-item.active .cb-conv-title {
+    color: var(--blue);
+    font-weight: 600;
+}
+
+.cb-conv-menu {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity .15s, background .15s;
+}
+.cb-conv-item:hover .cb-conv-menu {
+    opacity: 1;
+}
+.cb-conv-menu:hover {
+    background: #d1d5db;
+}
+
+/* ===== 대화 메뉴 팝오버 (이름 변경 / 삭제) ===== */
+.cb-conv-item { position: relative; }
+
+.cb-conv-pop {
+    position: absolute;
+    top: 100%;
+    right: 8px;
+    margin-top: 4px;
+    min-width: 140px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.12);
+    padding: 4px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.cb-conv-pop-item {
+    background: none;
+    border: none;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--gray-700);
+    text-align: left;
+    cursor: pointer;
+    border-radius: 5px;
+    font-family: inherit;
+    transition: background .12s, color .12s;
+}
+.cb-conv-pop-item:hover {
+    background: var(--blue-light);
+    color: var(--blue);
+}
+.cb-conv-pop-item.cb-conv-pop-danger {
+    color: #dc2626;
+}
+.cb-conv-pop-item.cb-conv-pop-danger:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.cb-conv-pop-msg {
+    font-size: 12px;
+    color: var(--gray-700);
+    padding: 8px 10px 4px;
+    line-height: 1.4;
+}
+.cb-conv-pop-actions {
+    display: flex;
+    gap: 4px;
+    padding: 0 4px 4px;
+}
+.cb-conv-pop-actions .cb-conv-pop-item { flex: 1; text-align: center; }
+
+/* ===== 대화 제목 인라인 편집 input ===== */
+.cb-conv-title-input {
+    flex: 1;
+    font-size: 12px;
+    color: var(--gray-800);
+    line-height: 1.3;
+    padding: 4px 6px;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    outline: none;
+    background: #fff;
+    font-family: inherit;
+    min-width: 0;
+}
+.cb-conv-title-input:focus {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
+}
+
+/* ===== 다크 테마 ===== */
+html.dark .cb-conv-pop {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+html.dark .cb-conv-pop-item { color: #cbd5e1; }
+html.dark .cb-conv-pop-item:hover { background: #1e293b; color: #93c5fd; }
+html.dark .cb-conv-pop-item.cb-conv-pop-danger { color: #fca5a5; }
+html.dark .cb-conv-pop-item.cb-conv-pop-danger:hover { background: #3b1d1d; color: #fecaca; }
+html.dark .cb-conv-pop-msg { color: #cbd5e1; }
+html.dark .cb-conv-title-input {
+    background: #1a1f2b;
+    color: #f1f5f9;
+    border-color: #60a5fa;
+}
+
+/* 사이드바 있을 때 반응형 */
+@media (max-width: 767px) {
+    #chatbot-box:has(#cb-sidebar) {
+        width: calc(100vw - 24px);
+    }
+    .cb-sidebar { width: 140px; }
+}
+
+/* 부적절 경고 메시지 스타일 */
+.cb-msg.bot.warn {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+/* ===== 공통 확인 모달 (챗봇 박스 내부 오버레이) ===== */
+.cb-confirm-modal {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .15s ease;
+    pointer-events: none;
+}
+.cb-confirm-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+.cb-confirm-modal[hidden] { display: none; }
+
+.cb-confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    cursor: pointer;
+}
+
+.cb-confirm-dialog {
+    position: relative;
+    width: min(280px, calc(100% - 32px));
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    padding: 18px 18px 14px;
+    transform: scale(.96);
+    transition: transform .15s ease;
+}
+.cb-confirm-modal.is-open .cb-confirm-dialog { transform: scale(1); }
+
+.cb-confirm-msg {
+    font-size: 13px;
+    color: var(--gray-800);
+    line-height: 1.5;
+    margin-bottom: 14px;
+    white-space: pre-wrap;
+}
+
+.cb-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.cb-confirm-actions button {
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+    transition: background .12s, color .12s, border-color .12s;
+}
+.cb-confirm-no {
+    background: #fff;
+    color: var(--gray-700);
+    border-color: var(--gray-200);
+}
+.cb-confirm-no:hover { background: var(--gray-100); color: var(--gray-800); }
+
+.cb-confirm-yes {
+    background: var(--blue);
+    color: #fff;
+}
+.cb-confirm-yes:hover { background: #1d4ed8; }
+.cb-confirm-yes.is-danger { background: #dc2626; }
+.cb-confirm-yes.is-danger:hover { background: #b91c1c; }
+
+/* 다크 테마 */
+html.dark .cb-confirm-dialog {
+    background: #1a1f2b;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .6);
+}
+html.dark .cb-confirm-msg { color: #f1f5f9; }
+html.dark .cb-confirm-no {
+    background: #1a1f2b;
+    border-color: #2b3241;
+    color: #cbd5e1;
+}
+html.dark .cb-confirm-no:hover { background: #232935; color: #f1f5f9; }

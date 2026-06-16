@@ -1,0 +1,2133 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="R5PmveUYLZieA_3fQDjEGxcfe5A99-jufXzXOhpA7enhKks8JvKCj4F5Sa2zYJntJBXwIyN9VvEPwIvDHhrlWC8j34vUTnkL">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../resources/css/common/header.css">
+    <link rel="stylesheet" href="../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../resources/css/community/community_detail.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../wallet.html">내 지갑</a>
+                    <a href="../shop.html">아이템샵</a>
+                    <a href="../packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+
+<div class="detail-wrap">
+
+  <button class="back-btn" onclick="location.href='../community/list.html'">
+    ← 목록으로
+  </button>
+
+  <main class="detail-main">
+
+      
+      <h1 class="detail-title">제주 3박4일 다녀온 후기 (사진 많음)</h1>
+
+      
+      <div class="detail-author-bar">
+        <div class="detail-av">
+          
+            여
+            
+          
+        </div>
+        <div class="detail-author-info">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            
+            
+              <span class="detail-author-name tt-nickname  ">여행가김철수</span>
+              
+            
+            
+          </div>
+          <span class="detail-date">
+            2026-06-14 16:06
+          </span>
+        </div>
+        <span class="detail-type-badge type-review">
+          
+            여행후기
+            
+            
+            
+          
+        </span>
+        
+          <div class="detail-actions">
+            <button class="action-btn edit-btn" onclick="location.href='../community/edit/1.html'">수정</button>
+            <button class="action-btn delete-btn" onclick="deletePost(1)">삭제</button>
+            
+          </div>
+        
+        
+      </div>
+
+      
+      
+      
+
+      
+      
+      
+
+      
+      
+        <div class="detail-tags">
+          
+            <span class="detail-tag" onclick="location.href='../community/list.html'">#제주여행</span>
+          
+            <span class="detail-tag" onclick="location.href='../community/list.html'">#사진맛집</span>
+          
+        </div>
+      
+
+      
+      <div class="detail-content">성산일출봉 일출 보려고 새벽 5시에 일어났는데 진짜 인생샷 건졌습니다. 우도 자전거 투어도 강추!</div>
+
+      
+      <div class="detail-action-bar">
+        
+          
+            <button class="like-btn " id="likeBtn" onclick="toggleLike(1)">
+              <span class="like-icon" id="likeIcon">
+                
+                  
+                  ♡
+                
+              </span>
+              <span id="likeCount">86</span>
+            </button>
+          
+          
+        
+        <span class="comment-count-badge">💬 4</span>
+        <span class="view-count-badge">👁 1243</span>
+        
+      </div>
+
+      
+      
+          
+          
+              <div class="comm-ad-banner">
+                  <div class="comm-ad-banner-inner">
+                      <span class="comm-ad-label">AD</span>
+                      <span class="comm-ad-size">970 × 90</span>
+                  </div>
+              </div>
+          
+      
+
+  </main>
+
+  
+  <section class="detail-comment-section">
+
+      
+      <div class="comm-comment-toolbar" id="commentToolbarTop">
+        <div class="comm-toolbar-left">
+          <span class="comm-comment-total">전체 댓글 {0}개</span>
+          <div class="comm-sort-btns">
+            <button class="comm-sort-btn active" data-sort="created" onclick="sortComments('created')">등록순</button>
+            <button class="comm-sort-btn" data-sort="latest" onclick="sortComments('latest')">최신순</button>
+            <button class="comm-sort-btn" data-sort="replies" onclick="sortComments('replies')">답글순</button>
+          </div>
+        </div>
+        <div class="comm-toolbar-right">
+          <button class="comm-tool-btn" onclick="scrollToPost()">본문 보기</button>
+          <button class="comm-tool-btn" id="commToggleBtnTop" onclick="toggleCommentSection()">댓글 닫기</button>
+          <button class="comm-tool-btn" onclick="refreshComments()">새로고침</button>
+        </div>
+      </div>
+
+      
+      
+
+      
+      <div id="commentListContainer">
+        <div class="comment-list">
+          
+            
+            
+              
+                
+                  
+                    
+                    
+                    
+                      
+                      
+                        <div class="comment-item" id="comment_1" style="">
+                          
+                          <div class="comment-av">
+                            
+                              박
+                              
+                            
+                          </div>
+                          
+                          
+                          <div class="comment-body-wrap ">
+                            
+                            <div class="comment-body  ">
+                              <div class="comment-top">
+                                <span class="comment-author tt-nickname  ">박민호</span>
+                                
+                                
+                                
+                                <span class="comment-date">
+                                  2026-06-15
+                                </span>
+                                
+                                
+                                  <span class="comment-author-link rpt-user-link" data-user-idx="9" data-source-type="comment" data-source-id="1" style="font-size:11px;color:var(--gray-400);cursor:pointer;text-decoration:underline;margin-right:2px;">(유저신고)</span>
+                                  <button class="report-btn" data-comment-id="1" onclick="openReportModal('comment', this.getAttribute('data-comment-id'))">⚠ 신고</button>
+                                
+                                
+                              </div>
+                              <div class="comment-text">사진 진짜 잘 찍으셨네요! 저도 다음달에 제주 가는데 참고할게요.</div>
+                              
+                              
+                              <div class="comment-actions">
+                                
+                                  
+                                    <button class="comment-like-btn" id="commentLike_1" onclick="toggleCommentLike(1, this)">
+                                      ❤ <span id="commentLikeCount_1">0</span>
+                                    </button>
+                                    <button class="reply-btn" onclick="toggleReplyInput(1)">↪ 답글</button>
+                                  
+                                  
+                                
+                              </div>
+                              
+                                <div class="reply-input-wrap hidden" id="replyInput_1">
+                                  <textarea class="reply-textarea" id="replyText_1" placeholder="답글을 입력하세요..." rows="2" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey){event.preventDefault(); submitReply(1, 1);}"></textarea>
+                                  <div class="reply-input-actions">
+                                    <button class="reply-cancel-btn" onclick="toggleReplyInput(1)">취소</button>
+                                    <button class="reply-submit-btn" onclick="submitReply(1, 1)">등록</button>
+                                  </div>
+                                </div>
+                              
+                            </div>
+                            
+                            
+                            
+                            
+                          </div>
+                        </div>
+
+                        
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+
+                      
+                    
+                  
+                
+              
+                
+                  
+                    
+                    
+                    
+                      
+                      
+                        <div class="comment-item" id="comment_2" style="">
+                          
+                          <div class="comment-av">
+                            
+                              윤
+                              
+                            
+                          </div>
+                          
+                          
+                          <div class="comment-body-wrap ">
+                            
+                            <div class="comment-body  ">
+                              <div class="comment-top">
+                                <span class="comment-author tt-nickname  ">윤서진여행</span>
+                                
+                                
+                                
+                                <span class="comment-date">
+                                  2026-06-15
+                                </span>
+                                
+                                
+                                  <span class="comment-author-link rpt-user-link" data-user-idx="12" data-source-type="comment" data-source-id="2" style="font-size:11px;color:var(--gray-400);cursor:pointer;text-decoration:underline;margin-right:2px;">(유저신고)</span>
+                                  <button class="report-btn" data-comment-id="2" onclick="openReportModal('comment', this.getAttribute('data-comment-id'))">⚠ 신고</button>
+                                
+                                
+                              </div>
+                              <div class="comment-text">우도 자전거 투어 정보 감사합니다 ㅎㅎ</div>
+                              
+                              
+                              <div class="comment-actions">
+                                
+                                  
+                                    <button class="comment-like-btn" id="commentLike_2" onclick="toggleCommentLike(2, this)">
+                                      ❤ <span id="commentLikeCount_2">0</span>
+                                    </button>
+                                    <button class="reply-btn" onclick="toggleReplyInput(2)">↪ 답글</button>
+                                  
+                                  
+                                
+                              </div>
+                              
+                                <div class="reply-input-wrap hidden" id="replyInput_2">
+                                  <textarea class="reply-textarea" id="replyText_2" placeholder="답글을 입력하세요..." rows="2" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey){event.preventDefault(); submitReply(1, 2);}"></textarea>
+                                  <div class="reply-input-actions">
+                                    <button class="reply-cancel-btn" onclick="toggleReplyInput(2)">취소</button>
+                                    <button class="reply-submit-btn" onclick="submitReply(1, 2)">등록</button>
+                                  </div>
+                                </div>
+                              
+                            </div>
+                            
+                            
+                            
+                            
+                          </div>
+                        </div>
+
+                        
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+
+                      
+                    
+                  
+                
+              
+                
+                  
+                    
+                    
+                    
+                      
+                      
+                        <div class="comment-item" id="comment_3" style="">
+                          
+                          <div class="comment-av">
+                            
+                              송
+                              
+                            
+                          </div>
+                          
+                          
+                          <div class="comment-body-wrap ">
+                            
+                            <div class="comment-body  ">
+                              <div class="comment-top">
+                                <span class="comment-author tt-nickname  ">송가을</span>
+                                
+                                
+                                
+                                <span class="comment-date">
+                                  2026-06-15
+                                </span>
+                                
+                                
+                                  <span class="comment-author-link rpt-user-link" data-user-idx="15" data-source-type="comment" data-source-id="3" style="font-size:11px;color:var(--gray-400);cursor:pointer;text-decoration:underline;margin-right:2px;">(유저신고)</span>
+                                  <button class="report-btn" data-comment-id="3" onclick="openReportModal('comment', this.getAttribute('data-comment-id'))">⚠ 신고</button>
+                                
+                                
+                              </div>
+                              <div class="comment-text">성산일출봉 일출 시간대가 언제쯤이 좋나요?</div>
+                              
+                              
+                              <div class="comment-actions">
+                                
+                                  
+                                    <button class="comment-like-btn" id="commentLike_3" onclick="toggleCommentLike(3, this)">
+                                      ❤ <span id="commentLikeCount_3">0</span>
+                                    </button>
+                                    <button class="reply-btn" onclick="toggleReplyInput(3)">↪ 답글</button>
+                                  
+                                  
+                                
+                              </div>
+                              
+                                <div class="reply-input-wrap hidden" id="replyInput_3">
+                                  <textarea class="reply-textarea" id="replyText_3" placeholder="답글을 입력하세요..." rows="2" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey){event.preventDefault(); submitReply(1, 3);}"></textarea>
+                                  <div class="reply-input-actions">
+                                    <button class="reply-cancel-btn" onclick="toggleReplyInput(3)">취소</button>
+                                    <button class="reply-submit-btn" onclick="submitReply(1, 3)">등록</button>
+                                  </div>
+                                </div>
+                              
+                            </div>
+                            
+                            
+                            
+                            
+                          </div>
+                        </div>
+
+                        
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+
+                      
+                    
+                  
+                
+              
+                
+                  
+                    
+                    
+                    
+                      
+                      
+                        <div class="comment-item" id="comment_4" style="">
+                          
+                          <div class="comment-av">
+                            
+                              여
+                              
+                            
+                          </div>
+                          
+                          
+                          <div class="comment-body-wrap ">
+                            
+                            <div class="comment-body  ">
+                              <div class="comment-top">
+                                <span class="comment-author tt-nickname  ">여행가김철수</span>
+                                
+                                
+                                
+                                <span class="comment-date">
+                                  2026-06-15
+                                </span>
+                                
+                                
+                                
+                                  <button class="comment-delete-btn" onclick="deleteComment(4)">삭제</button>
+                                
+                              </div>
+                              <div class="comment-text">@송가을 7월 기준 새벽 5시 반쯤이면 딱이에요!</div>
+                              
+                              
+                              <div class="comment-actions">
+                                
+                                  
+                                    <button class="comment-like-btn" id="commentLike_4" onclick="toggleCommentLike(4, this)">
+                                      ❤ <span id="commentLikeCount_4">0</span>
+                                    </button>
+                                    <button class="reply-btn" onclick="toggleReplyInput(4)">↪ 답글</button>
+                                  
+                                  
+                                
+                              </div>
+                              
+                                <div class="reply-input-wrap hidden" id="replyInput_4">
+                                  <textarea class="reply-textarea" id="replyText_4" placeholder="답글을 입력하세요..." rows="2" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey){event.preventDefault(); submitReply(1, 4);}"></textarea>
+                                  <div class="reply-input-actions">
+                                    <button class="reply-cancel-btn" onclick="toggleReplyInput(4)">취소</button>
+                                    <button class="reply-submit-btn" onclick="submitReply(1, 4)">등록</button>
+                                  </div>
+                                </div>
+                              
+                            </div>
+                            
+                            
+                            
+                            
+                          </div>
+                        </div>
+
+                        
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+                          
+                        
+
+                      
+                    
+                  
+                
+              
+            
+          
+        </div>
+      </div>
+
+      
+      <div class="comm-comment-pagination" id="commentPagination"></div>
+
+      
+      <div class="comm-comment-toolbar comm-comment-toolbar-bottom" id="commentToolbarBottom">
+        <div class="comm-toolbar-left">
+          <span class="comm-comment-total">전체 댓글 {0}개</span>
+          <div class="comm-sort-btns">
+            <button class="comm-sort-btn active" data-sort="created" onclick="sortComments('created')">등록순</button>
+            <button class="comm-sort-btn" data-sort="latest" onclick="sortComments('latest')">최신순</button>
+            <button class="comm-sort-btn" data-sort="replies" onclick="sortComments('replies')">답글순</button>
+          </div>
+        </div>
+        <div class="comm-toolbar-right">
+          <button class="comm-tool-btn" onclick="scrollToPost()">본문 보기</button>
+          <button class="comm-tool-btn" id="commToggleBtnBottom" onclick="toggleCommentSection()">댓글 닫기</button>
+          <button class="comm-tool-btn" onclick="refreshComments()">새로고침</button>
+        </div>
+      </div>
+
+      
+      <div class="comment-input-wrap">
+        
+          
+            <div class="comment-input-box">
+              <textarea class="comment-textarea" id="commentText" placeholder="댓글을 입력하세요..." rows="3" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey){event.preventDefault(); submitComment(1);}"></textarea>
+              <button class="comment-submit-btn" onclick="submitComment(1)">등록</button>
+            </div>
+          
+          
+        
+      </div>
+  </section>
+
+  
+  
+
+  
+  <div class="detail-bottom-section">
+    <h3 class="detail-bottom-title">🕐 최신 여행 이야기</h3>
+    
+    
+      
+      
+        <div class="detail-post-list">
+          
+            
+            <div class="post-card-wrap " data-id="12" data-href="../community/12.html">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-qna">
+                    
+                      
+                      
+                      
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        초
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">초보여행자</span>
+                    
+                    <span class="post-date">2026-06-16</span>
+                  </div>
+                  <div class="post-card-title">여행 초보인데 패키지 vs 자유여행 고민</div>
+                  <div class="post-card-content">첫 해외여행이라 패키지가 나을까요? 다들 어떻게 시작하셨는지 궁금합니다.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 12</span>
+                    <span class="post-stat">💬 3</span>
+                    <span class="post-stat">👁 312</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="3" data-href="/TripTogether/community/3">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-tip">
+                    
+                      
+                      
+                      여행팁
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        윤
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">윤서진여행</span>
+                    
+                    <span class="post-date">2026-06-15</span>
+                  </div>
+                  <div class="post-card-title">파리 자유여행 가서 루브르 100% 즐기는 법</div>
+                  <div class="post-card-content">루브르는 우선입장권 필수입니다. 모나리자 말고도 볼 게 너무 많아서 동선 정리해왔어요.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 142</span>
+                    <span class="post-stat">💬 5</span>
+                    <span class="post-stat">👁 2105</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="2" data-href="/TripTogether/community/2">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-tip">
+                    
+                      
+                      
+                      여행팁
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        박
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">박민호</span>
+                    
+                    <span class="post-date">2026-06-13</span>
+                  </div>
+                  <div class="post-card-title">부산 해운대 근처 가성비 맛집 정리</div>
+                  <div class="post-card-content">자갈치시장 회센터랑 해운대 돼지국밥 맛집 리스트 공유합니다. 현지인 추천 위주로 골랐어요.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 64</span>
+                    <span class="post-stat">💬 3</span>
+                    <span class="post-stat">👁 980</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="4" data-href="/TripTogether/community/4">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-review">
+                    
+                      여행후기
+                      
+                      
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        이
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">이영자트래블</span>
+                    
+                    <span class="post-date">2026-06-12</span>
+                  </div>
+                  <div class="post-card-title">혼자 떠난 강릉 카페투어 (힐링 후기)</div>
+                  <div class="post-card-content">안목해변에서 커피 마시면서 멍때리니까 진짜 힐링됐습니다. 혼행 입문으로 강릉 강추해요.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 44</span>
+                    <span class="post-stat">💬 2</span>
+                    <span class="post-stat">👁 540</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="5" data-href="/TripTogether/community/5">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-tip">
+                    
+                      
+                      
+                      여행팁
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        임
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">임도현</span>
+                    
+                    <span class="post-date">2026-06-11</span>
+                  </div>
+                  <div class="post-card-title">도쿄 디즈니랜드 어트랙션 공략 순서</div>
+                  <div class="post-card-content">오픈런 필수! 인기 어트랙션 패스트패스 받는 순서랑 점심 시간대 꿀팁 정리했습니다.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 98</span>
+                    <span class="post-stat">💬 3</span>
+                    <span class="post-stat">👁 1530</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="6" data-href="/TripTogether/community/6">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-review">
+                    
+                      여행후기
+                      
+                      
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        정
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">정하늘</span>
+                    
+                    <span class="post-date">2026-06-10</span>
+                  </div>
+                  <div class="post-card-title">방콕 왓아룬 노을 사진 명당 공유</div>
+                  <div class="post-card-content">강 건너편에서 찍어야 사원이랑 노을이 같이 나와요. 시간대는 오후 6시쯤이 베스트.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 52</span>
+                    <span class="post-stat">💬 2</span>
+                    <span class="post-stat">👁 760</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="7" data-href="/TripTogether/community/7">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-tip">
+                    
+                      
+                      
+                      여행팁
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        장
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">장미네VIP</span>
+                    
+                    <span class="post-date">2026-06-09</span>
+                  </div>
+                  <div class="post-card-title">유럽 3개국 2주 일정표 공유합니다</div>
+                  <div class="post-card-content">파리-로마-바르셀로나 2주 코스. 기차표 예약 팁이랑 숙소 위치 선정 기준 적어봤어요.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 160</span>
+                    <span class="post-stat">💬 4</span>
+                    <span class="post-stat">👁 1820</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="8" data-href="/TripTogether/community/8">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-review">
+                    
+                      여행후기
+                      
+                      
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        송
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">송가을</span>
+                    
+                    <span class="post-date">2026-06-08</span>
+                  </div>
+                  <div class="post-card-title">경주 벚꽃 시즌 사진 스팟 추천</div>
+                  <div class="post-card-content">보문호수랑 첨성대 야경 벚꽃이 미쳤습니다. 4월 초가 만개 시기예요.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 31</span>
+                    <span class="post-stat">💬 1</span>
+                    <span class="post-stat">👁 430</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="9" data-href="/TripTogether/community/9">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-tip">
+                    
+                      
+                      
+                      여행팁
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        여
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">여행가김철수</span>
+                    
+                    <span class="post-date">2026-06-07</span>
+                  </div>
+                  <div class="post-card-title">뉴욕 첫 자유여행 준비물 체크리스트</div>
+                  <div class="post-card-content">심카드, 교통카드(메트로), 팁 문화까지 처음 가는 분들 위해 정리했습니다.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 48</span>
+                    <span class="post-stat">💬 2</span>
+                    <span class="post-stat">👁 690</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+            
+            <div class="post-card-wrap " data-id="10" data-href="/TripTogether/community/10">
+              
+              <div class="post-card ">
+                <div class="post-card-img-wrap">
+                  
+                    
+                    
+                      <div class="post-card-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:36px;min-height:140px;">✈️</div>
+                    
+                  
+                  <span class="post-type-badge type-review">
+                    
+                      여행후기
+                      
+                      
+                      
+                    
+                  </span>
+                </div>
+                <div class="post-card-body">
+                  <div class="post-card-author">
+                    <div class="post-av">
+                      
+                        박
+                        
+                      
+                    </div>
+                    <span class="post-author-name tt-nickname  ">박민호</span>
+                    
+                    <span class="post-date">2026-06-06</span>
+                  </div>
+                  <div class="post-card-title">여수 밤바다 케이블카 야경 후기</div>
+                  <div class="post-card-content">노래 가사 그대로 낭만 그 자체였습니다. 돌산공원에서 보는 야경 강추.</div>
+                  <div class="post-card-footer">
+                    <span class="post-stat like-stat">❤ 29</span>
+                    <span class="post-stat">💬 1</span>
+                    <span class="post-stat">👁 380</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          
+        </div>
+
+        
+        
+          <div class="latest-pagination">
+            
+            
+              <a href="../community/list.html" class="latest-page-btn active">1</a>
+            
+              <a href="../community/list.html" class="latest-page-btn ">2</a>
+            
+            
+              <a href="../community/list.html" class="latest-page-btn">›</a>
+            
+          </div>
+        
+      
+    
+  </div>
+
+  
+  <div class="detail-search-wrap">
+    <form action="/TripTogether/community/list" method="get">
+      <div class="detail-search-box">
+        <select name="searchType" class="detail-search-select">
+          <option value="all">제목+내용+해시태그</option>
+          <option value="title">제목</option>
+          <option value="content">내용</option>
+          <option value="tag">해시태그</option>
+          <option value="author">글쓴이</option>
+          <option value="comment">댓글</option>
+        </select>
+        <span class="detail-search-divider"></span>
+        <input type="text" name="keyword" class="detail-search-input" placeholder="여행 이야기를 검색해보세요">
+        <button type="submit" class="detail-search-btn">🔍</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+var CTX = '/TripTogether';
+var COMMENT_CLOSE_LABEL = '댓글 닫기';
+var COMMENT_OPEN_LABEL = '댓글 영역 열기';
+var COMMUNITY_SELECTED_TEMPLATE = '{0}개 선택됨';
+var COMMUNITY_ACTION_LABELS = {
+  delete: '삭제',
+  blockUser: '아이디 차단',
+  blockIp: '아이피 차단',
+  blockBoth: '아이디+아이피 차단',
+  blockUserAndDelete: '아이디 차단+삭제',
+  blockIpAndDelete: '아이피 차단+삭제',
+  blockAndDelete: '아이디+아이피+삭제'
+};
+
+function formatCommunityMessage(template) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return template.replace(/\{(\d+)\}/g, function(_, idx) {
+    return typeof args[idx] !== 'undefined' ? args[idx] : '';
+  });
+}
+
+/* ===== 하단 카드 클릭 이동 ===== */
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.post-card-wrap[data-href]');
+  if (!card) return;
+  if (card.classList.contains('report-blurred-wrap')) {
+    card.classList.remove('report-blurred-wrap');
+    var inner = card.querySelector('.report-blurred');
+    if (inner) inner.classList.remove('report-blurred');
+    var ov = card.querySelector('.report-blurred-overlay');
+    if (ov) ov.remove();
+    return;
+  }
+  location.href = card.getAttribute('data-href');
+});
+
+/* ===== 댓글 툴바 ===== */
+var COMMENT_SORT = 'created';
+var COMMENT_PAGE = 1;
+var COMMENT_PAGE_SIZE = 10;
+var COMMENT_SECTION_OPEN = true;
+
+function sortComments(sort) {
+  COMMENT_SORT = sort;
+  COMMENT_PAGE = 1;
+  document.querySelectorAll('.comm-sort-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.sort === sort);
+  });
+  refreshComments();
+}
+
+function refreshComments() {
+  fetch(CTX + '/community/1/comments?sort=' + COMMENT_SORT, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(res) { return res.text(); })
+  .then(function(html) {
+    document.getElementById('commentListContainer').innerHTML = html;
+    var countEl = document.getElementById('ajaxCommentCount');
+    if (countEl) {
+      var n = countEl.textContent.trim();
+      document.querySelectorAll('.comm-comment-count-val').forEach(function(el) { el.textContent = n; });
+    }
+    COMMENT_PAGE = 1;
+    initCommentPagination();
+  });
+}
+
+function toggleCommentSection() {
+  var container = document.getElementById('commentListContainer');
+  var pagination = document.getElementById('commentPagination');
+  COMMENT_SECTION_OPEN = !COMMENT_SECTION_OPEN;
+  container.style.display = COMMENT_SECTION_OPEN ? '' : 'none';
+  if (pagination) pagination.style.display = COMMENT_SECTION_OPEN ? '' : 'none';
+  var label = COMMENT_SECTION_OPEN ? COMMENT_CLOSE_LABEL : COMMENT_OPEN_LABEL;
+  document.getElementById('commToggleBtnTop').textContent = label;
+  document.getElementById('commToggleBtnBottom').textContent = label;
+}
+
+function scrollToPost() {
+  var main = document.querySelector('.detail-main');
+  if (main) main.scrollIntoView({ behavior: 'smooth' });
+}
+
+function initCommentPagination() {
+  var container = document.querySelector('#commentListContainer .comment-list');
+  if (!container) return;
+  var allChildren = Array.from(container.children);
+  var groups = [];
+  var currentGroup = null;
+  allChildren.forEach(function(el) {
+    if (el.classList.contains('comment-item') && !el.classList.contains('reply-item')) {
+      currentGroup = [el];
+      groups.push(currentGroup);
+    } else if (el.classList.contains('reply-item') && currentGroup) {
+      currentGroup.push(el);
+    }
+  });
+  var total = groups.length;
+  var totalPages = Math.max(1, Math.ceil(total / COMMENT_PAGE_SIZE));
+  allChildren.forEach(function(el) { el.style.display = 'none'; });
+  var start = (COMMENT_PAGE - 1) * COMMENT_PAGE_SIZE;
+  var end = Math.min(start + COMMENT_PAGE_SIZE, total);
+  groups.slice(start, end).forEach(function(group) {
+    group.forEach(function(el) { el.style.display = ''; });
+  });
+  if (total === 0) {
+    var emptyEl = container.querySelector('.comment-empty');
+    if (emptyEl) emptyEl.style.display = '';
+  }
+  renderCommentPagination(totalPages);
+}
+
+function renderCommentPagination(totalPages) {
+  var html = '';
+  if (totalPages > 1) {
+    if (COMMENT_PAGE > 1) html += '<button class="comm-page-btn" onclick="goCommentPage(' + (COMMENT_PAGE - 1) + ')">&#8249;</button>';
+    for (var i = 1; i <= totalPages; i++) {
+      html += '<button class="comm-page-btn' + (i === COMMENT_PAGE ? ' active' : '') + '" onclick="goCommentPage(' + i + ')">' + i + '</button>';
+    }
+    if (COMMENT_PAGE < totalPages) html += '<button class="comm-page-btn" onclick="goCommentPage(' + (COMMENT_PAGE + 1) + ')">&#8250;</button>';
+  }
+  document.getElementById('commentPagination').innerHTML = html;
+}
+
+function goCommentPage(page) {
+  COMMENT_PAGE = page;
+  initCommentPagination();
+  document.getElementById('commentToolbarTop').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.addEventListener('DOMContentLoaded', function() { initCommentPagination(); });
+
+
+function toggleLike(postId) {
+  fetch(CTX + '/community/' + postId + '/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var btn = document.getElementById('likeBtn');
+    var icon = document.getElementById('likeIcon');
+    var count = document.getElementById('likeCount');
+    btn.classList.toggle('liked', data.liked);
+    icon.innerHTML = data.liked ? '&#10084;' : '&#9825;';
+    count.textContent = data.likeCount;
+  });
+}
+
+function submitComment(postId) {
+  var text = document.getElementById('commentText').value.trim();
+  if (!text) return;
+  var body = 'content=' + encodeURIComponent(text);
+  fetch(CTX + '/community/' + postId + '/comment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: body
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) location.reload();
+    else alert(data.message || '댓글 작성에 실패했습니다.');
+  });
+}
+
+function deleteComment(commentId) {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  fetch(CTX + '/community/comment/' + commentId, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { if (res.ok) location.reload(); });
+}
+
+function deletePost(postId) {
+  if (!confirm('게시글을 삭제하시겠습니까?')) return;
+  fetch(CTX + '/community/' + postId, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { if (res.ok) location.href = CTX + '/community/list'; });
+}
+
+function acceptComment(postId, commentId) {
+  if (!confirm('이 댓글을 채택하시겠습니까? 채택 후에는 변경할 수 없어요.')) return;
+  fetch(CTX + '/community/' + postId + '/accept/' + commentId, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) location.reload();
+    else alert(data.message || '채택 중 오류가 발생했습니다.');
+  });
+}
+
+function toggleReplyInput(commentId) {
+  var wrap = document.getElementById('replyInput_' + commentId);
+  wrap.classList.toggle('hidden');
+  if (!wrap.classList.contains('hidden')) document.getElementById('replyText_' + commentId).focus();
+}
+
+function submitReply(postId, commentId) {
+  var text = document.getElementById('replyText_' + commentId).value.trim();
+  if (!text) return;
+  var body = 'content=' + encodeURIComponent(text);
+  fetch(CTX + '/community/' + postId + '/comment/' + commentId + '/reply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: body
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) location.reload();
+    else alert(data.message || '답글 작성에 실패했습니다.');
+  });
+}
+
+function toggleCommentLike(commentId, btn) {
+  fetch(CTX + '/community/comment/' + commentId + '/like', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    document.getElementById('commentLikeCount_' + commentId).textContent = data.likeCount;
+    btn.style.color = data.liked ? '#ef4444' : '';
+  });
+}
+
+function openReportModal(targetType, targetId) {
+    document.getElementById('rptTargetType').value = targetType;
+    document.getElementById('rptTargetId').value   = targetId;
+    document.getElementById('rptReason').value      = '';
+    document.getElementById('rptDescription').value = '';
+    document.getElementById('rptReasonMsg').textContent = '';
+    document.getElementById('rpt-modal').style.display = 'flex';
+}
+
+function blockUser(userIdx) {
+  if (!confirm('이 유저를 차단하시겠습니까? 차단해제 시까지 해당 유저의 글/댓글이 블라인드 처리됩니다.')) return;
+  fetch(CTX + '/community/user/' + userIdx + '/block', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('차단되었습니다.'); location.reload(); }
+    else alert(data.message || '차단 중 오류가 발생했습니다.');
+  });
+}
+
+function unblockUser(userIdx) {
+  if (!confirm('이 유저의 차단을 해제하시겠습니까?')) return;
+  fetch(CTX + '/community/user/' + userIdx + '/unblock', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('차단이 해제되었습니다.'); location.reload(); }
+    else alert(data.message || '차단 해제 중 오류가 발생했습니다.');
+  });
+}
+
+function blockPost(postId) {
+  if (!confirm('이 게시글을 차단하시겠습니까?')) return;
+  fetch(CTX + '/community/' + postId + '/block', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('게시글이 차단되었습니다.'); location.reload(); }
+    else alert(data.message || '차단에 실패했습니다.');
+  });
+}
+
+function unblockPost(postId) {
+  if (!confirm('이 게시글의 차단을 해제하시겠습니까?')) return;
+  fetch(CTX + '/community/' + postId + '/unblock', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('게시글 차단이 해제되었습니다.'); location.reload(); }
+    else alert(data.message || '차단 해제에 실패했습니다.');
+  });
+}
+
+function blockComment(commentId) {
+  if (!confirm('이 댓글을 차단하시겠습니까?')) return;
+  fetch(CTX + '/community/comment/' + commentId + '/block', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('댓글이 차단되었습니다.'); location.reload(); }
+    else alert(data.message || '차단에 실패했습니다.');
+  });
+}
+
+function unblockComment(commentId) {
+  if (!confirm('이 댓글의 차단을 해제하시겠습니까?')) return;
+  fetch(CTX + '/community/comment/' + commentId + '/unblock', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) { alert('댓글 차단이 해제되었습니다.'); location.reload(); }
+    else alert(data.message || '차단 해제에 실패했습니다.');
+  });
+}
+
+/* ===== 어드민 댓글 일괄 처리 ===== */
+(function () {
+    var chkAll     = document.getElementById('chkAllComment');
+    var countLabel = document.getElementById('selectedCommentCount');
+    if (!chkAll) return;
+
+    function getChecked() {
+        return Array.from(document.querySelectorAll('.comm-admin-comment-chk:checked'));
+    }
+
+    function updateCount() {
+        countLabel.textContent = formatCommunityMessage(COMMUNITY_SELECTED_TEMPLATE, getChecked().length);
+    }
+
+    chkAll.addEventListener('change', function () {
+        document.querySelectorAll('.comm-admin-comment-chk').forEach(function (c) {
+            c.checked = chkAll.checked;
+        });
+        updateCount();
+    });
+
+    document.addEventListener('change', function (e) {
+        if (e.target.classList.contains('comm-admin-comment-chk')) {
+            if (!e.target.checked) chkAll.checked = false;
+            updateCount();
+        }
+    });
+
+})();
+
+window.doBulkCommentAction = function (action) {
+    var checked = Array.from(document.querySelectorAll('.comm-admin-comment-chk:checked'));
+    if (checked.length === 0) { alert('선택된 댓글이 없습니다.'); return; }
+    if (!confirm(formatCommunityMessage('{0}개 댓글에 대해 [{1}] 을(를) 실행하시겠습니까?', checked.length, COMMUNITY_ACTION_LABELS[action] || ''))) return;
+
+    var commentIds = checked.map(function (c) { return c.getAttribute('data-id'); });
+    var params     = new URLSearchParams();
+    params.append('action', action);
+    commentIds.forEach(function (id) { params.append('commentIds', id); });
+
+    fetch(CTX + '/community/admin/bulk/comment', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body:    params.toString()
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success) { alert('처리가 완료되었습니다.'); location.reload(); }
+        else alert(formatCommunityMessage('처리 중 오류가 발생했습니다: {0}', (data.message || '')));
+    })
+    .catch(function () { alert('요청 중 오류가 발생했습니다.'); });
+};
+
+/* ===== 추천/최신 섹션 어드민 ===== */
+function adminDeletePost(event, postId) {
+  event.stopPropagation();
+  if (!confirm('게시글을 삭제하시겠습니까?')) return;
+  fetch(CTX + '/community/' + postId, {
+    method: 'DELETE', headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }).then(function(res) {
+    if (res.ok) location.reload();
+    else alert('삭제에 실패했습니다.');
+  });
+}
+
+(function() {
+  var sections = [
+    { chkAllId: 'chkAllRelated', cls: '.comm-admin-related-chk', countId: 'selectedRelatedCount' },
+    { chkAllId: 'chkAllLatest',  cls: '.comm-admin-latest-chk',  countId: 'selectedLatestCount'  }
+  ];
+  sections.forEach(function(s) {
+    var chkAll = document.getElementById(s.chkAllId);
+    if (!chkAll) return;
+    var countLabel = document.getElementById(s.countId);
+    function updateCount() {
+      countLabel.textContent = formatCommunityMessage(COMMUNITY_SELECTED_TEMPLATE, document.querySelectorAll(s.cls + ':checked').length);
+    }
+    chkAll.addEventListener('change', function() {
+      document.querySelectorAll(s.cls).forEach(function(c) { c.checked = chkAll.checked; });
+      updateCount();
+    });
+    document.addEventListener('change', function(e) {
+      if (e.target.matches(s.cls)) {
+        if (!e.target.checked) chkAll.checked = false;
+        updateCount();
+      }
+    });
+  });
+})();
+
+window.doBulkPostAction = function(section, action) {
+  var cls = section === 'related' ? '.comm-admin-related-chk' : '.comm-admin-latest-chk';
+  var checked = Array.from(document.querySelectorAll(cls + ':checked'));
+  if (checked.length === 0) { alert('선택된 게시글이 없습니다.'); return; }
+  if (!confirm(formatCommunityMessage('{0}개 게시글에 대해 [{1}] 을(를) 실행하시겠습니까?', checked.length, COMMUNITY_ACTION_LABELS[action] || ''))) return;
+  var params = new URLSearchParams();
+  params.append('action', action);
+  checked.forEach(function(c) { params.append('postIds', c.getAttribute('data-id')); });
+  fetch(CTX + '/community/admin/bulk', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
+    body: params.toString()
+  }).then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) { alert('처리가 완료되었습니다.'); location.reload(); }
+      else alert(formatCommunityMessage('처리 중 오류가 발생했습니다: {0}', (data.message || '')));
+    }).catch(function() { alert('요청 중 오류가 발생했습니다.'); });
+};
+
+function adminDeleteComment(event, commentId) {
+  event.stopPropagation();
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  fetch(CTX + '/community/comment/' + commentId, {
+    method: 'DELETE',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(res) { if (res.ok) location.reload(); });
+}
+
+function adminClearPostBlur(event, postId) {
+  event.stopPropagation();
+  if (!confirm('이 콘텐츠의 BLUR를 해제하시겠습니까?')) return;
+  fetch(CTX + '/community/' + postId + '/clear-blur', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(res) {
+    if (res.ok) location.reload();
+    else alert('BLUR 해제에 실패했습니다.');
+  });
+}
+
+function adminClearCommentBlur(event, commentId) {
+  event.stopPropagation();
+  if (!confirm('이 콘텐츠의 BLUR를 해제하시겠습니까?')) return;
+  fetch(CTX + '/community/comment/' + commentId + '/clear-blur', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(res) {
+    if (res.ok) location.reload();
+    else alert('BLUR 해제에 실패했습니다.');
+  });
+}
+
+function openUserReportModal(targetUserIdx, sourceType, sourceId) {
+    document.getElementById('rptUserTargetIdx').value    = targetUserIdx;
+    document.getElementById('rptUserSourceType').value   = sourceType || '';
+    document.getElementById('rptUserSourceId').value     = sourceId   || '';
+    document.getElementById('rptUserDescription').value  = '';
+    document.getElementById('rptUserDescMsg').textContent = '';
+    document.getElementById('rpt-user-modal').style.display = 'flex';
+}
+
+function removeReportBlurComment(overlay) {
+  var wrap = overlay.closest('.report-blurred-wrap');
+  wrap.classList.remove('report-blurred-wrap');
+  wrap.querySelector('.report-blurred').classList.remove('report-blurred');
+  overlay.remove();
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.report-blurred-wrap').forEach(function(wrap) {
+        wrap.addEventListener('click', function() {
+            var overlay = wrap.querySelector('.report-blurred-overlay');
+            if (overlay) removeReportBlurComment(overlay);
+        });
+    });
+});
+
+/* =============================================
+   신고 모달 / 유저 신고 모달 초기화
+   (모달 HTML이 스크립트 아래에 있으므로 DOMContentLoaded 후 바인딩)
+   ============================================= */
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── 신고 모달 (게시글/댓글) ── */
+    var rptModal     = document.getElementById('rpt-modal');
+    var rptSubmitBtn = document.getElementById('rptSubmitBtn');
+    var rptCancelBtn = document.getElementById('rptCancelBtn');
+    var rptReasonSel = document.getElementById('rptReason');
+    var rptReasonMsg = document.getElementById('rptReasonMsg');
+
+    if (rptModal) {
+        rptCancelBtn.addEventListener('click', function () {
+            rptModal.style.display = 'none';
+        });
+        rptModal.addEventListener('click', function (e) {
+            if (e.target === rptModal) rptModal.style.display = 'none';
+        });
+        rptSubmitBtn.addEventListener('click', function () {
+            var targetType  = document.getElementById('rptTargetType').value;
+            var targetId    = document.getElementById('rptTargetId').value;
+            var reason      = rptReasonSel.value;
+            var description = document.getElementById('rptDescription').value.trim();
+
+            if (!reason) {
+                rptReasonMsg.textContent = '신고 사유를 선택해주세요.';
+                rptReasonMsg.style.color = '#ef4444';
+                return;
+            }
+            rptReasonMsg.textContent = '';
+
+            rptSubmitBtn.disabled = true;
+            fetch(CTX + '/report/' + targetType + '/' + targetId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'reason=' + encodeURIComponent(reason) + '&description=' + encodeURIComponent(description)
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                rptModal.style.display = 'none';
+                alert(data.message || '신고가 접수되었습니다.');
+            })
+            .catch(function () { alert('요청 중 오류가 발생했습니다.'); })
+            .finally(function () { rptSubmitBtn.disabled = false; });
+        });
+    }
+
+    /* ── 유저 신고 모달 ── */
+    var rptUserModal     = document.getElementById('rpt-user-modal');
+    var rptUserSubmitBtn = document.getElementById('rptUserSubmitBtn');
+    var rptUserCancelBtn = document.getElementById('rptUserCancelBtn');
+    var rptUserDescArea  = document.getElementById('rptUserDescription');
+    var rptUserDescMsg   = document.getElementById('rptUserDescMsg');
+
+    if (rptUserModal) {
+        rptUserCancelBtn.addEventListener('click', function () {
+            rptUserModal.style.display = 'none';
+        });
+        rptUserModal.addEventListener('click', function (e) {
+            if (e.target === rptUserModal) rptUserModal.style.display = 'none';
+        });
+        rptUserSubmitBtn.addEventListener('click', function () {
+            var targetUserIdx = document.getElementById('rptUserTargetIdx').value;
+            var sourceType    = document.getElementById('rptUserSourceType').value;
+            var sourceId      = document.getElementById('rptUserSourceId').value;
+            var description   = rptUserDescArea.value.trim();
+
+            if (description.length < 10) {
+                rptUserDescMsg.textContent = '신고 사유를 10자 이상 입력해주세요.';
+                rptUserDescMsg.style.color = '#ef4444';
+                return;
+            }
+            rptUserDescMsg.textContent = '';
+
+            var body = 'description=' + encodeURIComponent(description);
+            if (sourceType) body += '&sourceType=' + encodeURIComponent(sourceType);
+            if (sourceId)   body += '&sourceId='   + encodeURIComponent(sourceId);
+
+            rptUserSubmitBtn.disabled = true;
+            fetch(CTX + '/report/user/' + targetUserIdx, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                rptUserModal.style.display = 'none';
+                alert(data.message || '신고가 접수되었습니다.');
+            })
+            .catch(function () { alert('요청 중 오류가 발생했습니다.'); })
+            .finally(function () { rptUserSubmitBtn.disabled = false; });
+        });
+    }
+
+    /* ── 유저 신고 링크 클릭 핸들러 (이벤트 위임 — AJAX 교체 후에도 동작) ── */
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest('.rpt-user-link[data-user-idx]');
+        if (!el) return;
+        e.stopPropagation();
+        openUserReportModal(
+            el.getAttribute('data-user-idx'),
+            el.getAttribute('data-source-type'),
+            el.getAttribute('data-source-id')
+        );
+    });
+
+});
+</script>
+
+
+<div id="rpt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:320px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:20px;">⚠ 신고하기</div>
+    <input type="hidden" id="rptTargetType" value="">
+    <input type="hidden" id="rptTargetId" value="">
+
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:6px;">신고 사유 <span style="color:#ef4444;">*</span></label>
+      <select id="rptReason" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;">
+        <option value="">선택해주세요</option>
+        <option value="spam">스팸/광고</option>
+        <option value="abuse">욕설/비방</option>
+        <option value="privacy">개인정보 노출</option>
+        <option value="adult">음란물</option>
+        <option value="illegal">불법 정보</option>
+        <option value="other">기타</option>
+      </select>
+      <div id="rptReasonMsg" style="font-size:12px;min-height:16px;margin-top:4px;"></div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:6px;">상세 사유 (선택)</label>
+      <textarea id="rptDescription" rows="4" placeholder="상세 사유를 입력해주세요..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button id="rptCancelBtn" style="padding:9px 20px;border-radius:8px;background:var(--gray-100);color:var(--gray-600);border:none;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;">취소</button>
+      <button id="rptSubmitBtn" style="padding:9px 20px;border-radius:8px;background:#ef4444;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">신고하기</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="rpt-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:320px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:8px;">🚫 유저 신고</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">신고 사유를 상세히 적어주세요 (최소 10자)</div>
+    <input type="hidden" id="rptUserTargetIdx" value="">
+    <input type="hidden" id="rptUserSourceType" value="">
+    <input type="hidden" id="rptUserSourceId" value="">
+
+    <div style="margin-bottom:20px;">
+      <textarea id="rptUserDescription" rows="5" placeholder="신고 사유를 입력해주세요..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:14px;color:var(--gray-800);outline:none;resize:vertical;"></textarea>
+      <div id="rptUserDescMsg" style="font-size:12px;min-height:16px;margin-top:4px;"></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button id="rptUserCancelBtn" style="padding:9px 20px;border-radius:8px;background:var(--gray-100);color:var(--gray-600);border:none;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;">취소</button>
+      <button id="rptUserSubmitBtn" style="padding:9px 20px;border-radius:8px;background:#ef4444;color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">신고하기</button>
+    </div>
+  </div>
+</div>
+
+<script>window.AD_TRACKER_CTX = '/TripTogether';</script>
+<script src="../resources/js/common/ad-impression.js" defer=""></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="../resources/js/common/chatbot.js" defer=""></script>
+
+
+
+
+<script>window.__DEMO_BASE__="../";</script>
+<script src="../assets/demo-mock.js"></script>
+</body></html>

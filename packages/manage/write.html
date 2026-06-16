@@ -1,0 +1,467 @@
+<!DOCTYPE html><html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="jcV0PM10XZa-KmmExKCc_2FJsd44fdzF3MceU_AGvTvnnpOJuvBAC65CPK6THw_noo2ozQJ6nOcPTL7o6qQuMpE3ilmBqKS_">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="../../TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../resources/css/common/reset.css">
+    <link rel="stylesheet" href="../../resources/css/common/variables.css">
+    <link rel="stylesheet" href="../../resources/css/common/layout.css">
+    <link rel="stylesheet" href="../../resources/css/common/header.css">
+    <link rel="stylesheet" href="../../resources/css/common/notification.css">
+    <link rel="stylesheet" href="../../resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="../../resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="../../resources/css/packages/packages.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='../../index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='../../explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="../../courses.html">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../../community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="../../wallet.html">내 지갑</a>
+                    <a href="../../shop.html">아이템샵</a>
+                    <a href="../../packages.html">패키지</a>
+                    
+                        <a href="../../packages/manage.html">패키지 관리</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='../../mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                        <div class="noti-empty">새로운 알림이 없어요.</div>
+                                    
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="../../mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">제주드림투어</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="../../resources/js/common/notification.js" defer=""></script>
+
+
+
+
+<main class="pkg-wrap">
+    <section class="pkg-hero pkg-hero--form">
+        <div>
+            <p class="pkg-eyebrow">패키지 폼</p>
+            <h1>
+                
+                    
+                    
+                    패키지 등록
+                
+            </h1>
+            <p>
+                
+                    
+                    승인 요청 전까지는 임시 저장 상태로 내용을 다듬을 수 있습니다.
+                
+            </p>
+        </div>
+        <a class="pkg-ghost-link" href="../../packages/manage.html">
+            목록으로
+        </a>
+    </section>
+
+    <section class="pkg-panel pkg-form-panel">
+        
+
+        
+            
+            
+                
+            
+        
+
+        <form class="pkg-form" method="post" action="/TripTogether/packages/manage/write" enctype="multipart/form-data">
+            <div class="pkg-form-grid">
+                <label class="pkg-field pkg-field--wide">
+                    <span>연결 여행지 <em>*</em></span>
+                    <select name="spotIdx" required="">
+                        <option value="">여행지를 선택해 주세요</option>
+                        
+                            <option value="5">
+                                [asia] 강릉 안목해변 카페거리
+                            </option>
+                        
+                            <option value="3">
+                                [asia] 경주 불국사
+                            </option>
+                        
+                            <option value="8">
+                                [asia] 도쿄 시부야
+                            </option>
+                        
+                            <option value="9">
+                                [asia] 방콕 왓아룬
+                            </option>
+                        
+                            <option value="2">
+                                [asia] 부산 해운대 해수욕장
+                            </option>
+                        
+                            <option value="4">
+                                [asia] 서울 경복궁
+                            </option>
+                        
+                            <option value="6">
+                                [asia] 여수 밤바다
+                            </option>
+                        
+                            <option value="1">
+                                [asia] 제주 성산일출봉
+                            </option>
+                        
+                            <option value="7">
+                                [europe] 파리 에펠탑
+                            </option>
+                        
+                            <option value="10">
+                                [north_america] 뉴욕 센트럴파크
+                            </option>
+                        
+                    </select>
+                    <small>패키지는 반드시 기존 여행지 하나와 연결되어야 합니다.</small>
+                </label>
+
+                <label class="pkg-field pkg-field--wide">
+                    <span>패키지 제목 <em>*</em></span>
+                    <input type="text" name="packageTitle" maxlength="150" required="" value="" placeholder="예: 도쿄 야경 미식 3일 패키지">
+                </label>
+
+                <label class="pkg-field pkg-field--wide">
+                    <span>짧은 소개</span>
+                    <input type="text" name="packageSummary" maxlength="300" value="" placeholder="패키지 카드에 노출되는 한 줄 소개">
+                </label>
+
+                <label class="pkg-field">
+                    <span>가격 <em>*</em></span>
+                    <input type="number" name="packagePrice" min="0" required="" value="0">
+                </label>
+
+                <label class="pkg-field">
+                    <span>통화</span>
+                    <input type="text" name="currencyCode" maxlength="10" value="KRW">
+                </label>
+
+                <label class="pkg-field">
+                    <span>시작일</span>
+                    <input type="date" name="startDate" value="">
+                </label>
+
+                <label class="pkg-field">
+                    <span>종료일</span>
+                    <input type="date" name="endDate" value="">
+                </label>
+
+                <label class="pkg-field">
+                    <span>최소 인원 <em>*</em></span>
+                    <input type="number" name="minPeople" min="1" required="" value="1">
+                </label>
+
+                <label class="pkg-field">
+                    <span>최대 인원</span>
+                    <input type="number" name="maxPeople" min="1" value="">
+                </label>
+
+                <label class="pkg-field pkg-field--wide">
+                    <span>대표 이미지</span>
+                    
+                    <input type="hidden" name="mainImagePath" value="">
+                    <input type="file" name="mainImageFile" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp">
+                    <small>JPG, PNG, GIF, WEBP 형식의 이미지만 업로드할 수 있습니다.</small>
+                </label>
+
+                <label class="pkg-field pkg-field--wide">
+                    <span>상세 설명 <em>*</em></span>
+                    <textarea name="packageContent" rows="12" required="" placeholder="포함 사항, 일정, 유의사항, 취소 규정 등을 입력해 주세요."></textarea>
+                </label>
+            </div>
+
+            <div class="pkg-form-actions">
+                
+                    
+                    
+                        <button type="submit" name="action" value="DRAFT" class="pkg-secondary-btn">
+                            임시 저장
+                        </button>
+                        <button type="submit" name="action" value="PENDING" class="pkg-primary-btn">
+                            저장 후 승인 요청
+                        </button>
+                    
+                
+            </div>
+        </form>
+    </section>
+</main>
+
+
+
+
+<script>window.__DEMO_BASE__="../../";</script>
+<script src="../../assets/demo-mock.js"></script>
+</body></html>

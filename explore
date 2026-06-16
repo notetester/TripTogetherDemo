@@ -1,0 +1,4275 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="JXnZXUufVR1Zs6AUTxtfI_2jmCLXM6UCvsd6mRq6qmRqLvt7QUjuPHn5MXt0gJQsLDZrFMuXtRvhAMYv3fZM-i-DzlwIHJ4Z">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="/TripTogether/TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/reset.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/variables.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/layout.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/header.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/notification.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="/TripTogether/resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="/TripTogether/resources/css/explore/explore.css">
+    
+</head>
+<header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='/TripTogether/'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='/TripTogether/explore'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="/TripTogether/courses">여행 코스</a>
+                    <a href="/TripTogether/assistant">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='/TripTogether/community/list'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="/TripTogether/wallet">내 지갑</a>
+                    <a href="/TripTogether/shop">아이템샵</a>
+                    <a href="/TripTogether/packages">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='/TripTogether/mypage'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환"
+                    data-light-label="밝게"
+                    data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected>한국어</option>
+                    <option value="en" >English</option>
+                    <option value="ja" >日本語</option>
+                    <option value="zh" >中文</option>
+                </select>
+            </label>
+            
+                
+                
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search)">로그인</button>
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+
+
+
+<body>
+<div class="exp-header">
+  <div class="exp-header-inner">
+    <h1>&#128205; 여행지 탐색</h1>
+
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text"
+             id="searchInput"
+             class="search-input"
+             placeholder="도시, 지역, 주소로 검색"
+             value=""
+             autocomplete="off"/>
+      <button class="search-clear "
+              id="searchClear"
+              title="검색 초기화">&#215;</button>
+      
+      <ul class="suggest-dropdown" id="suggestDropdown"></ul>
+    </div>
+
+    <div class="exp-header-actions">
+      <p class="exp-header-note">찾는 여행지가 없다면, 새로운 여행지를 커뮤니티와 공유해보세요.</p>
+      
+    </div>
+
+    <div class="exp-tab-bar" role="tablist">
+      <button class="exp-tab-btn active" data-tab="all" role="tab">&#10024; 전체</button>
+      <button class="exp-tab-btn " data-tab="region" role="tab">&#128205; 지역별</button>
+      <button class="exp-tab-btn " data-tab="theme" role="tab">&#128506; 테마별</button>
+      <button class="exp-tab-btn " data-tab="rating" role="tab">&#11088; 평점순</button>
+      <button class="exp-tab-btn " data-tab="likes" role="tab">&#10084; 좋아요순</button>
+      
+      
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="exp-body">
+  <div id="tab-all" class="tab-panel active">
+    <div class="result-bar">
+      <p class="result-count">
+        <strong>10</strong>개의 여행지
+        
+      </p>
+    </div>
+    <div class="spot-grid" id="grid-all">
+      
+        
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="1">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/jeju1/800/600"
+         alt="제주 성산일출봉"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">제주 성산일출봉</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 4</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="7">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/paris1/800/600"
+         alt="파리 에펠탑"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">europe</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">파리 에펠탑</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 3</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="6">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/yeosu1/800/600"
+         alt="여수 밤바다"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">여수 밤바다</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">노래로 유명해진 여수의 밤. 돌산대교 야경과 해상 케이블카가 명물.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="10">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/newyork1/800/600"
+         alt="뉴욕 센트럴파크"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">north_america</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">뉴욕 센트럴파크</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="4">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/seoul1/800/600"
+         alt="서울 경복궁"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">서울 경복궁</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.5
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="2">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/busan1/800/600"
+         alt="부산 해운대 해수욕장"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">부산 해운대 해수욕장</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.3
+        <span class="spot-card__review-cnt">(3)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 2</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="3">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gyeongju1/800/600"
+         alt="경주 불국사"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">경주 불국사</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">신라 천년 고도의 상징. 석가탑·다보탑과 청운교가 있는 천년 사찰.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="5">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gangneung1/800/600"
+         alt="강릉 안목해변 카페거리"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">강릉 안목해변 카페거리</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">커피 향 가득한 해변 카페거리. 바다를 보며 즐기는 여유로운 동해 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="8">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/tokyo1/800/600"
+         alt="도쿄 시부야"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">도쿄 시부야</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">세계에서 가장 붐비는 교차로. 쇼핑·미식·야경을 한 번에 즐기는 도심 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="9">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/bangkok1/800/600"
+         alt="방콕 왓아룬"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">방콕 왓아룬</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">새벽 사원. 강변 노을과 어우러진 화려한 불탑이 인상적인 태국 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+        
+        
+      
+    </div>
+  </div>
+
+  <div id="tab-region" class="tab-panel ">
+    <div class="filter-row" id="regionFilters">
+      <button class="filter-btn active" data-region="">전체</button>
+      
+        <button class="filter-btn " data-region="asia">asia</button>
+      
+        <button class="filter-btn " data-region="europe">europe</button>
+      
+        <button class="filter-btn " data-region="north_america">north_america</button>
+      
+    </div>
+    <div class="result-bar">
+      <p class="result-count">
+        
+          
+          전체 지역
+        
+        , <strong>10</strong>개의 여행지
+      </p>
+    </div>
+    <div class="spot-grid" id="grid-region">
+      
+        
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="1">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/jeju1/800/600"
+         alt="제주 성산일출봉"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">제주 성산일출봉</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 4</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="7">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/paris1/800/600"
+         alt="파리 에펠탑"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">europe</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">파리 에펠탑</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 3</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="6">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/yeosu1/800/600"
+         alt="여수 밤바다"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">여수 밤바다</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">노래로 유명해진 여수의 밤. 돌산대교 야경과 해상 케이블카가 명물.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="10">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/newyork1/800/600"
+         alt="뉴욕 센트럴파크"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">north_america</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">뉴욕 센트럴파크</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="4">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/seoul1/800/600"
+         alt="서울 경복궁"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">서울 경복궁</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.5
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="2">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/busan1/800/600"
+         alt="부산 해운대 해수욕장"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">부산 해운대 해수욕장</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.3
+        <span class="spot-card__review-cnt">(3)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 2</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="3">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gyeongju1/800/600"
+         alt="경주 불국사"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">경주 불국사</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">신라 천년 고도의 상징. 석가탑·다보탑과 청운교가 있는 천년 사찰.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="5">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gangneung1/800/600"
+         alt="강릉 안목해변 카페거리"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">강릉 안목해변 카페거리</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">커피 향 가득한 해변 카페거리. 바다를 보며 즐기는 여유로운 동해 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="8">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/tokyo1/800/600"
+         alt="도쿄 시부야"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">도쿄 시부야</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">세계에서 가장 붐비는 교차로. 쇼핑·미식·야경을 한 번에 즐기는 도심 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="9">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/bangkok1/800/600"
+         alt="방콕 왓아룬"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">방콕 왓아룬</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">새벽 사원. 강변 노을과 어우러진 화려한 불탑이 인상적인 태국 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+        
+        
+      
+    </div>
+  </div>
+
+  <div id="tab-theme" class="tab-panel ">
+    <div class="filter-row" id="themeFilters">
+      <button class="filter-btn active" data-theme="">전체</button>
+      
+    </div>
+    <div class="result-bar">
+      <p class="result-count">
+        
+          
+          전체 테마
+        
+        , <strong>10</strong>개의 여행지
+      </p>
+    </div>
+    <div class="spot-grid" id="grid-theme">
+      
+        
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="1">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/jeju1/800/600"
+         alt="제주 성산일출봉"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">제주 성산일출봉</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 4</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="7">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/paris1/800/600"
+         alt="파리 에펠탑"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">europe</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">파리 에펠탑</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 3</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="6">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/yeosu1/800/600"
+         alt="여수 밤바다"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">여수 밤바다</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">노래로 유명해진 여수의 밤. 돌산대교 야경과 해상 케이블카가 명물.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="10">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/newyork1/800/600"
+         alt="뉴욕 센트럴파크"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">north_america</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">뉴욕 센트럴파크</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="4">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/seoul1/800/600"
+         alt="서울 경복궁"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">서울 경복궁</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.5
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="2">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/busan1/800/600"
+         alt="부산 해운대 해수욕장"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">부산 해운대 해수욕장</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.3
+        <span class="spot-card__review-cnt">(3)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 2</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="3">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gyeongju1/800/600"
+         alt="경주 불국사"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">경주 불국사</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">신라 천년 고도의 상징. 석가탑·다보탑과 청운교가 있는 천년 사찰.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="5">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gangneung1/800/600"
+         alt="강릉 안목해변 카페거리"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">강릉 안목해변 카페거리</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">커피 향 가득한 해변 카페거리. 바다를 보며 즐기는 여유로운 동해 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="8">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/tokyo1/800/600"
+         alt="도쿄 시부야"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">도쿄 시부야</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">세계에서 가장 붐비는 교차로. 쇼핑·미식·야경을 한 번에 즐기는 도심 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="9">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/bangkok1/800/600"
+         alt="방콕 왓아룬"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">방콕 왓아룬</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">새벽 사원. 강변 노을과 어우러진 화려한 불탑이 인상적인 태국 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+        
+        
+      
+    </div>
+  </div>
+
+  <div id="tab-rating" class="tab-panel ">
+    <div class="result-bar">
+      <p class="result-count">평점 높은 여행지: <strong>10</strong>개의 여행지</p>
+    </div>
+    <div class="spot-grid" id="grid-rating">
+      
+        
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="1">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/jeju1/800/600"
+         alt="제주 성산일출봉"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">제주 성산일출봉</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 4</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="7">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/paris1/800/600"
+         alt="파리 에펠탑"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">europe</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">파리 에펠탑</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 3</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="6">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/yeosu1/800/600"
+         alt="여수 밤바다"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">여수 밤바다</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">노래로 유명해진 여수의 밤. 돌산대교 야경과 해상 케이블카가 명물.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="10">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/newyork1/800/600"
+         alt="뉴욕 센트럴파크"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">north_america</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">뉴욕 센트럴파크</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="4">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/seoul1/800/600"
+         alt="서울 경복궁"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">서울 경복궁</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.5
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="2">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/busan1/800/600"
+         alt="부산 해운대 해수욕장"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">부산 해운대 해수욕장</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.3
+        <span class="spot-card__review-cnt">(3)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 2</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="3">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gyeongju1/800/600"
+         alt="경주 불국사"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">경주 불국사</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">신라 천년 고도의 상징. 석가탑·다보탑과 청운교가 있는 천년 사찰.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="5">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gangneung1/800/600"
+         alt="강릉 안목해변 카페거리"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">강릉 안목해변 카페거리</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">커피 향 가득한 해변 카페거리. 바다를 보며 즐기는 여유로운 동해 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="8">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/tokyo1/800/600"
+         alt="도쿄 시부야"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">도쿄 시부야</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">세계에서 가장 붐비는 교차로. 쇼핑·미식·야경을 한 번에 즐기는 도심 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="9">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/bangkok1/800/600"
+         alt="방콕 왓아룬"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">방콕 왓아룬</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">새벽 사원. 강변 노을과 어우러진 화려한 불탑이 인상적인 태국 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+        
+        
+      
+    </div>
+  </div>
+
+  <div id="tab-likes" class="tab-panel ">
+    <div class="result-bar">
+      <p class="result-count">좋아요 많은 여행지: <strong>10</strong>개의 여행지</p>
+    </div>
+    <div class="spot-grid" id="grid-likes">
+      
+        
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="1">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/jeju1/800/600"
+         alt="제주 성산일출봉"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">제주 성산일출봉</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 4</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="7">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/paris1/800/600"
+         alt="파리 에펠탑"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">europe</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">파리 에펠탑</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 3</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="6">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/yeosu1/800/600"
+         alt="여수 밤바다"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">여수 밤바다</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">노래로 유명해진 여수의 밤. 돌산대교 야경과 해상 케이블카가 명물.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="10">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/newyork1/800/600"
+         alt="뉴욕 센트럴파크"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">north_america</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">뉴욕 센트럴파크</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        5.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">마천루 속 거대한 도심 공원. 사계절 산책과 피크닉, 영화 촬영지로 유명.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="4">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/seoul1/800/600"
+         alt="서울 경복궁"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">서울 경복궁</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.5
+        <span class="spot-card__review-cnt">(2)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="2">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/busan1/800/600"
+         alt="부산 해운대 해수욕장"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">부산 해운대 해수욕장</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.3
+        <span class="spot-card__review-cnt">(3)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 2</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="3">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gyeongju1/800/600"
+         alt="경주 불국사"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">경주 불국사</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">신라 천년 고도의 상징. 석가탑·다보탑과 청운교가 있는 천년 사찰.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="5">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/gangneung1/800/600"
+         alt="강릉 안목해변 카페거리"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">강릉 안목해변 카페거리</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">커피 향 가득한 해변 카페거리. 바다를 보며 즐기는 여유로운 동해 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="8">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/tokyo1/800/600"
+         alt="도쿄 시부야"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">도쿄 시부야</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">세계에서 가장 붐비는 교차로. 쇼핑·미식·야경을 한 번에 즐기는 도심 여행.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+            
+
+
+
+
+
+﻿
+
+
+
+
+
+<div class="spot-card" data-spot-idx="9">
+
+  <div class="spot-card__img-wrap">
+    <img class="spot-card__img"
+         src="https://picsum.photos/seed/bangkok1/800/600"
+         alt="방콕 왓아룬"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80'">
+
+    <div class="spot-card__actions">
+      <button class="action-btn fav-btn "
+              type="button"
+              title="찜하기"
+              aria-label="찜하기">
+        ☆
+      </button>
+      <button class="action-btn like-btn "
+              type="button"
+              title="좋아요"
+              aria-label="좋아요">
+        🤍
+      </button>
+    </div>
+
+    
+      <span class="spot-card__region-badge">asia</span>
+    
+  </div>
+
+  <div class="spot-card__body">
+    <div class="spot-card__top">
+      <div class="spot-card__name">방콕 왓아룬</div>
+      <div class="spot-card__rating">
+        <span class="star">&#11088;</span>
+        4.0
+        <span class="spot-card__review-cnt">(1)</span>
+      </div>
+    </div>
+
+    
+      <p class="spot-card__desc">새벽 사원. 강변 노을과 어우러진 화려한 불탑이 인상적인 태국 명소.</p>
+    
+
+    <div class="spot-card__tags">
+      
+      
+        <span class="spot-tag" style="background:#fff0f0;color:#ef4444;">&#10084; 1</span>
+      
+    </div>
+  </div>
+</div>
+
+          
+        
+        
+      
+    </div>
+  </div>
+
+  
+  
+
+  
+
+  
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/TripTogether/resources/css/common/chatbot.css">
+
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="/TripTogether/inquiry/list" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+                <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset cb-reset-inline"
+                        title="현재 대화 초기화" hidden>
+                    ↻ 현재 대화 초기화
+                </button>
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: false,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="/TripTogether/resources/js/common/chatbot.js" defer></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll('input[name="tags"]');
+  const max = 4;
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", function () {
+      const checked = document.querySelectorAll('input[name="tags"]:checked');
+
+      if (checked.length > max) {
+        this.checked = false;
+        alert("\uD0DC\uADF8\uB294 \uCD5C\uB300 4\uAC1C\uAE4C\uC9C0 \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.");
+      }
+    });
+  });
+});
+
+  (function () {
+    'use strict';
+
+    const ctx = '/TripTogether';
+    const currentTab = 'all';
+    const savedRegion = '';
+    const savedTheme = '';
+    const overlay = document.getElementById('loadingOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+
+    function showLoading(on) {
+      overlay.classList.toggle('show', on);
+    }
+
+    window.addEventListener('pageshow', function () {
+      showLoading(false);
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function navigate(params) {
+      showLoading(true);
+      const q = new URLSearchParams();
+      q.set('tab', params.tab || 'all');
+      if (params.keyword && params.keyword !== '') q.set('keyword', params.keyword);
+      if (params.region && params.region !== '') q.set('region', params.region);
+      if (params.theme && params.theme !== '') q.set('theme', params.theme);
+      if (params.page && params.page > 1) q.set('page', params.page);
+      window.location.href = ctx + '/explore?' + q.toString();
+    }
+
+    function mergedParams(overrides) {
+      return Object.assign({
+        tab: currentTab,
+        keyword: searchInput.value.trim(),
+        region: savedRegion,
+        theme: savedTheme
+      }, overrides);
+    }
+
+    document.querySelectorAll('.exp-tab-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const tab = this.dataset.tab;
+        if (tab === currentTab) return;
+        navigate({ tab: tab, keyword: searchInput.value.trim() });
+      });
+    });
+
+    /* ------------------------------------------------------------
+       Suggest dropdown logic
+       - Send AJAX request when keyword length is 2 or more
+       - Render up to 7 suggestions from /explore/suggest
+       - Search immediately when the user picks a suggestion
+       ------------------------------------------------------------ */
+    const suggestDropdown = document.getElementById('suggestDropdown');
+    let searchTimer;      // debounce timer for search
+    let suggestTimer;     // debounce timer for suggestions
+    let selectedSuggestIdx = -1;  // highlighted suggestion index
+
+    /**
+     * Fetch suggestions from the server and render the dropdown.
+     * @param {string} keyword - current search keyword
+     */
+    function fetchSuggestions(keyword) {
+      // Close dropdown when the keyword is shorter than 2 characters.
+      if (!keyword || keyword.length < 2) {
+        suggestDropdown.innerHTML = '';
+        suggestDropdown.classList.remove('show');
+        return;
+      }
+
+      // Request suggestions from the server.
+      fetch(ctx + '/explore/suggest?q=' + encodeURIComponent(keyword))
+        .then(r => r.json())
+        .then(data => {
+          // Reset highlighted suggestion index.
+          selectedSuggestIdx = -1;
+
+          // Hide dropdown when there are no results.
+          if (!data || data.length === 0) {
+            suggestDropdown.innerHTML = '';
+            suggestDropdown.classList.remove('show');
+            return;
+          }
+
+          // Build suggestion items.
+          suggestDropdown.innerHTML = data.map(function(item, idx) {
+            // Highlight the matching part in the suggestion name.
+            var name = escapeHtml(item.name || '');
+            var region = escapeHtml(item.region || '');
+            var address = escapeHtml(item.address || '');
+            var highlighted = highlightMatch(name, keyword);
+
+            return '<li class="suggest-item" data-idx="' + idx + '" data-name="' + name + '">'
+              + '<span class="suggest-name">' + highlighted + '</span>'
+              + '<span class="suggest-region">' + region + (address ? ' / ' + address : '') + '</span>'
+              + '</li>';
+          }).join('');
+
+          suggestDropdown.classList.add('show');
+
+          // Register click handler for each suggestion item.
+          suggestDropdown.querySelectorAll('.suggest-item').forEach(function(li) {
+            li.addEventListener('mousedown', function(e) {
+              // Use mousedown so it runs before blur.
+              e.preventDefault();
+              var selectedName = this.dataset.name;
+              searchInput.value = selectedName;
+              suggestDropdown.classList.remove('show');
+              // Run search immediately with the selected keyword.
+              clearTimeout(searchTimer);
+              navigate(mergedParams({ keyword: selectedName, page: 1 }));
+            });
+          });
+        })
+        .catch(function() {
+          suggestDropdown.classList.remove('show');
+        });
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS.
+     */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /**
+     * Highlight the matching keyword with <mark> tags.
+     * @param {string} text - source text
+     * @param {string} keyword - keyword to highlight
+     * @returns {string} highlighted HTML string
+     */
+    function highlightMatch(text, keyword) {
+  if (!keyword) return text;
+  var escaped = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\$&');
+  var regex = new RegExp('(' + escaped + ')', 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+}
+
+    // Update suggestions on input, but do not search immediately.
+    // Search runs only on Enter or suggestion click.
+    searchInput.addEventListener('input', function () {
+      var val = this.value.trim();
+      // X 버튼 표시/숨김 토글
+      searchClear.classList.toggle('visible', this.value.length > 0);
+
+      // Refresh suggestions with a 300ms debounce.
+      clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(function() { fetchSuggestions(val); }, 300);
+    });
+
+    // Handle keyboard interaction for the suggestion dropdown.
+    searchInput.addEventListener('keydown', function (e) {
+      var items = suggestDropdown.querySelectorAll('.suggest-item');
+
+      if (e.key === 'ArrowDown') {
+        // ArrowDown: move to the next suggestion.
+        e.preventDefault();
+        selectedSuggestIdx = Math.min(selectedSuggestIdx + 1, items.length - 1);
+        updateSuggestHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        // ArrowUp: move to the previous suggestion.
+        e.preventDefault();
+        selectedSuggestIdx = Math.max(selectedSuggestIdx - 1, 0);
+        updateSuggestHighlight(items);
+      } else if (e.key === 'Enter') {
+        // Enter: use selected suggestion or current input value.
+        e.preventDefault();
+        clearTimeout(searchTimer);
+        clearTimeout(suggestTimer);
+        if (selectedSuggestIdx >= 0 && items[selectedSuggestIdx]) {
+          var selectedName = items[selectedSuggestIdx].dataset.name;
+          searchInput.value = selectedName;
+          suggestDropdown.classList.remove('show');
+          navigate(mergedParams({ keyword: selectedName, page: 1 }));
+        } else {
+          suggestDropdown.classList.remove('show');
+          navigate(mergedParams({ keyword: this.value.trim(), page: 1 }));
+        }
+      } else if (e.key === 'Escape') {
+        // Escape: close the suggestion dropdown.
+        suggestDropdown.classList.remove('show');
+        selectedSuggestIdx = -1;
+      }
+    });
+
+    /**
+     * Apply highlight class to the currently selected suggestion.
+     * @param {NodeList} items - all dropdown <li> elements
+     */
+    function updateSuggestHighlight(items) {
+      items.forEach(function(li, i) {
+        li.classList.toggle('highlighted', i === selectedSuggestIdx);
+      });
+      // Preview selected suggestion text in the search input.
+      if (selectedSuggestIdx >= 0 && items[selectedSuggestIdx]) {
+        searchInput.value = items[selectedSuggestIdx].dataset.name;
+      }
+    }
+
+    // Close dropdown when the search input loses focus.
+    searchInput.addEventListener('blur', function () {
+      // Delay to allow suggestion click handling first.
+      setTimeout(function() {
+        suggestDropdown.classList.remove('show');
+      }, 200);
+    });
+
+    // Show suggestions again on focus when the keyword is long enough.
+    searchInput.addEventListener('focus', function () {
+      if (this.value.trim().length >= 2) {
+        fetchSuggestions(this.value.trim());
+      }
+    });
+
+    // Clear search keyword and hide the suggestion dropdown.
+    searchClear.addEventListener('click', function () {
+      searchInput.value = '';
+      searchClear.classList.remove('visible');
+      suggestDropdown.classList.remove('show');
+      navigate(mergedParams({ keyword: '', page: 1 }));
+    });
+
+    document.querySelectorAll('#regionFilters .filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        navigate({ tab: 'region', region: this.dataset.region, keyword: searchInput.value.trim(), page: 1 });
+      });
+    });
+
+    document.querySelectorAll('#themeFilters .filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        navigate({ tab: 'theme', theme: this.dataset.theme, keyword: searchInput.value.trim(), page: 1 });
+      });
+    });
+
+    document.querySelectorAll('#pagination .page-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const p = parseInt(this.dataset.page, 10);
+        if (!isNaN(p)) navigate(mergedParams({ page: p }));
+      });
+    });
+
+    document.querySelectorAll('.spot-card[data-spot-idx]').forEach(card => {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('.action-btn')) return;
+        window.location.href = ctx + '/detail/' + this.dataset.spotIdx;
+      });
+    });
+
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const idx = this.closest('.spot-card').dataset.spotIdx;
+        toggleAction('/explore/favorite/' + idx, this, '\uD83D\uDCCC', '\uD83D\uDCCD', '\uCC1C \uCD94\uAC00', '\uCC1C \uCDE8\uC18C', 'favorited');
+      });
+    });
+
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const idx = this.closest('.spot-card').dataset.spotIdx;
+        toggleAction('/explore/like/' + idx, this, '\u2764', '\u2661', '\uC88B\uC544\uC694', '\uC88B\uC544\uC694 \uCDE8\uC18C', 'liked');
+      });
+    });
+
+    /**
+     * Shared handler for favorite and like actions.
+     * - Sends POST request and updates button state.
+     * - Removes a card immediately after favorite cancellation in the favorite tab.
+     */
+    function toggleAction(endpoint, btn, onIcon, offIcon, onMsg, offMsg, key) {
+      // Keep a reference to the current card before sending the request.
+      const card = btn.closest('.spot-card');
+
+      fetch(ctx + endpoint, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success) {
+            showToast('\uB85C\uADF8\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.');
+            setTimeout(() => { window.location.href = ctx + '/auth/login'; }, 1500);
+            return;
+          }
+
+          // Read the current active state from the server response.
+          const active = data[key];
+          // Update button icon and active class.
+          btn.textContent = active ? onIcon : offIcon;
+          btn.classList.toggle('active', active);
+          showToast(active ? onMsg : offMsg);
+
+          /* Remove a card immediately when favorite is canceled in the favorite tab. */
+          // key === 'favorited': favorite button action only
+          // !active: only when favorite has been canceled
+          // currentTab === 'favorite': only inside the favorite tab
+          if (key === 'favorited' && !active && currentTab === 'favorite' && card) {
+            // Apply a fade-out transition before removal.
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+
+            // Remove the card after the transition finishes.
+            setTimeout(() => {
+              card.remove();
+
+              // Update the result count with remaining cards.
+              const grid = document.getElementById('grid-favorite');
+              const remaining = grid ? grid.querySelectorAll('.spot-card').length : 0;
+
+              // Refresh the result count label.
+              const countEl = document.querySelector('#tab-favorite .result-count strong');
+              if (countEl) countEl.textContent = remaining;
+
+              // Show the empty state when there are no cards left.
+              if (remaining === 0 && grid) {
+                grid.innerHTML =
+                  '<div class="empty-state" style="grid-column:1/-1">' +
+                    '<div class="empty-icon">\u{1F4CC}</div>' +
+                    '<p>\uC544\uC9C1 \uCC1C\uD55C \uC5EC\uD589\uC9C0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.</p>' +
+                    '<p style="font-size:14px;color:var(--gray-400);margin-top:8px;">' +
+                      '\uC5EC\uD589\uC9C0 \uCE74\uB4DC\uC758 \uD540 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uCC1C\uD574\uBCF4\uC138\uC694.' +
+                    '</p>' +
+                  '</div>';
+              }
+            }, 300);
+          }
+        })
+        .catch(() => showToast('\uC694\uCCAD \uCC98\uB9AC \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.'));
+    }
+  })();
+</script>
+
+
+
+
+
+</body>
+</html>

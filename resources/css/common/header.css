@@ -1,0 +1,276 @@
+/* =============================================
+   TRIPTOGETHER - 헤더 (공통)
+   common/header.css
+   ============================================= */
+
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 로고 */
+.logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; color: #fff;
+}
+.logo-text {
+  font-size: 20px; font-weight: 600;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 네비게이션 */
+nav { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+nav > * { flex-shrink: 0; }
+.nb {
+  background: none; border: none; padding: 8px 14px; border-radius: 8px;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--gray-700);
+  cursor: pointer; transition: all .2s;
+  white-space: nowrap;
+}
+.nb:hover  { background: var(--gray-100); color: var(--blue); }
+.nb.active { color: var(--blue); background: var(--blue-light); font-weight: 600; }
+
+/* 드롭다운 네비 (플래너/쇼핑) */
+.nb-drop { position: relative; }
+.nb-drop-trigger::after {
+  content: ' \25BE';
+  font-size: 11px;
+  margin-left: 2px;
+  opacity: .7;
+}
+.nb-drop-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  padding: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .15s, transform .15s, visibility .15s;
+  z-index: 110;
+}
+.nb-drop:hover .nb-drop-menu,
+.nb-drop:focus-within .nb-drop-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.nb-drop-menu a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700);
+  text-decoration: none;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.nb-drop-menu a:hover { background: var(--gray-100); color: var(--blue); }
+
+/* 우측 영역 */
+.hr { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.hr > * { flex-shrink: 0; }
+.user-nick { white-space: nowrap; }
+.lang-sel {
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--gray-200);
+  font-family: inherit; font-size: 13px; color: var(--gray-700);
+  background: #fff; cursor: pointer;
+  white-space: nowrap;
+}
+.btn-out {
+  padding: 7px 16px; border-radius: 8px; border: 1px solid var(--gray-200);
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--gray-700);
+  background: #fff; cursor: pointer; transition: all .2s;
+  white-space: nowrap;
+}
+.btn-out:hover { border-color: var(--blue); color: var(--blue); }
+
+.admin-mode-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.admin-mode-btn.admin {
+  background: #1d4ed8;
+  color: #fff;
+}
+.admin-mode-btn.admin:hover {
+  background: #1e40af;
+}
+.admin-mode-btn.user {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+.admin-mode-btn.user:hover {
+  background: #e5e7eb;
+}
+
+/* =============================================
+   햄버거 버튼 / 드로어 백드롭 (모바일)
+   ============================================= */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-right: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.nav-toggle:hover { background: var(--gray-100); }
+.nav-toggle-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--gray-700);
+  border-radius: 2px;
+  transition: transform .2s, opacity .2s;
+}
+.nav-toggle.is-open .nav-toggle-bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle.is-open .nav-toggle-bar:nth-child(2) { opacity: 0; }
+.nav-toggle.is-open .nav-toggle-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+.nav-backdrop {
+  display: none;
+  position: fixed;
+  inset: 64px 0 0 0;
+  background: rgba(0, 0, 0, 0);
+  z-index: 99;
+  transition: background .2s ease;
+}
+.nav-backdrop.is-open {
+  display: block;
+  background: rgba(0, 0, 0, .4);
+}
+
+body.nav-lock { overflow: hidden; }
+
+/* =============================================
+   반응형 — 좁은 데스크탑/태블릿
+   ============================================= */
+@media (max-width: 1279px) {
+  .hi { padding: 0 20px; }
+  .tt-theme-label { display: none; }
+  .user-nick { display: none; }
+  .hr { gap: 8px; }
+}
+
+@media (max-width: 1199px) {
+  .hi { padding: 0 16px; }
+  nav { gap: 2px; }
+  .nb { padding: 8px 10px; font-size: 13px; }
+  .lang-sel { padding: 5px 10px; font-size: 12px; }
+}
+
+@media (max-width: 1023px) {
+  .nb { padding: 7px 8px; }
+  .lang-sel { padding: 5px 8px; font-size: 12px; }
+  .admin-mode-btn { padding: 6px 10px; font-size: 12px; }
+  .btn-out { padding: 6px 12px; font-size: 13px; }
+}
+
+/* =============================================
+   반응형 — 모바일 (드로어 모드)
+   ============================================= */
+@media (max-width: 767px) {
+  .nav-toggle { display: flex; }
+
+  nav {
+    position: fixed;
+    top: 64px;
+    left: -100%;
+    width: min(80vw, 320px);
+    height: calc(100dvh - 64px);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 16px 12px 32px;
+    overflow-y: auto;
+    border-right: 1px solid var(--gray-200);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, .08);
+    transition: left .25s ease;
+    z-index: 100;
+  }
+  nav.is-open { left: 0; }
+
+  nav .nb {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    text-align: left;
+    border-radius: 8px;
+  }
+
+  .nb-drop { width: 100%; }
+  .nb-drop-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .nb-drop-trigger::after {
+    content: '▾';
+    margin-left: auto;
+    transition: transform .2s;
+  }
+  .nb-drop.is-open .nb-drop-trigger::after { transform: rotate(180deg); }
+
+  .nb-drop-menu {
+    position: static;
+    display: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    min-width: 0;
+    box-shadow: none;
+    border: none;
+    padding: 2px 0 6px 12px;
+    background: transparent;
+  }
+  .nb-drop.is-open .nb-drop-menu { display: block; }
+  .nb-drop-menu a { padding: 10px 12px; font-size: 14px; }
+
+  .admin-mode-btn {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .hr { gap: 6px; }
+  .lang-sel { padding: 4px 6px; font-size: 12px; max-width: 90px; }
+  .btn-out { padding: 6px 10px; font-size: 12px; }
+  .tt-theme-btn { padding: 5px 8px; }
+}
+
+@media (max-width: 479px) {
+  .logo-text { display: none; }
+  .hi { padding: 0 12px; }
+  .hr { gap: 4px; }
+  .lang-sel { max-width: 72px; }
+}
