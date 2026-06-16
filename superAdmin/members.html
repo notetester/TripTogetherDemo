@@ -1,1483 +1,1087 @@
-<html><head>
+<!DOCTYPE html><html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <meta name="_csrf" content="T6THnlnnMwYDUCUE2ZW_10NjY8KFhCHE2Llf8Ke11TCjVPqRfcX3_z2FB2AuZB1gu7iL4HpQTqPmtUPpvYk6wZ6D4AKUbM2j">
-    <meta name="_csrf_header" content="X-CSRF-TOKEN">
-    <script>
-    (function () {
-        var meta = document.querySelector('meta[name="_csrf"]');
-        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
-        var token = meta ? meta.getAttribute('content') : null;
-        var header = headerMeta ? headerMeta.getAttribute('content') : null;
-        if (!token || !header) return;
-
-        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
-        var origFetch = window.fetch;
-        window.fetch = function (input, init) {
-            init = init || {};
-            var url = typeof input === 'string' ? input : (input && input.url) || '';
-            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
-            if (sameOrigin) {
-                if (init.headers instanceof Headers) {
-                    init.headers.set(header, token);
-                } else if (Array.isArray(init.headers)) {
-                    init.headers.push([header, token]);
-                } else {
-                    init.headers = init.headers || {};
-                    init.headers[header] = token;
-                }
-            }
-            return origFetch.call(this, input, init);
-        };
-
-        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
-        (function trySetupJQuery(retry) {
-            if (window.jQuery) {
-                window.jQuery.ajaxSetup({
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader(header, token);
-                    }
-                });
-            } else if (retry < 30) {
-                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
-            }
-        })(0);
-    })();
-    </script>
-    <script>
-    (function () {
-        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
-        try {
-            var legacy = localStorage.getItem('sa_theme');
-            if (legacy !== null) {
-                if (!localStorage.getItem('tt_theme')) {
-                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
-                }
-                localStorage.removeItem('sa_theme');
-            }
-            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
-            if (localStorage.getItem('tt_theme') === 'dark') {
-                document.documentElement.classList.add('dark');
-            }
-        } catch (e) {}
-    })();
-    </script>
-    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png"> 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../resources/css/common/reset.css">
-    <link rel="stylesheet" href="../resources/css/common/variables.css">
-    <link rel="stylesheet" href="../resources/css/common/layout.css">
-    <link rel="stylesheet" href="../resources/css/common/header.css">
-    <link rel="stylesheet" href="../resources/css/common/notification.css">
-    <link rel="stylesheet" href="../resources/css/common/item-effects.css">
-    <link rel="stylesheet" href="../resources/css/common/dark-theme.css">
-    
-        <link rel="stylesheet" href="../resources/css/home/home.css">
-    
+    <link rel="icon" type="image/png" href="../TripTogetherFavicon.png">
+    <title>관리자 목록 — TripTogether SuperAdmin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="../resources/css/admin/admin.css">
+    <link rel="stylesheet" href="../resources/css/superAdmin/superadmin.css">
 </head>
-<body><header>
-    <div class="hi">
-        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
-            <span class="nav-toggle-bar"></span>
-            <span class="nav-toggle-bar"></span>
-            <span class="nav-toggle-bar"></span>
-        </button>
-        <div class="logo" onclick="location.href='../index.html'">
-            <div class="logo-icon">🌐</div>
-            <span class="logo-text">TripTogether</span>
-        </div>
-        <nav id="primaryNav">
-            <button class="nb" onclick="location.href='../explore.html'">여행지 탐색</button>
-
-            <div class="nb-drop">
-                <button type="button" class="nb nb-drop-trigger">플래너</button>
-                <div class="nb-drop-menu">
-                    <a href="../courses.html">여행 코스</a>
-                    <a href="/TripTogether/assistant">AI 도우미</a>
-                </div>
+<body>
+<script>
+(function(){
+    // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+    var legacy = localStorage.getItem('sa_theme');
+    if (legacy !== null) {
+        if (!localStorage.getItem('tt_theme')) {
+            localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+        }
+        localStorage.removeItem('sa_theme');
+    }
+    // superAdmin 기본 테마는 다크. tt_theme === 'light' 일 때만 sa-light 적용
+    var t = localStorage.getItem('tt_theme');
+    if (t === 'light') document.body.classList.add('sa-light');
+})();
+</script>
+<div class="adm-shell">
+    <aside class="adm-sidebar" id="adm-sidebar">
+        <a class="adm-brand" href="/TripTogether/superAdmin">
+            <div class="adm-brand-icon">🔑</div>
+            <div>
+                <div class="adm-brand-text">TripTogether</div>
+                <div class="adm-brand-sub">Super Admin</div>
             </div>
+        </a>
 
-            <button class="nb" onclick="location.href='../community/list.html'">커뮤니티</button>
+        <nav class="adm-nav">
+            <div class="adm-nav-section">관리자 관리</div>
+            <a class="adm-nav-item active" href="../superAdmin/members.html">
+                <span class="adm-nav-icon">👤</span> 관리자 목록
+            </a>
+            <a class="adm-nav-item " href="../superAdmin/org.html">
+                <span class="adm-nav-icon">🏢</span> 조직도
+            </a>
 
-            <div class="nb-drop">
-                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
-                <div class="nb-drop-menu">
-                    <a href="../wallet.html">내 지갑</a>
-                    <a href="../shop.html">아이템샵</a>
-                    <a href="../packages.html">패키지</a>
-                    
-                </div>
+            <div class="adm-nav-section sa-nav-section-spaced">권한 관리</div>
+            <a class="adm-nav-item " href="../superAdmin/permissions.html">
+                <span class="adm-nav-icon">🔑</span> 권한 항목
+            </a>
+            <a class="adm-nav-item " href="../superAdmin/groups.html">
+                <span class="adm-nav-icon">🔐</span> 권한 그룹
+            </a>
+            <a class="adm-nav-item " href="../superAdmin/permission-codes.html">
+                <span class="adm-nav-icon">🗂️</span> 권한 템플릿
+            </a>
+
+            <div class="adm-nav-section sa-nav-section-spaced">현황 분석</div>
+            <a class="adm-nav-item " href="../superAdmin/salary.html">
+                <span class="adm-nav-icon">💰</span> 급여/역량 현황
+            </a>
+            <a class="adm-nav-item " href="../superAdmin/stats.html">
+                <span class="adm-nav-icon">📊</span> 통계 대시보드
+            </a>
+
+            <div class="sa-nav-aux-wrap">
+                <a class="adm-nav-item sa-nav-aux" href="../admin.html">
+                    <span class="adm-nav-icon">↩️</span> 관리자 패널
+                </a>
+                <a class="adm-nav-item sa-nav-aux sa-nav-aux-site" href="../index.html" target="_blank">
+                    <span class="adm-nav-icon">↗️</span> 사이트 보기
+                </a>
             </div>
-
-            <button class="nb" onclick="location.href='../mypage.html'">마이페이지</button>
-            
-
         </nav>
-        <div class="hr">
-            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
-                <span class="tt-theme-icon">🌙</span>
-                <span class="tt-theme-label">어둡게</span>
+
+        <div class="adm-sidebar-foot">
+            <div class="adm-user-chip">
+                <div class="adm-user-av">최</div>
+                <div>
+                    <div class="adm-user-name">최고관리자</div>
+                    <div class="adm-user-role">최고관리자</div>
+                </div>
+                <a href="/TripTogether/auth/logout" class="adm-logout" title="로그아웃">⏏</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="adm-main">
+        <div class="adm-topbar">
+            <button type="button" class="adm-nav-toggle" id="sidebar-toggle" aria-label="메뉴" aria-expanded="false" aria-controls="adm-sidebar">
+                <span class="adm-nav-toggle-bar"></span>
+                <span class="adm-nav-toggle-bar"></span>
+                <span class="adm-nav-toggle-bar"></span>
             </button>
-            <label>
-                <select class="lang-sel" id="langSel">
-                    <option value="ko" selected="">한국어</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                    <option value="zh">中文</option>
-                </select>
-            </label>
-            
-                
-                    
-                    <div class="noti-wrap">
-                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
-                            <span class="noti-bell-icon">🔔</span>
-                            
-                        </button>
-                        <div class="noti-dropdown" id="notiDropdown" hidden="">
-                            <div class="noti-dropdown-head">
-                                <span class="noti-dropdown-title">알림</span>
-                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
-                            </div>
-                            <div class="noti-dropdown-body">
-                                
-                                    
-                                        <div class="noti-empty">새로운 알림이 없어요.</div>
-                                    
-                                    
-                                
-                            </div>
-                            <div class="noti-dropdown-foot">
-                                <a href="../mypage.html">전체 보기</a>
+            <div class="adm-topbar-title">관리자 목록</div>
+            <button class="sa-theme-btn" id="saThemeBtn" onclick="saToggleTheme()" title="테마 변경">☀️ 밝게</button>
+            <div class="adm-topbar-path">
+                <span>SuperAdmin</span>
+                <span>관리자 목록</span>
+            </div>
+        </div>
+        <div id="adm-toast-container"></div>
+<script>
+(function(){
+    var btn = document.getElementById('saThemeBtn');
+    var isLight = document.body.classList.contains('sa-light');
+    if (btn) btn.textContent = isLight
+        ? '🌙 어둡게'
+        : '☀️ 밝게';
+})();
+
+function saToggleTheme() {
+    var body = document.body;
+    var btn  = document.getElementById('saThemeBtn');
+    if (body.classList.contains('sa-light')) {
+        body.classList.remove('sa-light');
+        localStorage.setItem('tt_theme', 'dark');
+        if (btn) btn.textContent = '☀️ 밝게';
+    } else {
+        body.classList.add('sa-light');
+        localStorage.setItem('tt_theme', 'light');
+        if (btn) btn.textContent = '🌙 어둡게';
+    }
+}
+</script>
+
+
+<div class="adm-content sa-members-page">
+
+    
+    <div class="adm-card sa-members-filter-card">
+        <div class="adm-card-body">
+            <form id="searchForm" method="get" action="/TripTogether/superAdmin/members">
+                <div class="adm-filter-bar sa-members-filterbar">
+                    <div class="sa-members-keyword-field">
+                        <div class="adm-filter-label">검색</div>
+                        <div class="sa-members-search-row">
+                            <select class="adm-select sa-members-search-type" name="searchType">
+                                <option value="all" selected="">전체</option>
+                                <option value="userId">아이디</option>
+                                <option value="nickname">닉네임</option>
+                                <option value="email">이메일</option>
+                            </select>
+                            <div class="adm-search-box sa-members-search-box">
+                                <span class="adm-search-ico">🔍</span>
+                                <input class="adm-input" type="text" name="keyword" value="" placeholder="검색어 입력...">
                             </div>
                         </div>
                     </div>
-                    <span class="user-nick">최고관리자</span>
-                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
-                
-                
-            
+                    <div class="sa-members-filter-field">
+                        <div class="adm-filter-label">부서</div>
+                        <select class="adm-select" name="filterDepartment">
+                            <option value="">전체</option>
+                            
+                                
+                                <option value="커뮤니티운영팀">
+                                    커뮤니티운영팀
+                                </option>
+                            
+                                
+                                <option value="여행서비스팀">
+                                    여행서비스팀
+                                </option>
+                            
+                                
+                                <option value="고객지원팀">
+                                    고객지원팀
+                                </option>
+                            
+                                
+                                <option value="플랫폼개발팀">
+                                    플랫폼개발팀
+                                </option>
+                            
+                                
+                                <option value="인프라팀">
+                                    인프라팀
+                                </option>
+                            
+                                
+                                <option value="AI팀">
+                                    AI팀
+                                </option>
+                            
+                                
+                                <option value="마케팅팀">
+                                    마케팅팀
+                                </option>
+                            
+                                
+                                <option value="재무팀">
+                                    재무팀
+                                </option>
+                            
+                                
+                                <option value="인사팀">
+                                    인사팀
+                                </option>
+                            
+                                
+                                <option value="법무팀">
+                                    법무팀
+                                </option>
+                            
+                                
+                                <option value="사업개발팀">
+                                    사업개발팀
+                                </option>
+                            
+                                
+                                <option value="보안팀">
+                                    보안팀
+                                </option>
+                            
+                                
+                                <option value="개인정보보호팀">
+                                    개인정보보호팀
+                                </option>
+                            
+                        </select>
+                    </div>
+                    <div class="sa-members-filter-field">
+                        <div class="adm-filter-label">실효권한</div>
+                        <select class="adm-select" name="filterPermissionCode">
+                            <option value="">전체</option>
+                            
+                        </select>
+                    </div>
+                    <div class="sa-members-status-field">
+                        <div class="adm-filter-label">계정상태</div>
+                        <select class="adm-select" name="filterAccountStatus">
+                            <option value="">전체</option>
+                            <option value="ACTIVE">활성</option>
+                            <option value="BLOCKED">차단</option>
+                            <option value="DORMANT">휴면</option>
+                            <option value="DELETED">탈퇴</option>
+                        </select>
+                    </div>
+                    <div class="sa-members-filter-actions">
+                        <button type="submit" class="adm-btn adm-btn-primary">검색</button>
+                        <a href="../superAdmin/members.html" class="adm-btn adm-btn-ghost">초기화</a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
-</header>
+
+    
+    <div class="adm-card sa-members-list-card">
+        <div class="adm-card-head">
+            <div class="adm-card-title">
+                관리자 목록
+                <span class="adm-section-total-inline">총 2건</span>
+            </div>
+            <div class="sa-list-head-actions">
+                <button type="button" class="adm-btn adm-btn-ghost" onclick="openGrantModal()">+ 관리자 등록</button>
+            </div>
+        </div>
+        <div class="adm-section-list-toolbar adm-admin-list-controlbar js-admin-list-tools-toolbar" data-table-id="admSectionListTable0"><div class="adm-admin-list-selection adm-admin-list-bulkbar" aria-live="polite" aria-hidden="true"><span class="adm-admin-list-selected-count">선택 0건</span><button type="button" class="adm-btn adm-btn-ghost js-admin-list-clear-selection" disabled="">선택 해제</button></div><div class="adm-admin-list-toolcluster"><div class="adm-admin-list-primary-tools js-admin-list-primary-tools"><label class="adm-admin-list-tool adm-section-list-mode"><span>로드 방식</span><select class="adm-select js-admin-list-mode" title="전체 로드 시 최대 500건까지 서버에서 다시 불러옵니다."><option value="page">페이지 로드</option><option value="full">전체 로드</option></select></label><label class="adm-admin-list-tool adm-section-list-size"><span>표시</span><select class="adm-select js-admin-list-page-size"><option value="10">10</option><option value="20" selected="">20</option><option value="50">50</option><option value="100">100</option><option value="all">전체</option></select></label><div class="adm-export-control adm-admin-list-export-tool"><select class="adm-select js-admin-list-export-format"><option value="csv">CSV</option><option value="excel">Excel</option></select><div class="adm-export-menu"><button type="button" class="adm-btn adm-btn-ghost js-export-toggle">내보내기 ▾</button><div class="adm-export-dropdown"><button type="button" class="js-admin-list-export" data-scope="page">현재 페이지 내보내기</button><button type="button" class="js-admin-list-export" data-scope="filtered">검색 결과 내보내기</button><button type="button" class="js-admin-list-export js-admin-list-export-selected" data-scope="selected" disabled="">선택 내보내기 (0)</button></div></div></div></div><div class="adm-admin-list-overflow-menu js-admin-list-overflow-menu has-items"><button type="button" class="adm-btn adm-btn-ghost adm-admin-list-overflow-toggle js-admin-list-overflow-toggle" aria-expanded="false">옵션 ▾</button><div class="adm-admin-list-overflow-panel js-admin-list-overflow-panel"><button type="button" class="adm-btn adm-btn-ghost js-admin-list-sort-reset" style="display:none;">↺ 정렬 초기화</button><div class="adm-admin-list-tool adm-section-list-filter"><select class="adm-select js-admin-list-field" title="현재 화면 기준 필드"><option value="all">현재 화면 전체</option><option value="1">닉네임 / 아이디</option><option value="2">이메일</option><option value="3">직함</option><option value="4">소속</option><option value="5">권한코드</option><option value="6">계정상태</option><option value="7">등록일</option></select><div class="adm-search-box adm-section-list-search"><span class="adm-search-ico adm-admin-list-search-ico" aria-hidden="true"></span><input type="text" class="adm-input js-admin-list-keyword" placeholder="현재 화면 내 검색"></div><button type="button" class="adm-btn adm-btn-ghost js-admin-list-filter-reset">↺ 필터 초기화</button></div></div></div></div></div><div class="adm-card-body sa-table-card-body">
+            <table class="adm-table sa-members-table adm-admin-list-table adm-admin-list-server-table" data-admin-list-ignore="true" id="admSectionListTable0" data-admin-list-tools-enhanced="true" data-admin-list-server-sort="true">
+                <thead>
+                    <tr>
+                        <th class="sa-check-head">
+                            <input type="checkbox" class="sa-cb js-admin-list-check-all" id="cbAll" onclick="toggleAll(this)" data-table-id="admSectionListTable0" data-admin-list-select-all="true">
+                        </th>
+                        <th onclick="saMemberThClick(this)">닉네임 / 아이디</th>
+                        <th onclick="saMemberThClick(this)">이메일</th>
+                        <th onclick="saMemberThClick(this)">직함</th>
+                        <th onclick="saMemberThClick(this)">소속</th>
+                        <th onclick="saMemberThClick(this)">권한코드</th>
+                        <th onclick="saMemberThClick(this)">계정상태</th>
+                        <th onclick="saMemberThClick(this)">등록일</th>
+                        <th onclick="saMemberThClick(this)">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                    
+                    
+                        
+                        
+                        
+                        
+                        
+                    
+                
+                <tr data-admin-list-orig-order="0" data-admin-list-visible="true" style="">
+                            <td class="sa-check-cell">
+                                <input type="checkbox" class="sa-cb row-cb js-admin-list-row-check" data-idx="2" data-nickname="운영관리자" onchange="onRowCbChange()" data-table-id="admSectionListTable0" data-admin-list-select="true">
+                            </td>
+                            <td>
+                                <div class="sa-member-name">운영관리자</div>
+                                <div class="sa-member-id">admin01</div>
+                            </td>
+                            <td>admin01@triptogether.demo</td>
+                            <td>-</td>
+                            <td>
+                                
+                                
+                                -
+                            </td>
+                            <td>
+                                
+                                    
+                                    <span class="sa-muted-text">없음</span>
+                                
+                            </td>
+                            <td>
+                                
+                                    <span class="adm-badge adm-badge-green">활성</span>
+                                    
+                                    
+                                
+                            </td>
+                            <td>2026-06-16</td>
+                            <td>
+                                <div class="sa-row-actions">
+                                    <button class="adm-btn adm-btn-sm adm-btn-ghost" data-id="2" onclick="openDetailModal(this.getAttribute('data-id'))">권한</button>
+                                    <a class="adm-btn adm-btn-sm adm-btn-ghost" href="../superAdmin/members/2/edit.html">편집</a>
+                                    <button class="adm-btn adm-btn-sm adm-btn-danger" data-id="2" data-nickname="운영관리자" onclick="revokeAdmin(this.getAttribute('data-id'), this.getAttribute('data-nickname'))">해제</button>
+                                </div>
+                            </td>
+                        </tr><tr data-admin-list-orig-order="1" data-admin-list-visible="true" style="">
+                            <td class="sa-check-cell">
+                                <input type="checkbox" class="sa-cb row-cb js-admin-list-row-check" data-idx="3" data-nickname="보안관리자" onchange="onRowCbChange()" data-table-id="admSectionListTable0" data-admin-list-select="true">
+                            </td>
+                            <td>
+                                <div class="sa-member-name">보안관리자</div>
+                                <div class="sa-member-id">admin02</div>
+                            </td>
+                            <td>admin02@triptogether.demo</td>
+                            <td>-</td>
+                            <td>
+                                
+                                
+                                -
+                            </td>
+                            <td>
+                                
+                                    
+                                    <span class="sa-muted-text">없음</span>
+                                
+                            </td>
+                            <td>
+                                
+                                    <span class="adm-badge adm-badge-green">활성</span>
+                                    
+                                    
+                                
+                            </td>
+                            <td>2026-06-16</td>
+                            <td>
+                                <div class="sa-row-actions">
+                                    <button class="adm-btn adm-btn-sm adm-btn-ghost" data-id="3" onclick="openDetailModal(this.getAttribute('data-id'))">권한</button>
+                                    <a class="adm-btn adm-btn-sm adm-btn-ghost" href="/TripTogether/superAdmin/members/3/edit">편집</a>
+                                    <button class="adm-btn adm-btn-sm adm-btn-danger" data-id="3" data-nickname="보안관리자" onclick="revokeAdmin(this.getAttribute('data-id'), this.getAttribute('data-nickname'))">해제</button>
+                                </div>
+                            </td>
+                        </tr></tbody>
+            </table>
+        </div><div class="adm-section-list-footer js-admin-list-tools-footer" data-table-id="admSectionListTable0"><span class="adm-section-list-page-info js-admin-list-page-info">2건 중 2건 표시 · 1/1쪽</span><div class="adm-section-list-page-tools"><button type="button" class="adm-btn adm-btn-ghost js-admin-list-prev" disabled="">이전</button><button type="button" class="adm-btn adm-btn-ghost js-admin-list-next" disabled="">다음</button></div></div>
+    </div>
+
+    
+    
+</div>
+
+
+
+<div class="sa-bulk-bar sa-bulk-hidden" id="bulkBar">
+    <span class="sa-bulk-count" id="bulkCount">0</span> <span id="bulkCountLabel">{0}명 선택됨</span>
+    <button class="adm-btn adm-btn-sm adm-btn-primary" onclick="openBulkPermModal()">권한 일괄 설정</button>
+    <button class="adm-btn adm-btn-sm adm-btn-danger" onclick="bulkRevoke()">관리자 해제</button>
+    <button class="adm-btn adm-btn-sm adm-btn-ghost sa-muted-button" onclick="clearSelection()">취소</button>
+</div>
+
+
+<div class="adm-modal-overlay" id="detailModal">
+    <div class="adm-modal sa-modal-md">
+        <div class="adm-modal-head">
+            <div class="adm-modal-title" id="detailModalTitle">관리자 상세</div>
+            <button class="adm-modal-close" onclick="closeModal('detailModal')">✕</button>
+        </div>
+        <div class="adm-modal-body sa-modal-scroll">
+            <div class="sa-tabs">
+                <button class="sa-tab-btn active" onclick="switchTab('info',this)">정보 / 권한</button>
+                <button class="sa-tab-btn" onclick="switchTab('audit',this)">변경 이력</button>
+            </div>
+            <div class="sa-tab-panel active" id="tabInfo">
+                <div id="detailModalBody">
+                    <div class="sa-empty-cell">불러오는 중...</div>
+                </div>
+            </div>
+            <div class="sa-tab-panel" id="tabAudit">
+                <div id="auditBody">
+                    <div class="sa-empty-cell">불러오는 중...</div>
+                </div>
+            </div>
+        </div>
+        <div class="adm-modal-foot">
+            <button class="adm-btn adm-btn-ghost" onclick="closeModal('detailModal')">닫기</button>
+            <button class="adm-btn adm-btn-primary" id="savePermBtn" onclick="savePermissions()">권한 저장</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="adm-modal-overlay" id="grantModal">
+    <div class="adm-modal sa-modal-sm">
+        <div class="adm-modal-head">
+            <div class="adm-modal-title">관리자 등록</div>
+            <button class="adm-modal-close" onclick="closeModal('grantModal')">✕</button>
+        </div>
+        <div class="adm-modal-body">
+            <div class="sa-modal-search-row">
+                <input class="adm-input" id="grantSearchInput" type="text" placeholder="아이디 또는 닉네임 검색...">
+                <button class="adm-btn adm-btn-primary" onclick="searchUsers()">검색</button>
+            </div>
+            <div id="grantSearchResult"></div>
+        </div>
+        <div class="adm-modal-foot">
+            <button class="adm-btn adm-btn-ghost" onclick="closeModal('grantModal')">닫기</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="adm-modal-overlay" id="bulkPermModal">
+    <div class="adm-modal sa-modal-sm">
+        <div class="adm-modal-head">
+            <div class="adm-modal-title">권한 일괄 설정</div>
+            <button class="adm-modal-close" onclick="closeModal('bulkPermModal')">✕</button>
+        </div>
+        <div class="adm-modal-body">
+            <div class="sa-modal-description">선택된 관리자 전체에 동일한 권한 세트를 적용합니다.
+기존 권한은 모두 초기화됩니다.</div>
+            <div id="bulkPermList"></div>
+        </div>
+        <div class="adm-modal-foot">
+            <button class="adm-btn adm-btn-ghost" onclick="closeModal('bulkPermModal')">취소</button>
+            <button class="adm-btn adm-btn-primary" onclick="saveBulkPermissions()">일괄 저장</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const CTX = '/TripTogether';
+let currentUserIdx  = null;
+let allPolicies         = [];
+let allPermCodePolicies = [];
+let activeCodes         = [];
+const MEMBER_LIST_MESSAGES = {
+    loading: '불러오는 중...',
+    groupNoData: '소속 그룹 없음',
+    groupSelectPlaceholder: '-- 그룹 배정 --',
+    groupAssignSection: '소속 그룹',
+    groupAssign: '배정',
+    groupRequired: '그룹을 선택하세요.',
+    groupAssigned: '그룹이 배정되었습니다.',
+    groupAssignFailed: '배정 실패',
+    confirmGroupRevoke: '이 그룹에서 해제하시겠습니까?',
+    groupRevoked: '그룹에서 해제되었습니다.',
+    groupRevokeFailed: '해제 실패',
+    actionRevoke: '해제',
+    detailTitleSuffix: '상세',
+    sourceCode: '코드:',
+    sourceGroup: '그룹:',
+    sourceDirect: '직접',
+    codeClear: '없음',
+    codeClearChange: '없음으로 변경',
+    fieldNickname: '닉네임',
+    fieldUserId: '아이디',
+    fieldEmail: '이메일',
+    fieldTitle: '직함',
+    fieldOrganization: '소속 조직',
+    fieldDepartment: '부서',
+    fieldTeam: '팀',
+    codeSection: '실효 권한 코드',
+    codeSave: '저장',
+    codeHint: '코드 번들로 부여된 권한(보라색)은 코드를 변경하거나 없음으로 설정해야 해제됩니다.',
+    permissionSection: '보유 권한',
+    permissionHint: '그룹 소속 권한(보라색)은 그룹 해제로만 제거할 수 있습니다.',
+    permissionCodeSaved: '실효 권한 코드가 변경되었습니다.',
+    saveFailed: '저장 실패',
+    auditGroupTitle: '그룹 배정 이력',
+    auditPermissionTitle: '직접 권한 이력',
+    auditEmpty: '변경 이력이 없습니다.',
+    auditHeaderGroupCode: '그룹코드',
+    auditHeaderGroupName: '그룹명',
+    auditHeaderCode: '코드',
+    auditHeaderPermissionName: '권한명',
+    auditHeaderStatus: '상태',
+    auditHeaderActor: '처리자',
+    auditHeaderDate: '일시',
+    auditStatusActive: '활성',
+    auditStatusInactive: '비활성',
+    auditStatusRevoked: '해제',
+    permissionSaved: '권한이 저장되었습니다.',
+    confirmRevokeAdmin: '{0} 관리자를 해제하시겠습니까?\n보유 권한이 모두 회수됩니다.',
+    revokeDone: '관리자가 해제되었습니다.',
+    revokeFailed: '해제 실패',
+    grantSearchRequired: '검색어를 입력하세요.',
+    grantSearching: '불러오는 중...',
+    grantEmpty: '검색 결과가 없습니다.',
+    grantButton: '등록',
+    grantErrorPrefix: '오류가 발생했습니다:',
+    confirmGrantAdmin: '{0} 을(를) 관리자로 등록하시겠습니까?',
+    grantDone: '관리자로 등록되었습니다.',
+    grantFailed: '등록 실패',
+    bulkSelectedFormat: '{0}명 선택됨',
+    confirmBulkRevoke: '{0}명의 관리자를 해제하시겠습니까?\n모든 권한이 회수됩니다.',
+    bulkRevokeDone: '{0}명이 해제되었습니다.',
+    bulkUpdateDone: '{0}명의 권한이 업데이트되었습니다.',
+    bulkEmptyPolicies: '권한 정책이 없습니다.'
+};
+
+function formatMemberListMessage(template) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return template.replace(/\u007B(\d+)\u007D/g, function(_, idx) {
+        return args[idx] !== undefined ? args[idx] : '';
+    });
+}
+
+const GROUP_LIST = [
+
+];
+
+function buildGroupAssignSection(adminGroups) {
+    if (GROUP_LIST.length === 0) return '';
+    var currentCodes = (adminGroups || []).map(function(g){ return g.groupCode; });
+    var currentHtml = (adminGroups && adminGroups.length > 0)
+        ? adminGroups.map(function(g){
+            return '<div class="sa-inline-row">' +
+                '<span class="adm-badge adm-badge-green sa-code-badge">' + g.displayName + '</span>' +
+                '<button class="adm-btn adm-btn-sm adm-btn-danger" ' +
+                    'data-gcode="' + g.groupCode + '" ' +
+                    'onclick="revokeGroup(this.getAttribute(\'data-gcode\'))">' + MEMBER_LIST_MESSAGES.actionRevoke + '</button>' +
+                '</div>';
+          }).join('')
+        : '<div class="sa-help-text">' + MEMBER_LIST_MESSAGES.groupNoData + '</div>';
+
+    var assignableGroups = GROUP_LIST.filter(function(g){ return !currentCodes.includes(g.code); });
+    var assignHtml = assignableGroups.length > 0
+        ? '<div class="sa-inline-row is-top">' +
+          '<select class="adm-select" id="grpAssignSel">' +
+          '<option value="">' + MEMBER_LIST_MESSAGES.groupSelectPlaceholder + '</option>' +
+          assignableGroups.map(function(g){ return '<option value="' + g.code + '">' + g.name + '</option>'; }).join('') +
+          '</select>' +
+          '<button class="adm-btn adm-btn-primary" onclick="assignGroup()">' + MEMBER_LIST_MESSAGES.groupAssign + '</button>' +
+          '</div>'
+        : '';
+
+    return '<div class="sa-section-title">' + MEMBER_LIST_MESSAGES.groupAssignSection + '</div>' +
+           '<div id="adminGroupList">' + currentHtml + '</div>' + assignHtml;
+}
+
+function buildGroupSelect() {
+    return '';
+}
+
+function assignGroup() {
+    var sel = document.getElementById('grpAssignSel');
+    if (!sel || !sel.value) { adm_toast(MEMBER_LIST_MESSAGES.groupRequired, 'error'); return; }
+    fetch(CTX + '/superAdmin/members/' + currentUserIdx + '/groups/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'groupCode=' + encodeURIComponent(sel.value)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (data.success) { adm_toast(MEMBER_LIST_MESSAGES.groupAssigned); reloadDetailModal(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.groupAssignFailed, 'error');
+    });
+}
+
+function revokeGroup(groupCode) {
+    if (!confirm(MEMBER_LIST_MESSAGES.confirmGroupRevoke)) return;
+    fetch(CTX + '/superAdmin/members/' + currentUserIdx + '/groups/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'groupCode=' + encodeURIComponent(groupCode)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (data.success) { adm_toast(MEMBER_LIST_MESSAGES.groupRevoked); reloadDetailModal(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.groupRevokeFailed, 'error');
+    });
+}
+
+function reloadDetailModal() {
+    fetch(CTX + '/superAdmin/members/' + currentUserIdx)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            allPolicies = data.permissionPolicies;
+            allPermCodePolicies = data.permissionCodePolicies || [];
+            activeCodes = (data.member.permissions || []).map(function(p){ return p.permissionCode; });
+            renderDetailModal(data.member, data.permissionPolicies, data.adminGroups);
+        });
+}
+
+/* ── 탭 전환 ── */
+function switchTab(tab, btn) {
+    document.querySelectorAll('.sa-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sa-tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+
+    if (tab === 'info') {
+        document.getElementById('savePermBtn').hidden = false;
+    } else {
+        document.getElementById('savePermBtn').hidden = true;
+        loadAuditLog();
+    }
+}
+
+/* ── 상세 모달 열기 ── */
+function openDetailModal(userIdx) {
+    currentUserIdx = userIdx;
+    activeCodes    = [];
+    document.getElementById('detailModal').classList.add('open');
+    document.getElementById('detailModalBody').innerHTML = '<div class="sa-empty-cell">' + MEMBER_LIST_MESSAGES.loading + '</div>';
+    document.getElementById('auditBody').innerHTML       = '<div class="sa-empty-cell">' + MEMBER_LIST_MESSAGES.loading + '</div>';
+    document.getElementById('savePermBtn').hidden = false;
+    document.querySelectorAll('.sa-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    document.querySelectorAll('.sa-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
+
+    fetch(CTX + '/superAdmin/members/' + userIdx)
+        .then(r => r.json())
+        .then(data => {
+            allPolicies = data.permissionPolicies;
+            allPermCodePolicies = data.permissionCodePolicies || [];
+            activeCodes = (data.member.permissions || []).map(p => p.permissionCode);
+            renderDetailModal(data.member, data.permissionPolicies, data.adminGroups);
+        });
+}
+
+function renderDetailModal(m, policies, adminGroups) {
+    document.getElementById('detailModalTitle').textContent = (m.nickname || '') + ' ' + MEMBER_LIST_MESSAGES.detailTitleSuffix;
+
+    // 권한별 소스 맵 구성
+    var sourceMap = {};
+    (m.permissions || []).forEach(function(p) {
+        if (!sourceMap[p.permissionCode]) sourceMap[p.permissionCode] = { isDirect: false, groupSources: [] };
+            if (p.permissionSource === 'DIRECT') {
+                sourceMap[p.permissionCode].isDirect = true;
+            } else {
+                var label;
+                if (p.permissionSource === 'CODE_DIRECT' || p.permissionSource === 'CODE_GROUP') {
+                    label = MEMBER_LIST_MESSAGES.sourceCode + ' ' + (p.sourceGroupCode || p.permissionSource);
+                } else {
+                    label = MEMBER_LIST_MESSAGES.sourceGroup + ' ' + (p.sourceGroupCode || p.permissionSource);
+                }
+                if (label && !sourceMap[p.permissionCode].groupSources.includes(label))
+                    sourceMap[p.permissionCode].groupSources.push(label);
+        }
+    });
+
+    activeCodes = Object.keys(sourceMap).filter(function(code) { return sourceMap[code].isDirect; });
+
+    var permHtml = policies.map(function(p) {
+        var info = sourceMap[p.permissionCode];
+        var hasGroup = info && info.groupSources.length > 0;
+        var isDirect = info && info.isDirect;
+        var sourceLabel = hasGroup ? info.groupSources.join(', ') : '';
+
+        if (hasGroup && !isDirect) {
+            // 그룹에서만 부여 → disabled
+            return '<label class="sa-perm-item sa-perm-from-group">' +
+                '<input type="checkbox" disabled checked>' +
+                '<div class="sa-perm-info">' +
+                '<span class="sa-perm-name">' + (p.displayName || '') + '</span>' +
+                '<span class="sa-perm-code">' + (p.permissionCode || '') + '</span>' +
+                (p.description ? '<span class="sa-perm-desc">' + p.description + '</span>' : '') +
+                '</div>' +
+                '<span class="sa-perm-source">' + sourceLabel + '</span>' +
+                '</label>';
+        } else {
+            return '<label class="sa-perm-item">' +
+                '<input type="checkbox" name="permissionCodes" value="' + p.permissionCode + '"' +
+                (isDirect ? ' checked' : '') + '>' +
+                '<div class="sa-perm-info">' +
+                '<span class="sa-perm-name">' + (p.displayName || '') + '</span>' +
+                '<span class="sa-perm-code">' + (p.permissionCode || '') + '</span>' +
+                (p.description ? '<span class="sa-perm-desc">' + p.description + '</span>' : '') +
+                '</div>' +
+                (hasGroup ? '<span class="sa-perm-source">' + sourceLabel + ' + ' + MEMBER_LIST_MESSAGES.sourceDirect + '</span>' : '') +
+                '</label>';
+        }
+    }).join('');
+
+    var codeOptions = '<option value="">' + (m.adminPermissionCode ? MEMBER_LIST_MESSAGES.codeClearChange : MEMBER_LIST_MESSAGES.codeClear) + '</option>';
+    allPermCodePolicies.forEach(function(cp) {
+        var sel = (m.adminPermissionCode === cp.adminPermissionCode) ? ' selected' : '';
+        codeOptions += '<option value="' + cp.adminPermissionCode + '"' + sel + '>' +
+            cp.displayName + ' (' + cp.adminPermissionCode + ')' + '</option>';
+    });
+
+    document.getElementById('detailModalBody').innerHTML =
+        '<div class="sa-detail-grid">' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldNickname + '</span><span>' + (m.nickname || '') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldUserId + '</span><span>' + (m.userId || '-') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldEmail + '</span><span>' + (m.userEmail || '-') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldTitle + '</span><span>' + (m.adminTitle || '-') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldOrganization + '</span><span>' + (m.adminOrganization || '-') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldDepartment + '</span><span>' + (m.adminDepartment || '-') + '</span></div>' +
+            '<div class="sa-detail-row"><span class="sa-detail-label">' + MEMBER_LIST_MESSAGES.fieldTeam + '</span><span>' + (m.adminTeam || '-') + '</span></div>' +
+        '</div>' +
+        '<div class="sa-section-title is-spaced">' + MEMBER_LIST_MESSAGES.codeSection + '</div>' +
+        '<div class="sa-perm-code-row">' +
+            '<select class="adm-select sa-perm-code-select" id="permCodeSelect">' + codeOptions + '</select>' +
+            '<button class="adm-btn adm-btn-primary" onclick="savePermissionCode(' + m.userIdx + ')">' + MEMBER_LIST_MESSAGES.codeSave + '</button>' +
+        '</div>' +
+        '<div class="sa-help-text">' + MEMBER_LIST_MESSAGES.codeHint + '</div>' +
+        buildGroupAssignSection(adminGroups) +
+        '<div class="sa-section-title is-spaced">' + MEMBER_LIST_MESSAGES.permissionSection + '</div>' +
+        '<div class="sa-help-text">' + MEMBER_LIST_MESSAGES.permissionHint + '</div>' +
+        '<div class="sa-perm-list">' + permHtml + '</div>';
+}
+
+/* ── 이력 로드 ── */
+function savePermissionCode(userIdx) {
+    var code = document.getElementById('permCodeSelect').value;
+    var params = new URLSearchParams();
+    if (code) params.append('permissionCode', code);
+    fetch(CTX + '/superAdmin/members/' + userIdx + '/permission-code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            adm_toast(MEMBER_LIST_MESSAGES.permissionCodeSaved);
+            reloadDetailModal();
+        } else {
+            adm_toast(data.message || MEMBER_LIST_MESSAGES.saveFailed, 'error');
+        }
+    });
+}
+
+function loadAuditLog() {
+    if (!currentUserIdx) return;
+    fetch(CTX + '/superAdmin/members/' + currentUserIdx + '/audit')
+        .then(r => r.json())
+        .then(data => {
+            var html = '';
+
+            // 그룹 배정 이력
+            var gLogs = data.groupLogs || [];
+            if (gLogs.length > 0) {
+                var gRows = gLogs.map(function(l) {
+                    var status = l.active
+                        ? '<span class="sa-status-active">' + MEMBER_LIST_MESSAGES.auditStatusActive + '</span>'
+                        : '<span class="sa-status-inactive">' + MEMBER_LIST_MESSAGES.auditStatusRevoked + '</span>';
+                    var at = l.grantedAt ? new Date(l.grantedAt).toLocaleString('ko-KR') : '-';
+                    return '<tr>' +
+                        '<td><span class="sa-perm-code sa-code-badge is-green">' + (l.groupCode || '') + '</span></td>' +
+                        '<td>' + (l.displayName || '-') + '</td>' +
+                        '<td>' + status + '</td>' +
+                        '<td>' + (l.grantedByNickname || '-') + '</td>' +
+                        '<td class="sa-muted-cell">' + at + '</td>' +
+                        '</tr>';
+                }).join('');
+                html += '<div class="sa-section-title is-tight">' + MEMBER_LIST_MESSAGES.auditGroupTitle + '</div>' +
+                    '<table class="sa-audit-table sa-audit-table-spaced">' +
+                    '<thead><tr>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderGroupCode + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderGroupName + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderStatus + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderActor + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderDate + '</th>' +
+                    '</tr></thead>' +
+                    '<tbody>' + gRows + '</tbody></table>';
+            }
+
+            // 직접 권한 이력
+            var pLogs = (data.logs || []).filter(function(l) { return l.grantedByNickname || l.active; });
+            if (pLogs.length > 0) {
+                var pRows = pLogs.map(function(l) {
+                    var status = l.active
+                        ? '<span class="sa-status-active">' + MEMBER_LIST_MESSAGES.auditStatusActive + '</span>'
+                        : '<span class="sa-status-inactive">' + MEMBER_LIST_MESSAGES.auditStatusInactive + '</span>';
+                    var grantedBy = l.grantedByNickname || '-';
+                    var updatedAt = l.updatedAt ? new Date(l.updatedAt).toLocaleString('ko-KR') : '-';
+                    return '<tr>' +
+                        '<td><span class="sa-perm-code sa-code-badge is-blue">' + (l.permissionCode || '') + '</span></td>' +
+                        '<td>' + (l.displayName || '-') + '</td>' +
+                        '<td>' + status + '</td>' +
+                        '<td>' + grantedBy + '</td>' +
+                        '<td class="sa-muted-cell">' + updatedAt + '</td>' +
+                        '</tr>';
+                }).join('');
+                html += '<div class="sa-section-title is-tight">' + MEMBER_LIST_MESSAGES.auditPermissionTitle + '</div>' +
+                    '<table class="sa-audit-table">' +
+                    '<thead><tr>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderCode + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderPermissionName + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderStatus + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderActor + '</th>' +
+                        '<th onclick="saMemberThClick(this)">' + MEMBER_LIST_MESSAGES.auditHeaderDate + '</th>' +
+                    '</tr></thead>' +
+                    '<tbody>' + pRows + '</tbody></table>';
+            }
+
+            document.getElementById('auditBody').innerHTML = html ||
+                '<div class="sa-empty-cell">' + MEMBER_LIST_MESSAGES.auditEmpty + '</div>';
+        });
+}
+
+/* ── 권한 저장 (직접) ── */
+function savePermissions() {
+    const checked = [...document.querySelectorAll('input[name="permissionCodes"]:checked')]
+                        .map(el => el.value);
+    const params = new URLSearchParams();
+    checked.forEach(c => params.append('permissionCodes', c));
+
+    fetch(CTX + '/superAdmin/members/' + currentUserIdx + '/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { adm_toast(MEMBER_LIST_MESSAGES.permissionSaved); closeModal('detailModal'); location.reload(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.saveFailed, 'error');
+    });
+}
+
+/* ── 관리자 해제 ── */
+function revokeAdmin(userIdx, nickname) {
+    if (!confirm(formatMemberListMessage(MEMBER_LIST_MESSAGES.confirmRevokeAdmin, nickname))) return;
+    fetch(CTX + '/superAdmin/members/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'userIdx=' + userIdx
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { adm_toast(MEMBER_LIST_MESSAGES.revokeDone); location.reload(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.revokeFailed, 'error');
+    });
+}
+
+/* ── 관리자 등록 모달 ── */
+function openGrantModal() {
+    document.getElementById('grantSearchResult').innerHTML = '';
+    document.getElementById('grantSearchInput').value = '';
+    document.getElementById('grantModal').classList.add('open');
+    setTimeout(() => document.getElementById('grantSearchInput').focus(), 100);
+}
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('grantSearchInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') searchUsers();
+    });
+});
+
+function searchUsers() {
+    const keyword = document.getElementById('grantSearchInput').value.trim();
+    const resultEl = document.getElementById('grantSearchResult');
+    if (!keyword) {
+        resultEl.innerHTML = '<div class="sa-empty-cell is-compact">' + MEMBER_LIST_MESSAGES.grantSearchRequired + '</div>';
+        return;
+    }
+    resultEl.innerHTML = '<div class="sa-empty-cell is-compact">' + MEMBER_LIST_MESSAGES.grantSearching + '</div>';
+    fetch(CTX + '/superAdmin/users/search?keyword=' + encodeURIComponent(keyword) + '&pageSize=20')
+        .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(data => {
+            if (!data.users || data.users.length === 0) {
+                resultEl.innerHTML = '<div class="sa-empty-cell is-compact">' + MEMBER_LIST_MESSAGES.grantEmpty + '</div>';
+                return;
+            }
+            resultEl.innerHTML = data.users.map(function(u) {
+                return '<div class="sa-user-row">' +
+                    '<div>' +
+                        '<div class="sa-user-primary">' + (u.nickname || '') + '</div>' +
+                        '<div class="sa-user-meta">' + (u.userId || '') + ' · ' + (u.userEmail || '') + '</div>' +
+                    '</div>' +
+                    '<button class="adm-btn adm-btn-sm adm-btn-primary"' +
+                        ' data-id="' + u.userIdx + '"' +
+                        ' data-nickname="' + (u.nickname || '') + '"' +
+                        ' onclick="grantAdmin(this.getAttribute(\'data-id\'), this.getAttribute(\'data-nickname\'))">' + MEMBER_LIST_MESSAGES.grantButton + '</button>' +
+                '</div>';
+            }).join('');
+        })
+        .catch(err => {
+            resultEl.innerHTML = '<div class="sa-empty-cell is-compact is-danger">' + MEMBER_LIST_MESSAGES.grantErrorPrefix + ' ' + err.message + '</div>';
+        });
+}
+
+function grantAdmin(userIdx, nickname) {
+    if (!confirm(formatMemberListMessage(MEMBER_LIST_MESSAGES.confirmGrantAdmin, nickname))) return;
+    fetch(CTX + '/superAdmin/members/grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'userIdx=' + userIdx
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { adm_toast(MEMBER_LIST_MESSAGES.grantDone); closeModal('grantModal'); location.reload(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.grantFailed, 'error');
+    });
+}
+
+/* ── 일괄 처리 ── */
+function toggleAll(cb) {
+    document.querySelectorAll('.row-cb').forEach(el => el.checked = cb.checked);
+    onRowCbChange();
+}
+
+function onRowCbChange() {
+    const checked = document.querySelectorAll('.row-cb:checked');
+    const bar     = document.getElementById('bulkBar');
+    document.getElementById('cbAll').checked = (checked.length > 0 && checked.length === document.querySelectorAll('.row-cb').length);
+    if (checked.length > 0) {
+        document.getElementById('bulkCount').textContent = checked.length;
+        document.getElementById('bulkCountLabel').textContent = formatMemberListMessage(MEMBER_LIST_MESSAGES.bulkSelectedFormat, checked.length);
+        bar.classList.remove('sa-bulk-hidden');
+    } else {
+        bar.classList.add('sa-bulk-hidden');
+    }
+}
+
+function clearSelection() {
+    document.querySelectorAll('.row-cb').forEach(el => el.checked = false);
+    document.getElementById('cbAll').checked = false;
+    document.getElementById('bulkBar').classList.add('sa-bulk-hidden');
+}
+
+function getSelectedIdxList() {
+    return [...document.querySelectorAll('.row-cb:checked')].map(el => el.getAttribute('data-idx'));
+}
+
+function bulkRevoke() {
+    const list = getSelectedIdxList();
+    if (list.length === 0) return;
+    if (!confirm(formatMemberListMessage(MEMBER_LIST_MESSAGES.confirmBulkRevoke, list.length))) return;
+
+    const params = new URLSearchParams();
+    list.forEach(idx => params.append('userIdxList', idx));
+
+    fetch(CTX + '/superAdmin/members/bulk-revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { adm_toast(formatMemberListMessage(MEMBER_LIST_MESSAGES.bulkRevokeDone, list.length)); location.reload(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.revokeFailed, 'error');
+    });
+}
+
+function openBulkPermModal() {
+    const list = getSelectedIdxList();
+    if (list.length === 0) return;
+    var permHtml = allPolicies.length > 0
+        ? allPolicies.map(function(p) {
+            return '<label class="sa-perm-item">' +
+                '<input type="checkbox" name="bulkPermCodes" value="' + p.permissionCode + '">' +
+                '<div class="sa-perm-info">' +
+                '<span class="sa-perm-name">' + (p.displayName || '') + '</span>' +
+                '<span class="sa-perm-code">' + (p.permissionCode || '') + '</span>' +
+                (p.description ? '<span class="sa-perm-desc">' + p.description + '</span>' : '') +
+                '</div>' +
+                '</label>';
+          }).join('')
+        : '<div class="sa-empty-cell is-compact">' + MEMBER_LIST_MESSAGES.bulkEmptyPolicies + '</div>';
+
+    // allPolicies가 비어있으면 서버에서 불러오기
+    if (allPolicies.length === 0) {
+        fetch(CTX + '/superAdmin/members/1') // 임시 any user call to get policies
+            .then(r => r.json())
+            .then(data => {
+                allPolicies = data.permissionPolicies || [];
+                openBulkPermModal();
+            });
+        return;
+    }
+    document.getElementById('bulkPermList').innerHTML = buildGroupSelect() + '<div class="sa-perm-list">' + permHtml + '</div>';
+    document.getElementById('bulkPermModal').classList.add('open');
+}
+
+function saveBulkPermissions() {
+    const userIdxList = getSelectedIdxList();
+    const codes = [...document.querySelectorAll('input[name="bulkPermCodes"]:checked')].map(el => el.value);
+    const params = new URLSearchParams();
+    userIdxList.forEach(idx => params.append('userIdxList', idx));
+    codes.forEach(c => params.append('permissionCodes', c));
+
+    fetch(CTX + '/superAdmin/members/bulk-permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { adm_toast(formatMemberListMessage(MEMBER_LIST_MESSAGES.bulkUpdateDone, userIdxList.length)); closeModal('bulkPermModal'); clearSelection(); location.reload(); }
+        else adm_toast(data.message || MEMBER_LIST_MESSAGES.saveFailed, 'error');
+    });
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+
+/* ── 헤더 클릭: 첫 행의 같은 컬럼 셀 액션을 트리거 (모달/메인 모두 공용) ── */
+function saMemberThClick(th) {
+    var table = th.closest('table');
+    var firstRow = table && table.querySelector('tbody tr');
+    if (!firstRow) return;
+    var cell = firstRow.children[th.cellIndex];
+    if (!cell) return;
+    var target = cell.querySelector('button:not(.sa-cb), input[type="checkbox"]:not(.sa-cb), a[href]');
+    if (target) {
+        if (target.tagName === 'INPUT' && target.type === 'checkbox') target.click();
+        else target.click();
+        return;
+    }
+    var anyBtn = firstRow.querySelector('button:not(.sa-cb), a[href]');
+    if (anyBtn) anyBtn.click();
+}
+</script>
 
 
 
 <script>
-window.__notificationConfig = {
-    ctx: '/TripTogether',
-    locale: 'ko',
-    labels: {
-        typeCommunity: '[커뮤니티]',
-        typeInquiry: '[문의]',
-        typeReport: '[신고]',
-        typeLevelup: '[레벨업]',
-        typeGrade: '[등급]',
-        typeAccountBlock: '[계정]',
-        typeDefault: '[알림]',
-        close: '닫기',
-        justNow: '방금 전',
-        view: '보기'
+function adm_toast(msg, type = 'success') {
+    const c   = document.getElementById('adm-toast-container');
+    const el  = document.createElement('div');
+    el.className = 'adm-toast ' + type;
+    el.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
+    c.appendChild(el);
+    setTimeout(() => { el.classList.add('is-hiding'); setTimeout(()=>el.remove(),300); }, 2800);
+}
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.adm-modal-overlay.open').forEach(o => o.classList.remove('open'));
     }
-};
+});
 
+/* ── 사이드바 햄버거 드로어 ── */
 (function () {
-    const btn = document.getElementById('ttThemeBtn');
-    if (!btn) return;
+    var toggle   = document.getElementById('sidebar-toggle');
+    var sidebar  = document.getElementById('adm-sidebar');
+    var backdrop = document.getElementById('admBackdrop');
+    if (!toggle || !sidebar || !backdrop) return;
 
-    const iconEl = btn.querySelector('.tt-theme-icon');
-    const labelEl = btn.querySelector('.tt-theme-label');
-    const lightLabel = btn.dataset.lightLabel;
-    const darkLabel = btn.dataset.darkLabel;
+    var mqDesktop = window.matchMedia('(min-width: 1024px)');
 
-    const syncIcon = function () {
-        const isDark = document.documentElement.classList.contains('dark');
-        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
-        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
-    };
-    syncIcon();
-
-    btn.addEventListener('click', function () {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            localStorage.setItem('tt_theme', 'light');
-        } else {
-            html.classList.add('dark');
-            localStorage.setItem('tt_theme', 'dark');
-        }
-        syncIcon();
-    });
-})();
-
-(function () {
-    const langSel = document.getElementById('langSel');
-    if (!langSel) return;
-
-    langSel.addEventListener('change', function () {
-        const url = new URL(window.location.href);
-        url.searchParams.set('lang', this.value);
-        window.location.href = url.toString();
-    });
-})();
-
-(function () {
-    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
-    navButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            window.location.href = button.dataset.url;
-        });
-    });
-})();
-
-(function () {
-    const toggle   = document.getElementById('navToggle');
-    const nav      = document.getElementById('primaryNav');
-    const backdrop = document.getElementById('navBackdrop');
-    if (!toggle || !nav || !backdrop) return;
-
-    const mqMobile = window.matchMedia('(max-width: 767px)');
-
-    function openNav() {
-        nav.classList.add('is-open');
+    function openDrawer() {
+        sidebar.classList.add('open');
         backdrop.hidden = false;
         requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
         toggle.classList.add('is-open');
         toggle.setAttribute('aria-expanded', 'true');
-        document.body.classList.add('nav-lock');
+        document.body.classList.add('adm-nav-lock');
     }
-    function closeNav() {
-        nav.classList.remove('is-open');
+    function closeDrawer() {
+        sidebar.classList.remove('open');
         backdrop.classList.remove('is-open');
         backdrop.hidden = true;
         toggle.classList.remove('is-open');
         toggle.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('nav-lock');
-        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+        document.body.classList.remove('adm-nav-lock');
     }
-    function toggleNav() {
-        if (nav.classList.contains('is-open')) closeNav(); else openNav();
-    }
-
-    toggle.addEventListener('click', toggleNav);
-    backdrop.addEventListener('click', closeNav);
-
-    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
-    nav.addEventListener('click', function (e) {
-        if (!mqMobile.matches) return;
-        const trigger = e.target.closest('.nb-drop-trigger');
-        if (trigger) return;
-        const interactive = e.target.closest('a, button');
-        if (interactive) closeNav();
+    toggle.addEventListener('click', function () {
+        if (sidebar.classList.contains('open')) closeDrawer(); else openDrawer();
     });
-
-    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
-    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            if (!mqMobile.matches) return;
-            e.preventDefault();
-            const drop = btn.closest('.nb-drop');
-            if (!drop) return;
-            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
-                if (d !== drop) d.classList.remove('is-open');
-            });
-            drop.classList.toggle('is-open');
-        });
+    backdrop.addEventListener('click', closeDrawer);
+    sidebar.addEventListener('click', function (e) {
+        if (mqDesktop.matches) return;
+        var link = e.target.closest('a');
+        if (link) closeDrawer();
     });
-
-    // 데스크탑 폭으로 넓어지면 강제 닫기
-    const mqClose = window.matchMedia('(min-width: 768px)');
-    const handleChange = function (e) { if (e.matches) closeNav(); };
-    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
-    else if (mqClose.addListener) mqClose.addListener(handleChange);
+    var onChange = function (e) { if (e.matches) closeDrawer(); };
+    if (mqDesktop.addEventListener) mqDesktop.addEventListener('change', onChange);
+    else if (mqDesktop.addListener) mqDesktop.addListener(onChange);
 })();
 </script>
-
-<script src="../resources/js/common/notification.js" defer=""></script>
-
-
-
-
-<!-- ===== 히어로 섹션 ===== -->
-<section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-ov"></div>
-    <div class="hero-c">
-        <h1>세계를 탐험하세요</h1>
-        <p>AI가 추천하는 완벽한 여행 계획</p>
-        <div class="hero-btns">
-            <button class="btn-pri" onclick="location.href='../explore.html'">
-                📍 여행지 탐색
-            </button>
-            <button class="btn-sec" onclick="location.href='/TripTogether/assistant'">
-                ✨ AI 추천받기
-            </button>
-        </div>
+<script src="../resources/js/admin/admin-list-tools.js"></script>
     </div>
-</section>
-
-<!-- ===== 피처 섹션 ===== -->
-<section class="feat-sec">
-    <div class="si">
-        <div class="feat-grid">
-            <div class="feat-card" style="cursor:pointer;" onclick="location.href='/TripTogether/assistant'">
-                <div class="feat-icon fi-b">✨</div>
-                <h3>AI 여행 도우미</h3>
-                <p>AI가 당신의 취향에 맞는 완벽한 여행지와 일정을 추천해드립니다</p>
-            </div>
-            <div class="feat-card" style="cursor:pointer;" onclick="location.href='/TripTogether/courses/list'">
-                <div class="feat-icon fi-p">📅</div>
-                <h3>일정 자동 생성</h3>
-                <p>여행 기간과 선호도만 입력하면 최적의 일정이 자동으로 생성됩니다</p>
-            </div>
-            <div class="feat-card" style="cursor:pointer;" onclick="location.href='../community/list.html'">
-                <div class="feat-icon fi-g">💬</div>
-                <h3>커뮤니티</h3>
-                <p>전 세계 여행자들과 경험을 공유하고 유용한 정보를 얻으세요</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== 인기 여행지 섹션 ===== -->
-<section class="cs">
-    <div class="si">
-        <div class="sh">
-            <h2 class="st">인기 여행지</h2>
-            <button class="vm" onclick="location.href='../explore.html'">더보기 →</button>
-        </div>
-        <div id="spotsSection">
-            
-                
-                
-                    <div class="home-grid">
-                        
-                            
-                                <div class="cc-wrap" data-spot-id="2" style="cursor: pointer;">
-                                        <div class="dc">
-                                            <div class="dc-iw">
-                                                
-                                                    
-                                                        <img class="dc-img" src="https://picsum.photos/seed/busan1/800/600" alt="부산 해운대 해수욕장" onerror="spotImgError(this)">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                        
-                                                            <span class="dc-badge dc-badge-verygood">★ 4.6</span>
-                                                        
-                                                        
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="dc-b">
-                                                <div class="dc-name">부산 해운대 해수욕장</div>
-                                                
-                                                    <div class="dc-ctry">📍 asia</div>
-                                                
-                                                
-                                                    <div class="dc-desc">대한민국 대표 해변. 여름 피서와 야경, 마린시티가 어우러진 도심 속 바다.</div>
-                                                
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-spot-id="1" style="cursor: pointer;">
-                                        <div class="dc">
-                                            <div class="dc-iw">
-                                                
-                                                    
-                                                        <img class="dc-img" src="https://picsum.photos/seed/jeju1/800/600" alt="제주 성산일출봉" onerror="spotImgError(this)">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                            <span class="dc-badge dc-badge-excellent">★ 4.8</span>
-                                                        
-                                                        
-                                                        
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="dc-b">
-                                                <div class="dc-name">제주 성산일출봉</div>
-                                                
-                                                    <div class="dc-ctry">📍 asia</div>
-                                                
-                                                
-                                                    <div class="dc-desc">유네스코 세계자연유산. 분화구 정상에서 보는 일출이 장관인 제주 대표 명소.</div>
-                                                
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-spot-id="4" style="cursor: pointer;">
-                                        <div class="dc">
-                                            <div class="dc-iw">
-                                                
-                                                    
-                                                        <img class="dc-img" src="https://picsum.photos/seed/seoul1/800/600" alt="서울 경복궁" onerror="spotImgError(this)">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                        
-                                                            <span class="dc-badge dc-badge-verygood">★ 4.5</span>
-                                                        
-                                                        
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="dc-b">
-                                                <div class="dc-name">서울 경복궁</div>
-                                                
-                                                    <div class="dc-ctry">📍 asia</div>
-                                                
-                                                
-                                                    <div class="dc-desc">조선 왕조의 법궁. 수문장 교대식과 한복 체험으로 외국인에게도 인기.</div>
-                                                
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-spot-id="7" style="cursor: pointer;">
-                                        <div class="dc">
-                                            <div class="dc-iw">
-                                                
-                                                    
-                                                        <img class="dc-img" src="https://picsum.photos/seed/paris1/800/600" alt="파리 에펠탑" onerror="spotImgError(this)">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                            <span class="dc-badge dc-badge-excellent">★ 4.9</span>
-                                                        
-                                                        
-                                                        
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="dc-b">
-                                                <div class="dc-name">파리 에펠탑</div>
-                                                
-                                                    <div class="dc-ctry">📍 europe</div>
-                                                
-                                                
-                                                    <div class="dc-desc">파리의 상징. 야간 조명 점등과 센강 유람선 투어가 함께하는 낭만의 도시.</div>
-                                                
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                            
-                            
-                            
-                        </div>
-                
-            
-        </div>
-    </div>
-</section>
-
-<!-- ===== 추천 여행 패키지 섹션 ===== -->
-
-    
-    
-    <section class="cs home-package-sec">
-        <div class="si">
-            <div class="sh package-sh">
-                <div>
-                    <h2 class="st">추천 여행 패키지</h2>
-                    <p class="package-sub">승인된 여행 패키지를 파트너 상품 우선으로 추천합니다.</p>
-                </div>
-                <div class="package-controls">
-                    <button type="button" class="package-nav-btn" id="packagePrevBtn" aria-label="이전 패키지">‹</button>
-                    <button type="button" class="package-nav-btn" id="packageNextBtn" aria-label="다음 패키지">›</button>
-                    <button type="button" class="vm" data-home-package-list-url="/TripTogether/packages">
-                        더보기 →
-                    </button>
-                </div>
-            </div>
-
-            <div class="home-package-slider" id="homePackageSlider">
-                <div class="home-package-track" id="homePackageTrack">
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="7" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgparis/900/600" alt="파리 5일 에펠탑 &amp; 루브르 자유여행">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 europe · 파리 에펠탑
-                                </div>
-                                <h3>파리 5일 에펠탑 &amp; 루브르 자유여행</h3>
-                                <p>
-                                    
-                                        
-                                            센강 유람선 + 루브르 입장권 포함
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        2,390,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        58
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="8" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgtokyo/900/600" alt="도쿄 3박4일 시부야 &amp; 디즈니">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 asia · 도쿄 시부야
-                                </div>
-                                <h3>도쿄 3박4일 시부야 &amp; 디즈니</h3>
-                                <p>
-                                    
-                                        
-                                            디즈니랜드 1일권 + 시부야 쇼핑
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        890,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        49
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="1" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgjeju/900/600" alt="제주 2박3일 성산일출봉 &amp; 우도 패키지">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 asia · 제주 성산일출봉
-                                </div>
-                                <h3>제주 2박3일 성산일출봉 &amp; 우도 패키지</h3>
-                                <p>
-                                    
-                                        
-                                            제주 동부 핵심 코스, 전일정 가이드 동행
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        329,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        42
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="10" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgny/900/600" alt="뉴욕 6일 자유여행 핵심 패키지">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 north_america · 뉴욕 센트럴파크
-                                </div>
-                                <h3>뉴욕 6일 자유여행 핵심 패키지</h3>
-                                <p>
-                                    
-                                        
-                                            센트럴파크·타임스퀘어·MoMA
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        3,290,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        33
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="2" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgbusan/900/600" alt="부산 해운대 야경 &amp; 미식 1박2일">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 asia · 부산 해운대 해수욕장
-                                </div>
-                                <h3>부산 해운대 야경 &amp; 미식 1박2일</h3>
-                                <p>
-                                    
-                                        
-                                            마린시티 야경과 자갈치 회센터 투어
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        189,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        31
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="9" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkgbangkok/900/600" alt="방콕 4박5일 사원 &amp; 마사지 힐링">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 asia · 방콕 왓아룬
-                                </div>
-                                <h3>방콕 4박5일 사원 &amp; 마사지 힐링</h3>
-                                <p>
-                                    
-                                        
-                                            왓아룬·왓포 + 전통 타이마사지
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        690,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        24
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                        
-                        
-
-                        <article class="home-package-card" data-spot-id="5" tabindex="0">
-                            <div class="home-package-img-wrap">
-                                
-                                    
-                                        <img class="home-package-img" src="https://picsum.photos/seed/pkggn/900/600" alt="강릉 바다 &amp; 카페투어 1박2일">
-                                    
-                                    
-                                
-
-                                
-                            </div>
-
-                            <div class="home-package-body">
-                                <div class="home-package-spot">
-                                    📍 asia · 강릉 안목해변 카페거리
-                                </div>
-                                <h3>강릉 바다 &amp; 카페투어 1박2일</h3>
-                                <p>
-                                    
-                                        
-                                            안목해변 카페거리 + 정동진 일출
-                                        
-                                        
-                                    
-                                </p>
-                                <div class="home-package-meta">
-                                    <span>
-                                        145,000
-                                        KRW
-                                    </span>
-                                    <span>
-                                        예약
-                                        19
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-<!-- ===== 트렌딩 여행 코스 섹션 ===== -->
-<section class="cs bg">
-    <div class="si">
-        <div class="sh">
-            <h2 class="st">트렌딩 여행 코스</h2>
-            <button class="vm" onclick="location.href='/TripTogether/courses/list'">더보기 →</button>
-        </div>
-        <div id="plansSection">
-            
-                
-                
-                    <div class="home-grid">
-                        
-                            
-                                <div class="cc-wrap" data-plan-id="1" style="cursor: pointer;">
-                                        <div class="tc">
-                                            <div class="tc-iw">
-                                                
-                                                    
-                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593754/community_default/oceania.jpg" alt="제주 가족여행 3박4일">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="tc-b">
-                                                <div class="tc-title">제주 가족여행 3박4일</div>
-                                                <div class="tc-foot">
-                                                    <span class="tc-auth">by {0}</span>
-                                                    
-                                                        <span class="tc-dest">📍 제주</span>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-plan-id="2" style="cursor: pointer;">
-                                        <div class="tc">
-                                            <div class="tc-iw">
-                                                
-                                                    
-                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593746/community_default/north_america.jpg" alt="파리 허니문 5일 코스">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="tc-b">
-                                                <div class="tc-title">파리 허니문 5일 코스</div>
-                                                <div class="tc-foot">
-                                                    <span class="tc-auth">by {0}</span>
-                                                    
-                                                        <span class="tc-dest">📍 파리</span>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-plan-id="3" style="cursor: pointer;">
-                                        <div class="tc">
-                                            <div class="tc-iw">
-                                                
-                                                    
-                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593736/community_default/europe.jpg" alt="부산 1박2일 미식투어">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                            <span class="tc-badge tc-badge-short">{0}박 {1}일</span>
-                                                        
-                                                        
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="tc-b">
-                                                <div class="tc-title">부산 1박2일 미식투어</div>
-                                                <div class="tc-foot">
-                                                    <span class="tc-auth">by {0}</span>
-                                                    
-                                                        <span class="tc-dest">📍 부산</span>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                                <div class="cc-wrap" data-plan-id="4" style="cursor: pointer;">
-                                        <div class="tc">
-                                            <div class="tc-iw">
-                                                
-                                                    
-                                                        <img class="tc-img" src="https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593731/community_default/asia.jpg" alt="유럽 3개국 2주 배낭여행">
-                                                    
-                                                    
-                                                
-                                                
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <span class="tc-badge tc-badge-long">{0}박 {1}일</span>
-                                                        
-                                                    
-                                                
-                                            </div>
-                                            <div class="tc-b">
-                                                <div class="tc-title">유럽 3개국 2주 배낭여행</div>
-                                                <div class="tc-foot">
-                                                    <span class="tc-auth">by {0}</span>
-                                                    
-                                                        <span class="tc-dest">📍 파리/로마/바르셀로나</span>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            
-                            
-                            
-                        </div>
-                
-            
-        </div>
-    </div>
-</section>
-
-<!-- ===== 커뮤니티 미리보기 섹션 ===== -->
-<section class="cs">
-    <div class="si">
-        <div class="sh">
-            <h2 class="st">인기 여행 이야기</h2>
-            <button class="vm" onclick="location.href='../community/list.html'">더보기 →</button>
-        </div>
-        <div id="communitySection">
-            
-                
-                
-                    <div class="home-grid">
-                        
-                            
-                                    
-                                    
-                                        
-                                        
-                                        
-                                        <div class="cc-wrap" data-id="7" style="cursor: pointer;">
-                                            
-                                            
-                                            <div class="cc">
-                                                <div class="cc-iw">
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
-                                                        
-                                                    
-                                                    <span class="cc-badge cc-badge-tip">
-                                                        
-                                                            
-                                                            
-                                                            팁
-                                                            
-                                                            
-                                                        
-                                                    </span>
-                                                </div>
-                                                <div class="cc-b">
-                                                    <div class="cc-title">유럽 3개국 2주 일정표 공유합니다</div>
-                                                    <div class="cc-foot">
-                                                        <div class="cc-auth">
-                                                            <div class="cc-av">장</div>
-                                                            <div>
-                                                                <div class="cc-an">장미네VIP</div>
-                                                                <div class="cc-dt">2026.06.09</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="cc-stats">
-                                                            <span>❤ 160</span>
-                                                            <span>💬 4</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    
-                        
-                            
-                                    
-                                    
-                                        
-                                        
-                                        
-                                        <div class="cc-wrap" data-id="3" style="cursor: pointer;">
-                                            
-                                            
-                                            <div class="cc">
-                                                <div class="cc-iw">
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
-                                                        
-                                                    
-                                                    <span class="cc-badge cc-badge-tip">
-                                                        
-                                                            
-                                                            
-                                                            팁
-                                                            
-                                                            
-                                                        
-                                                    </span>
-                                                </div>
-                                                <div class="cc-b">
-                                                    <div class="cc-title">파리 자유여행 가서 루브르 100% 즐기는 법</div>
-                                                    <div class="cc-foot">
-                                                        <div class="cc-auth">
-                                                            <div class="cc-av">윤</div>
-                                                            <div>
-                                                                <div class="cc-an">윤서진여행</div>
-                                                                <div class="cc-dt">2026.06.15</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="cc-stats">
-                                                            <span>❤ 142</span>
-                                                            <span>💬 5</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    
-                        
-                            
-                                    
-                                    
-                                        
-                                        
-                                        
-                                        <div class="cc-wrap" data-id="5" style="cursor: pointer;">
-                                            
-                                            
-                                            <div class="cc">
-                                                <div class="cc-iw">
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
-                                                        
-                                                    
-                                                    <span class="cc-badge cc-badge-tip">
-                                                        
-                                                            
-                                                            
-                                                            팁
-                                                            
-                                                            
-                                                        
-                                                    </span>
-                                                </div>
-                                                <div class="cc-b">
-                                                    <div class="cc-title">도쿄 디즈니랜드 어트랙션 공략 순서</div>
-                                                    <div class="cc-foot">
-                                                        <div class="cc-auth">
-                                                            <div class="cc-av">임</div>
-                                                            <div>
-                                                                <div class="cc-an">임도현</div>
-                                                                <div class="cc-dt">2026.06.11</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="cc-stats">
-                                                            <span>❤ 98</span>
-                                                            <span>💬 3</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    
-                        
-                            
-                                    
-                                    
-                                        
-                                        
-                                        
-                                        <div class="cc-wrap" data-id="1" style="cursor: pointer;">
-                                            
-                                            
-                                            <div class="cc">
-                                                <div class="cc-iw">
-                                                    
-                                                        
-                                                        
-                                                        
-                                                            <div class="cc-img" style="background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px;">✈</div>
-                                                        
-                                                    
-                                                    <span class="cc-badge cc-badge-review">
-                                                        
-                                                            여행후기
-                                                            
-                                                            
-                                                            
-                                                            
-                                                        
-                                                    </span>
-                                                </div>
-                                                <div class="cc-b">
-                                                    <div class="cc-title">제주 3박4일 다녀온 후기 (사진 많음)</div>
-                                                    <div class="cc-foot">
-                                                        <div class="cc-auth">
-                                                            <div class="cc-av">여</div>
-                                                            <div>
-                                                                <div class="cc-an">여행가김철수</div>
-                                                                <div class="cc-dt">2026.06.14</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="cc-stats">
-                                                            <span>❤ 86</span>
-                                                            <span>💬 4</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    
-                        
-                    </div>
-                
-            
-        </div>
-    </div>
-</section>
-
-<script>
-    var ctx            = '/TripTogether';
-    var adminMode      = false;
-    var fallbackImgUrl = 'https://res.cloudinary.com/dpwkbo5lk/image/upload/v1781593736/community_default/europe.jpg';
-
-
-    function spotImgError(img) {
-        if (fallbackImgUrl) {
-            img.onerror = null;
-            img.src = fallbackImgUrl;
-        } else {
-            img.outerHTML = '<div class="dc-img-placeholder">'
-                + '<span class="dc-ph-icon">&#9992;</span>'
-                + '<span class="dc-ph-name">' + escHtml(img.alt) + '</span>'
-                + '</div>';
-        }
-    }
-
-    function escHtml(s) {
-        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function removeReportBlur(overlay) {
-        var wrap = overlay.closest('.report-blurred-wrap');
-        wrap.classList.remove('report-blurred-wrap');
-        overlay.previousElementSibling.classList.remove('report-blurred');
-        overlay.remove();
-    }
-
-    /* ===== 인기 여행지 카드 클릭 ===== */
-    var spotsSection = document.getElementById('spotsSection');
-    if (spotsSection) {
-        spotsSection.querySelectorAll('.cc-wrap[data-spot-id]').forEach(function (wrap) {
-            wrap.style.cursor = 'pointer';
-            wrap.addEventListener('click', function () {
-                location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
-            });
-        });
-    }
-
-    /* ===== 트렌딩 코스 카드 클릭 ===== */
-    var plansSection = document.getElementById('plansSection');
-    if (plansSection) {
-        plansSection.querySelectorAll('.cc-wrap[data-plan-id]').forEach(function (wrap) {
-            wrap.style.cursor = 'pointer';
-            wrap.addEventListener('click', function () {
-                location.href = ctx + '/courses/detail?planId=' + this.getAttribute('data-plan-id');
-            });
-        });
-    }
-
-    /* ===== 추천 여행 패키지 자동 슬라이드 ===== */
-    var packageTrack = document.getElementById('homePackageTrack');
-    var packageSlider = document.getElementById('homePackageSlider');
-    var packagePrevBtn = document.getElementById('packagePrevBtn');
-    var packageNextBtn = document.getElementById('packageNextBtn');
-    var packageAutoTimer = null;
-
-    function getPackageStep() {
-        if (!packageTrack) return 0;
-        var firstCard = packageTrack.querySelector('.home-package-card');
-        if (!firstCard) return 0;
-        var gap = 24;
-        return (firstCard.offsetWidth + gap) * 3;
-    }
-
-    function movePackageSlider(direction) {
-        if (!packageSlider || !packageTrack) return;
-
-        var step = getPackageStep();
-        if (step <= 0) return;
-
-        var maxScroll = packageTrack.scrollWidth - packageSlider.clientWidth;
-        var nextLeft = packageSlider.scrollLeft + (step * direction);
-
-        if (nextLeft > maxScroll - 4) {
-            nextLeft = 0;
-        }
-        if (nextLeft < 0) {
-            nextLeft = maxScroll;
-        }
-
-        packageSlider.scrollTo({
-            left: nextLeft,
-            behavior: 'smooth'
-        });
-    }
-
-    function startPackageAutoSlide() {
-        if (!packageSlider || packageAutoTimer) return;
-        packageAutoTimer = window.setInterval(function () {
-            movePackageSlider(1);
-        }, 4500);
-    }
-
-    function stopPackageAutoSlide() {
-        if (!packageAutoTimer) return;
-        window.clearInterval(packageAutoTimer);
-        packageAutoTimer = null;
-    }
-
-    if (packageSlider) {
-        if (packagePrevBtn) {
-            packagePrevBtn.addEventListener('click', function () {
-                movePackageSlider(-1);
-            });
-        }
-        if (packageNextBtn) {
-            packageNextBtn.addEventListener('click', function () {
-                movePackageSlider(1);
-            });
-        }
-
-        packageSlider.addEventListener('mouseenter', stopPackageAutoSlide);
-        packageSlider.addEventListener('mouseleave', startPackageAutoSlide);
-
-        packageSlider.querySelectorAll('.home-package-card[data-spot-id]').forEach(function (card) {
-            card.addEventListener('click', function () {
-                location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
-            });
-            card.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    location.href = ctx + '/detail/' + this.getAttribute('data-spot-id');
-                }
-            });
-        });
-
-        document.querySelectorAll('[data-home-package-list-url]').forEach(function (button) {
-            button.addEventListener('click', function () {
-                location.href = this.getAttribute('data-home-package-list-url');
-            });
-        });
-
-        startPackageAutoSlide();
-    }
-
-    /* ===== 인기 여행 이야기 카드 클릭 ===== */
-    var communitySection = document.getElementById('communitySection');
-    if (communitySection) {
-        communitySection.querySelectorAll('.cc-wrap[data-id]').forEach(function (wrap) {
-            wrap.style.cursor = 'pointer';
-            wrap.addEventListener('click', function () {
-                location.href = ctx + '/community/' + this.getAttribute('data-id');
-            });
-        });
-    }
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="../resources/css/common/chatbot.css">
-
-<footer class="site-footer">
-    <div class="si">
-        <div class="footer-inner">
-            <div class="footer-logo">
-                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
-                <span class="logo-text" style="font-size:18px;">TripTogether</span>
-            </div>
-            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
-                &nbsp;·&nbsp;
-                <a href="../inquiry/list.html" class="footer-inquiry-link">문의하기</a>
-            </p>
-        </div>
-    </div>
-</footer>
-
-<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
-    <span id="cb-toggle-icon">✈️</span>
-    <span id="chatbot-badge"></span>
-</button>
-
-<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
-
-    
-    
-        <aside id="cb-sidebar" class="cb-sidebar">
-            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
-            <div id="cb-conv-list" class="cb-conv-list"></div>
-            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
-                현재 대화 초기화
-            </button>
-        </aside>
-    
-
-    
-    <section class="cb-main">
-        <div class="cb-header">
-            <div class="cb-avatar">✈️</div>
-            <div class="cb-header-info">
-                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
-                <div class="cb-header-status">
-                    <span class="cb-dot"></span>
-                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
-                </div>
-            </div>
-            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
-        </div>
-
-        <div class="cb-body" id="cb-body"></div>
-
-        <div class="cb-footer">
-            
-            
-            <div class="cb-suggestions" id="cb-suggestions"></div>
-            <div class="cb-input-row">
-                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
-                <button id="cb-send" aria-label="전송">➤</button>
-            </div>
-        </div>
-    </section>
+    <div class="adm-backdrop" id="admBackdrop" hidden=""></div>
 </div>
-
-<script>
-    window.__chatbotConfig = {
-        ctx: '/TripTogether',
-        loggedIn: true,
-        locale: 'ko',
-        msg: {
-            suggestPopular:       '인기 여행지 추천 ✈️',
-            suggestPopularMsg:    '인기 여행지를 추천해줘',
-            suggestCourses:       '여행 코스 보기 🗺️',
-            suggestCoursesMsg:    '여행 코스를 보고 싶어',
-            suggestAssistant:     'AI 도우미 사용법 ✨',
-            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
-            suggestCommunity:     '커뮤니티 둘러보기 💬',
-            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
-            suggestAuth:          '로그인 \/ 회원가입 👤',
-            suggestAuthMsg:       '로그인하려면 어떻게 해?',
-            welcomeTitle:         '👋 안녕하세요!',
-            welcomeBody1:         'TripTogether 여행 도우미입니다.',
-            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
-            error:                '오류 발생',
-            menuRename:           '이름 변경',
-            menuDelete:           '삭제',
-            confirmDelete:        '이 대화를 삭제할까요?',
-            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
-            confirmYes:           '삭제',
-            confirmNo:            '취소',
-            editPlaceholder:      '제목을 입력하세요',
-            openNewTab:           '새 창에서 열기'
-        }
-    };
-</script>
-<script src="../resources/js/common/chatbot.js" defer=""></script>
-
 
 
 
