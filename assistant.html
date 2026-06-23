@@ -1,0 +1,1309 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="_csrf" content="8xSu6GzxYe80IKgFANGK3F-_I-ydIbiCRi8lVTrBQNviOA1RliaejlzJUdoZRZFjZvy-umaPDo6sE4ivfkpAbQ75I76DCG5h">
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <script>
+    (function () {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var header = headerMeta ? headerMeta.getAttribute('content') : null;
+        if (!token || !header) return;
+
+        // fetch monkey-patch: 같은 origin 의 요청에 자동으로 CSRF 헤더 첨부
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            init = init || {};
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var sameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+            if (sameOrigin) {
+                if (init.headers instanceof Headers) {
+                    init.headers.set(header, token);
+                } else if (Array.isArray(init.headers)) {
+                    init.headers.push([header, token]);
+                } else {
+                    init.headers = init.headers || {};
+                    init.headers[header] = token;
+                }
+            }
+            return origFetch.call(this, input, init);
+        };
+
+        // jQuery 가 로드된 시점에 ajaxSetup (jQuery 사용처 자동 적용)
+        (function trySetupJQuery(retry) {
+            if (window.jQuery) {
+                window.jQuery.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    }
+                });
+            } else if (retry < 30) {
+                setTimeout(function () { trySetupJQuery(retry + 1); }, 100);
+            }
+        })(0);
+    })();
+    </script>
+    <script>
+    (function () {
+        // 구버전 키(sa_theme) → 신규 키(tt_theme) 일회성 마이그레이션
+        try {
+            var legacy = localStorage.getItem('sa_theme');
+            if (legacy !== null) {
+                if (!localStorage.getItem('tt_theme')) {
+                    localStorage.setItem('tt_theme', legacy === 'sa-light' ? 'light' : 'dark');
+                }
+                localStorage.removeItem('sa_theme');
+            }
+            // 일반 사이트 기본은 라이트. tt_theme === 'dark' 일 때만 html.dark 적용
+            if (localStorage.getItem('tt_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <link rel="icon" type="image/png" href="TripTogetherFavicon.png"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="resources/css/common/reset.css">
+    <link rel="stylesheet" href="resources/css/common/variables.css">
+    <link rel="stylesheet" href="resources/css/common/layout.css">
+    <link rel="stylesheet" href="resources/css/common/header.css">
+    <link rel="stylesheet" href="resources/css/common/notification.css">
+    <link rel="stylesheet" href="resources/css/common/item-effects.css">
+    <link rel="stylesheet" href="resources/css/common/dark-theme.css">
+    
+        <link rel="stylesheet" href="resources/css/assistant/assistant.css">
+    
+</head>
+<body><header>
+    <div class="hi">
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴" aria-expanded="false" aria-controls="primaryNav">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+        <div class="logo" onclick="location.href='index.html'">
+            <div class="logo-icon">🌐</div>
+            <span class="logo-text">TripTogether</span>
+        </div>
+        <nav id="primaryNav">
+            <button class="nb" onclick="location.href='explore.html'">여행지 탐색</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">플래너</button>
+                <div class="nb-drop-menu">
+                    <a href="courses.html">여행 코스</a>
+                    <a href="assistant.html">AI 도우미</a>
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='community/list.html'">커뮤니티</button>
+
+            <div class="nb-drop">
+                <button type="button" class="nb nb-drop-trigger">쇼핑</button>
+                <div class="nb-drop-menu">
+                    <a href="wallet.html">내 지갑</a>
+                    <a href="shop.html">아이템샵</a>
+                    <a href="packages.html">패키지</a>
+                    
+                </div>
+            </div>
+
+            <button class="nb" onclick="location.href='mypage.html'">마이페이지</button>
+            
+
+        </nav>
+        <div class="hr">
+            <button type="button" class="tt-theme-btn" id="ttThemeBtn" aria-label="테마 전환" data-light-label="밝게" data-dark-label="어둡게">
+                <span class="tt-theme-icon">🌙</span>
+                <span class="tt-theme-label">어둡게</span>
+            </button>
+            <label>
+                <select class="lang-sel" id="langSel">
+                    <option value="ko" selected="">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                </select>
+            </label>
+            
+                
+                    
+                    <div class="noti-wrap">
+                        <button type="button" class="noti-bell" id="notiBell" aria-label="알림">
+                            <span class="noti-bell-icon">🔔</span>
+                            
+                                <span class="noti-badge">1</span>
+                            
+                        </button>
+                        <div class="noti-dropdown" id="notiDropdown" hidden="">
+                            <div class="noti-dropdown-head">
+                                <span class="noti-dropdown-title">알림</span>
+                                <button type="button" class="noti-mark-all" id="notiMarkAll">모두 읽음</button>
+                            </div>
+                            <div class="noti-dropdown-body">
+                                
+                                    
+                                    
+                                        
+                                            
+                                            
+                                            <div class="noti-row " data-id="1" data-target="/TripTogether/community/1">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">회원님의 게시글에 새 댓글이 달렸습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="2" data-target="/TripTogether/mypage/bookings">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">제주 2박3일 패키지 예약이 확정되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                            
+                                            
+                                                
+                                            
+                                            <div class="noti-row is-read" data-id="3" data-target="/TripTogether/mypage/points">
+                                                <span class="noti-type">
+                                                    
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        
+                                                        [알림]
+                                                    
+                                                </span>
+                                                <span class="noti-msg">리뷰 작성으로 500P가 적립되었습니다.</span>
+                                                <span class="noti-date">
+                                                    06-16 16:15
+                                                </span>
+                                            </div>
+                                        
+                                    
+                                
+                            </div>
+                            <div class="noti-dropdown-foot">
+                                <a href="mypage.html">전체 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="user-nick">여행가김철수</span>
+                    <button class="btn-out" onclick="location.href='/TripTogether/auth/logout'">로그아웃</button>
+                
+                
+            
+        </div>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+</header>
+
+
+
+<script>
+window.__notificationConfig = {
+    ctx: '/TripTogether',
+    locale: 'ko',
+    labels: {
+        typeCommunity: '[커뮤니티]',
+        typeInquiry: '[문의]',
+        typeReport: '[신고]',
+        typeLevelup: '[레벨업]',
+        typeGrade: '[등급]',
+        typeAccountBlock: '[계정]',
+        typeDefault: '[알림]',
+        close: '닫기',
+        justNow: '방금 전',
+        view: '보기'
+    }
+};
+
+(function () {
+    const btn = document.getElementById('ttThemeBtn');
+    if (!btn) return;
+
+    const iconEl = btn.querySelector('.tt-theme-icon');
+    const labelEl = btn.querySelector('.tt-theme-label');
+    const lightLabel = btn.dataset.lightLabel;
+    const darkLabel = btn.dataset.darkLabel;
+
+    const syncIcon = function () {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+        if (labelEl) labelEl.textContent = isDark ? lightLabel : darkLabel;
+    };
+    syncIcon();
+
+    btn.addEventListener('click', function () {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('tt_theme', 'light');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('tt_theme', 'dark');
+        }
+        syncIcon();
+    });
+})();
+
+(function () {
+    const langSel = document.getElementById('langSel');
+    if (!langSel) return;
+
+    langSel.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', this.value);
+        window.location.href = url.toString();
+    });
+})();
+
+(function () {
+    const navButtons = document.querySelectorAll('.js-header-nav[data-url]');
+    navButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.location.href = button.dataset.url;
+        });
+    });
+})();
+
+(function () {
+    const toggle   = document.getElementById('navToggle');
+    const nav      = document.getElementById('primaryNav');
+    const backdrop = document.getElementById('navBackdrop');
+    if (!toggle || !nav || !backdrop) return;
+
+    const mqMobile = window.matchMedia('(max-width: 767px)');
+
+    function openNav() {
+        nav.classList.add('is-open');
+        backdrop.hidden = false;
+        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('nav-lock');
+    }
+    function closeNav() {
+        nav.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        backdrop.hidden = true;
+        toggle.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-lock');
+        document.querySelectorAll('.nb-drop.is-open').forEach(function (d) { d.classList.remove('is-open'); });
+    }
+    function toggleNav() {
+        if (nav.classList.contains('is-open')) closeNav(); else openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+    backdrop.addEventListener('click', closeNav);
+
+    // 모바일에서 nav 내부 일반 버튼/링크 클릭 시 닫기 (드롭다운 트리거 제외)
+    nav.addEventListener('click', function (e) {
+        if (!mqMobile.matches) return;
+        const trigger = e.target.closest('.nb-drop-trigger');
+        if (trigger) return;
+        const interactive = e.target.closest('a, button');
+        if (interactive) closeNav();
+    });
+
+    // 드롭다운 (플래너·쇼핑) 모바일 클릭 토글
+    document.querySelectorAll('.nb-drop-trigger').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (!mqMobile.matches) return;
+            e.preventDefault();
+            const drop = btn.closest('.nb-drop');
+            if (!drop) return;
+            document.querySelectorAll('.nb-drop.is-open').forEach(function (d) {
+                if (d !== drop) d.classList.remove('is-open');
+            });
+            drop.classList.toggle('is-open');
+        });
+    });
+
+    // 데스크탑 폭으로 넓어지면 강제 닫기
+    const mqClose = window.matchMedia('(min-width: 768px)');
+    const handleChange = function (e) { if (e.matches) closeNav(); };
+    if (mqClose.addEventListener) mqClose.addEventListener('change', handleChange);
+    else if (mqClose.addListener) mqClose.addListener(handleChange);
+})();
+</script>
+
+<script src="resources/js/common/notification.js" defer=""></script>
+<div class="chat-wrap">
+  <aside class="chat-side">
+    <div class="side-header">
+      <div class="ai-avatar">✈️</div>
+      <div class="ai-info">
+        <div class="ai-name">TripTogether AI</div>
+        <div class="ai-status"><span class="dot"></span>온라인 · AI 여행 도우미</div>
+      </div>
+    </div>
+    <div class="side-desc"><p>가고 싶은 도시와 일정, 여행 스타일만 알려주세요. 맞춤 여행 코스를 추천해 드립니다.</p></div>
+    <div class="quick-title">빠른 질문</div>
+    <div class="quick-btns">
+      <button class="qb" onclick="sendQuick('도쿄 3박 4일 일정 추천해줘')">🗼 도쿄 3박4일</button>
+      <button class="qb" onclick="sendQuick('가성비 좋은 여행지 알려줘')">💰 가성비 여행</button>
+      <button class="qb" onclick="sendQuick('동남아 배낭여행 코스 짜줘')">🎒 배낭여행</button>
+      <button class="qb" onclick="sendQuick('제주도 2박 3일 일정 추천해줘')">🌴 제주 2박3일</button>
+      <button class="qb" onclick="sendQuick('혼자 떠나는 여행지 추천해줘')">🧳 나홀로 여행</button>
+      <button class="qb" onclick="sendQuick('해외여행 준비물 체크리스트 알려줘')">✅ 준비물 체크</button>
+    </div>
+    <div class="history-section">
+      <div class="history-header"><span class="history-title">대화 기록</span></div>
+      <div class="history-list">
+        <div class="history-item active">
+          <button type="button" class="history-load-btn">제주 2박3일 일정</button>
+          <button type="button" class="history-edit-btn" onclick="startNewChat()">수정</button>
+          <button type="button" class="history-delete-btn" onclick="startNewChat()">삭제</button>
+        </div>
+        <div class="history-item">
+          <button type="button" class="history-load-btn">도쿄 맛집 추천</button>
+          <button type="button" class="history-edit-btn" onclick="startNewChat()">수정</button>
+          <button type="button" class="history-delete-btn" onclick="startNewChat()">삭제</button>
+        </div>
+        <div class="history-item">
+          <button type="button" class="history-load-btn">유럽 배낭여행 예산</button>
+          <button type="button" class="history-edit-btn" onclick="startNewChat()">수정</button>
+          <button type="button" class="history-delete-btn" onclick="startNewChat()">삭제</button>
+        </div>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="startNewChat()">+ 새 대화</button>
+  </aside>
+
+  <main class="chat-main">
+    <div class="chat-header">
+      <h2>AI 여행 어시스턴트</h2>
+      <span class="chat-sub">제주 2박3일 일정</span>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="msg-row ai">
+        <div class="msg-avatar">✈️</div>
+        <div class="msg-bubble">안녕하세요! TripTogether AI 여행 도우미예요. ✈️<br><br>어디로, 며칠 동안 떠나시나요?<br>여행 스타일(휴양·액티비티·맛집 등)을 알려주시면 맞춤 코스를 짜드릴게요.</div>
+      </div>
+      <div class="msg-row user">
+        <div class="msg-bubble">제주도 2박 3일 일정 추천해줘</div>
+      </div>
+      <div class="msg-row ai">
+        <div class="msg-avatar">✈️</div>
+        <div class="msg-bubble">제주 2박 3일 추천 코스예요 🌴<br><br><b>Day 1 · 제주 동부</b><br>• 성산일출봉 → 우도 → 섭지코지<br>• 저녁: 성산 흑돼지 거리<br><br><b>Day 2 · 제주 서부</b><br>• 한라산 1100고지 → 오설록 티뮤지엄 → 협재해수욕장<br>• 노을 명소: 애월 카페거리<br><br><b>Day 3 · 제주 시내</b><br>• 동문시장 → 용두암 → 공항<br><br>예산이나 맛집 위주로 더 다듬어 드릴까요?</div>
+      </div>
+      <div class="msg-row user">
+        <div class="msg-bubble">예산은 대략 어느 정도 들까?</div>
+      </div>
+      <div class="msg-row ai">
+        <div class="msg-avatar">✈️</div>
+        <div class="msg-bubble">1인 기준 대략 이렇게 잡으면 좋아요 💰<br><br>• 항공(왕복): 7~12만원<br>• 숙박(2박): 16~24만원<br>• 렌터카(3일): 9~15만원<br>• 식비·입장료: 12~18만원<br><br><b>합계 약 44~69만원</b> 정도예요. 시즌과 숙소 등급에 따라 달라질 수 있어요!</div>
+      </div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <div class="chat-input-inner">
+        <textarea id="chatInput" class="chat-input" placeholder="가고 싶은 여행지나 여행 스타일을 입력해 보세요" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()"><span id="sendIcon">➤</span></button>
+      </div>
+      <div class="chat-hint">데모 모드 — AI 응답은 예시이며 실제 서버와 연결되지 않습니다.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var CANNED = [
+    '좋은 선택이에요! 😊 추천 코스를 구성하고 있어요. 데모 모드에서는 예시 응답만 제공돼요 — 실제 서비스에서는 AI가 일정·예산·맛집까지 맞춤으로 추천해 드립니다.',
+    '여행 스타일에 맞춰 코스를 다듬어 볼게요. (데모에서는 실제 AI 응답이 제공되지 않아요.)',
+    '네, 알려주신 조건으로 일정을 정리해 볼게요! 실제 데모에서는 백엔드 연결 없이 예시만 보여드려요.'
+  ];
+  var ci = 0;
+  function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML.replace(/\n/g,'<br>'); }
+  function append(role, html){
+    var b=document.getElementById('chatBody');
+    var row=document.createElement('div');
+    row.className='msg-row '+role;
+    row.innerHTML=(role==='ai'?'<div class="msg-avatar">✈️</div>':'')+'<div class="msg-bubble">'+html+'</div>';
+    b.appendChild(row); b.scrollTop=b.scrollHeight;
+  }
+  window.sendMessage=function(){
+    var i=document.getElementById('chatInput'); var m=i.value.trim(); if(!m) return;
+    append('user', esc(m)); i.value=''; autoResize(i);
+    setTimeout(function(){ append('ai', CANNED[ci++ % CANNED.length]); }, 550);
+  };
+  window.sendQuick=function(t){ document.getElementById('chatInput').value=t; sendMessage(); };
+  window.handleKey=function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } };
+  window.autoResize=function(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,140)+'px'; };
+  window.startNewChat=function(){ if(window.__demoToast) window.__demoToast('데모에서는 대화 기록이 저장되지 않습니다.'); };
+})();
+</script>
+
+<link rel="stylesheet" href="resources/css/common/chatbot.css">
+<footer class="site-footer">
+    <div class="si">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🌐</div>
+                <span class="logo-text" style="font-size:18px;">TripTogether</span>
+            </div>
+            <p class="footer-copy">© 2026 TripTogether. All rights reserved. AI 기반 여행 플랫폼
+                &nbsp;·&nbsp;
+                <a href="inquiry/list.html" class="footer-inquiry-link">문의하기</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<button id="chatbot-toggle" aria-label="TripTogether 도우미 열기" title="AI 여행 도우미">
+    <span id="cb-toggle-icon">✈️</span>
+    <span id="chatbot-badge"></span>
+</button>
+
+<div id="chatbot-box" role="dialog" aria-label="TripTogether 도우미">
+
+    
+    
+        <aside id="cb-sidebar" class="cb-sidebar">
+            <button type="button" id="cb-new" class="cb-new-btn">＋ 새 대화</button>
+            <div id="cb-conv-list" class="cb-conv-list"></div>
+            <button type="button" id="cb-reset" class="cb-new-btn cb-new-btn--reset" title="현재 대화 초기화" hidden="">
+                현재 대화 초기화
+            </button>
+        </aside>
+    
+
+    
+    <section class="cb-main">
+        <div class="cb-header">
+            <div class="cb-avatar">✈️</div>
+            <div class="cb-header-info">
+                <div class="cb-header-name" id="cb-header-title">TripTogether 도우미</div>
+                <div class="cb-header-status">
+                    <span class="cb-dot"></span>
+                    <span>TripTogether 챗봇 도우미가 답변합니다</span>
+                </div>
+            </div>
+            <button class="cb-close" id="cb-close" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="cb-body" id="cb-body"></div>
+
+        <div class="cb-footer">
+            
+            
+            <div class="cb-suggestions" id="cb-suggestions"></div>
+            <div class="cb-input-row">
+                <textarea id="cb-input" placeholder="TripTogether에 대해 물어보세요..." rows="1"></textarea>
+                <button id="cb-send" aria-label="전송">➤</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    window.__chatbotConfig = {
+        ctx: '/TripTogether',
+        loggedIn: true,
+        locale: 'ko',
+        msg: {
+            suggestPopular:       '인기 여행지 추천 ✈️',
+            suggestPopularMsg:    '인기 여행지를 추천해줘',
+            suggestCourses:       '여행 코스 보기 🗺️',
+            suggestCoursesMsg:    '여행 코스를 보고 싶어',
+            suggestAssistant:     'AI 도우미 사용법 ✨',
+            suggestAssistantMsg:  'AI 도우미는 어떻게 쓰나요?',
+            suggestCommunity:     '커뮤니티 둘러보기 💬',
+            suggestCommunityMsg:  '커뮤니티에서 뭘 할 수 있어?',
+            suggestAuth:          '로그인 \/ 회원가입 👤',
+            suggestAuthMsg:       '로그인하려면 어떻게 해?',
+            welcomeTitle:         '👋 안녕하세요!',
+            welcomeBody1:         'TripTogether 여행 도우미입니다.',
+            welcomeBody2:         '여행지 추천, 코스 정보, 사이트 이용 방법 등 무엇이든 물어보세요!',
+            error:                '오류 발생',
+            menuRename:           '이름 변경',
+            menuDelete:           '삭제',
+            confirmDelete:        '이 대화를 삭제할까요?',
+            confirmReset:         '현재 대화를 초기화하고 새 대화를 시작할까요?',
+            confirmYes:           '삭제',
+            confirmNo:            '취소',
+            editPlaceholder:      '제목을 입력하세요',
+            openNewTab:           '새 창에서 열기'
+        }
+    };
+</script>
+<script src="resources/js/common/chatbot.js" defer=""></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll('input[name="tags"]');
+  const max = 4;
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", function () {
+      const checked = document.querySelectorAll('input[name="tags"]:checked');
+
+      if (checked.length > max) {
+        this.checked = false;
+        alert("\uD0DC\uADF8\uB294 \uCD5C\uB300 4\uAC1C\uAE4C\uC9C0 \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.");
+      }
+    });
+  });
+});
+
+  (function () {
+    'use strict';
+
+    const ctx = '/TripTogether';
+    const currentTab = 'all';
+    const savedRegion = '';
+    const savedTheme = '';
+    const overlay = document.getElementById('loadingOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+
+    function showLoading(on) {
+      overlay.classList.toggle('show', on);
+    }
+
+    window.addEventListener('pageshow', function () {
+      showLoading(false);
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function navigate(params) {
+      showLoading(true);
+      const q = new URLSearchParams();
+      q.set('tab', params.tab || 'all');
+      if (params.keyword && params.keyword !== '') q.set('keyword', params.keyword);
+      if (params.region && params.region !== '') q.set('region', params.region);
+      if (params.theme && params.theme !== '') q.set('theme', params.theme);
+      if (params.page && params.page > 1) q.set('page', params.page);
+      window.location.href = ctx + '/explore?' + q.toString();
+    }
+
+    function mergedParams(overrides) {
+      return Object.assign({
+        tab: currentTab,
+        keyword: searchInput.value.trim(),
+        region: savedRegion,
+        theme: savedTheme
+      }, overrides);
+    }
+
+    document.querySelectorAll('.exp-tab-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const tab = this.dataset.tab;
+        if (tab === currentTab) return;
+        navigate({ tab: tab, keyword: searchInput.value.trim() });
+      });
+    });
+
+    /* ------------------------------------------------------------
+       Suggest dropdown logic
+       - Send AJAX request when keyword length is 2 or more
+       - Render up to 7 suggestions from /explore/suggest
+       - Search immediately when the user picks a suggestion
+       ------------------------------------------------------------ */
+    const suggestDropdown = document.getElementById('suggestDropdown');
+    let searchTimer;      // debounce timer for search
+    let suggestTimer;     // debounce timer for suggestions
+    let selectedSuggestIdx = -1;  // highlighted suggestion index
+
+    /**
+     * Fetch suggestions from the server and render the dropdown.
+     * @param {string} keyword - current search keyword
+     */
+    function fetchSuggestions(keyword) {
+      // Close dropdown when the keyword is shorter than 2 characters.
+      if (!keyword || keyword.length < 2) {
+        suggestDropdown.innerHTML = '';
+        suggestDropdown.classList.remove('show');
+        return;
+      }
+
+      // Request suggestions from the server.
+      fetch(ctx + '/explore/suggest?q=' + encodeURIComponent(keyword))
+        .then(r => r.json())
+        .then(data => {
+          // Reset highlighted suggestion index.
+          selectedSuggestIdx = -1;
+
+          // Hide dropdown when there are no results.
+          if (!data || data.length === 0) {
+            suggestDropdown.innerHTML = '';
+            suggestDropdown.classList.remove('show');
+            return;
+          }
+
+          // Build suggestion items.
+          suggestDropdown.innerHTML = data.map(function(item, idx) {
+            // Highlight the matching part in the suggestion name.
+            var name = escapeHtml(item.name || '');
+            var region = escapeHtml(item.region || '');
+            var address = escapeHtml(item.address || '');
+            var highlighted = highlightMatch(name, keyword);
+
+            return '<li class="suggest-item" data-idx="' + idx + '" data-name="' + name + '">'
+              + '<span class="suggest-name">' + highlighted + '</span>'
+              + '<span class="suggest-region">' + region + (address ? ' / ' + address : '') + '</span>'
+              + '</li>';
+          }).join('');
+
+          suggestDropdown.classList.add('show');
+
+          // Register click handler for each suggestion item.
+          suggestDropdown.querySelectorAll('.suggest-item').forEach(function(li) {
+            li.addEventListener('mousedown', function(e) {
+              // Use mousedown so it runs before blur.
+              e.preventDefault();
+              var selectedName = this.dataset.name;
+              searchInput.value = selectedName;
+              suggestDropdown.classList.remove('show');
+              // Run search immediately with the selected keyword.
+              clearTimeout(searchTimer);
+              navigate(mergedParams({ keyword: selectedName, page: 1 }));
+            });
+          });
+        })
+        .catch(function() {
+          suggestDropdown.classList.remove('show');
+        });
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS.
+     */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /**
+     * Highlight the matching keyword with <mark> tags.
+     * @param {string} text - source text
+     * @param {string} keyword - keyword to highlight
+     * @returns {string} highlighted HTML string
+     */
+    function highlightMatch(text, keyword) {
+  if (!keyword) return text;
+  var escaped = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\$&');
+  var regex = new RegExp('(' + escaped + ')', 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+}
+
+    // Update suggestions on input, but do not search immediately.
+    // Search runs only on Enter or suggestion click.
+    searchInput.addEventListener('input', function () {
+      var val = this.value.trim();
+      // X 버튼 표시/숨김 토글
+      searchClear.classList.toggle('visible', this.value.length > 0);
+
+      // Refresh suggestions with a 300ms debounce.
+      clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(function() { fetchSuggestions(val); }, 300);
+    });
+
+    // Handle keyboard interaction for the suggestion dropdown.
+    searchInput.addEventListener('keydown', function (e) {
+      var items = suggestDropdown.querySelectorAll('.suggest-item');
+
+      if (e.key === 'ArrowDown') {
+        // ArrowDown: move to the next suggestion.
+        e.preventDefault();
+        selectedSuggestIdx = Math.min(selectedSuggestIdx + 1, items.length - 1);
+        updateSuggestHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        // ArrowUp: move to the previous suggestion.
+        e.preventDefault();
+        selectedSuggestIdx = Math.max(selectedSuggestIdx - 1, 0);
+        updateSuggestHighlight(items);
+      } else if (e.key === 'Enter') {
+        // Enter: use selected suggestion or current input value.
+        e.preventDefault();
+        clearTimeout(searchTimer);
+        clearTimeout(suggestTimer);
+        if (selectedSuggestIdx >= 0 && items[selectedSuggestIdx]) {
+          var selectedName = items[selectedSuggestIdx].dataset.name;
+          searchInput.value = selectedName;
+          suggestDropdown.classList.remove('show');
+          navigate(mergedParams({ keyword: selectedName, page: 1 }));
+        } else {
+          suggestDropdown.classList.remove('show');
+          navigate(mergedParams({ keyword: this.value.trim(), page: 1 }));
+        }
+      } else if (e.key === 'Escape') {
+        // Escape: close the suggestion dropdown.
+        suggestDropdown.classList.remove('show');
+        selectedSuggestIdx = -1;
+      }
+    });
+
+    /**
+     * Apply highlight class to the currently selected suggestion.
+     * @param {NodeList} items - all dropdown <li> elements
+     */
+    function updateSuggestHighlight(items) {
+      items.forEach(function(li, i) {
+        li.classList.toggle('highlighted', i === selectedSuggestIdx);
+      });
+      // Preview selected suggestion text in the search input.
+      if (selectedSuggestIdx >= 0 && items[selectedSuggestIdx]) {
+        searchInput.value = items[selectedSuggestIdx].dataset.name;
+      }
+    }
+
+    // Close dropdown when the search input loses focus.
+    searchInput.addEventListener('blur', function () {
+      // Delay to allow suggestion click handling first.
+      setTimeout(function() {
+        suggestDropdown.classList.remove('show');
+      }, 200);
+    });
+
+    // Show suggestions again on focus when the keyword is long enough.
+    searchInput.addEventListener('focus', function () {
+      if (this.value.trim().length >= 2) {
+        fetchSuggestions(this.value.trim());
+      }
+    });
+
+    // Clear search keyword and hide the suggestion dropdown.
+    searchClear.addEventListener('click', function () {
+      searchInput.value = '';
+      searchClear.classList.remove('visible');
+      suggestDropdown.classList.remove('show');
+      navigate(mergedParams({ keyword: '', page: 1 }));
+    });
+
+    document.querySelectorAll('#regionFilters .filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        navigate({ tab: 'region', region: this.dataset.region, keyword: searchInput.value.trim(), page: 1 });
+      });
+    });
+
+    document.querySelectorAll('#themeFilters .filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        navigate({ tab: 'theme', theme: this.dataset.theme, keyword: searchInput.value.trim(), page: 1 });
+      });
+    });
+
+    document.querySelectorAll('#pagination .page-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const p = parseInt(this.dataset.page, 10);
+        if (!isNaN(p)) navigate(mergedParams({ page: p }));
+      });
+    });
+
+    document.querySelectorAll('.spot-card[data-spot-idx]').forEach(card => {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('.action-btn')) return;
+        window.location.href = ctx + '/detail/' + this.dataset.spotIdx;
+      });
+    });
+
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const idx = this.closest('.spot-card').dataset.spotIdx;
+        toggleAction('/explore/favorite/' + idx, this, '\uD83D\uDCCC', '\uD83D\uDCCD', '\uCC1C \uCD94\uAC00', '\uCC1C \uCDE8\uC18C', 'favorited');
+      });
+    });
+
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const idx = this.closest('.spot-card').dataset.spotIdx;
+        toggleAction('/explore/like/' + idx, this, '\u2764', '\u2661', '\uC88B\uC544\uC694', '\uC88B\uC544\uC694 \uCDE8\uC18C', 'liked');
+      });
+    });
+
+    /**
+     * Shared handler for favorite and like actions.
+     * - Sends POST request and updates button state.
+     * - Removes a card immediately after favorite cancellation in the favorite tab.
+     */
+    function toggleAction(endpoint, btn, onIcon, offIcon, onMsg, offMsg, key) {
+      // Keep a reference to the current card before sending the request.
+      const card = btn.closest('.spot-card');
+
+      fetch(ctx + endpoint, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success) {
+            showToast('\uB85C\uADF8\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.');
+            setTimeout(() => { window.location.href = ctx + '/auth/login'; }, 1500);
+            return;
+          }
+
+          // Read the current active state from the server response.
+          const active = data[key];
+          // Update button icon and active class.
+          btn.textContent = active ? onIcon : offIcon;
+          btn.classList.toggle('active', active);
+          showToast(active ? onMsg : offMsg);
+
+          /* Remove a card immediately when favorite is canceled in the favorite tab. */
+          // key === 'favorited': favorite button action only
+          // !active: only when favorite has been canceled
+          // currentTab === 'favorite': only inside the favorite tab
+          if (key === 'favorited' && !active && currentTab === 'favorite' && card) {
+            // Apply a fade-out transition before removal.
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+
+            // Remove the card after the transition finishes.
+            setTimeout(() => {
+              card.remove();
+
+              // Update the result count with remaining cards.
+              const grid = document.getElementById('grid-favorite');
+              const remaining = grid ? grid.querySelectorAll('.spot-card').length : 0;
+
+              // Refresh the result count label.
+              const countEl = document.querySelector('#tab-favorite .result-count strong');
+              if (countEl) countEl.textContent = remaining;
+
+              // Show the empty state when there are no cards left.
+              if (remaining === 0 && grid) {
+                grid.innerHTML =
+                  '<div class="empty-state" style="grid-column:1/-1">' +
+                    '<div class="empty-icon">\u{1F4CC}</div>' +
+                    '<p>\uC544\uC9C1 \uCC1C\uD55C \uC5EC\uD589\uC9C0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.</p>' +
+                    '<p style="font-size:14px;color:var(--gray-400);margin-top:8px;">' +
+                      '\uC5EC\uD589\uC9C0 \uCE74\uB4DC\uC758 \uD540 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uCC1C\uD574\uBCF4\uC138\uC694.' +
+                    '</p>' +
+                  '</div>';
+              }
+            }, 300);
+          }
+        })
+        .catch(() => showToast('\uC694\uCCAD \uCC98\uB9AC \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.'));
+    }
+  })();
+</script>
+
+
+<script>
+  (function () {
+    /* ------------------------------------------------------------
+       Spot write modal script
+       - Uses Google Places API and gmp-select event
+       - Supports drag and drop image upload
+       ------------------------------------------------------------ */
+
+    /* Modal-related DOM references */
+    var modal          = document.getElementById('spotWriteModal');
+    var openBtn        = document.getElementById('openSpotWriteBtn');
+    var closeBtn       = document.getElementById('closeSpotWriteBtn');
+    var cancelBtn      = document.getElementById('cancelSpotWriteBtn');
+    var form           = document.getElementById('spotWriteForm');
+    var nameInput      = document.getElementById('spotName');
+    var regionInput    = document.getElementById('spotRegion');
+    var addressInput   = document.getElementById('spotAddress');
+    var latInput       = document.getElementById('spotLatitude');
+    var lngInput       = document.getElementById('spotLongitude');
+    var latHiddenInput = document.getElementById('spotLatitudeHidden');
+    var lngHiddenInput = document.getElementById('spotLongitudeHidden');
+    var shouldOpenOnLoad = 'false' === 'true';
+
+    /* Image upload DOM references */
+    var dropZone    = document.getElementById('spotImageDropZone');
+    var fileInput   = document.getElementById('spotImageFile');
+    var previewWrap = document.getElementById('spotImagePreview');
+    var previewImg  = document.getElementById('spotPreviewImg');
+    var placeholder = document.getElementById('spotImagePlaceholder');
+    var removeBtn   = document.getElementById('spotImageRemoveBtn');
+
+    /* Coordinate sync ------------------------------------------------
+       Keep visible inputs and hidden fields in sync.
+       ------------------------------------------------------------ */
+    function syncCoords(lat, lng) {
+      var latValue = typeof lat === 'number' ? lat.toFixed(6) : '';
+      var lngValue = typeof lng === 'number' ? lng.toFixed(6) : '';
+      latInput.value       = latValue;
+      lngInput.value       = lngValue;
+      latHiddenInput.value = latValue;
+      lngHiddenInput.value = lngValue;
+    }
+
+    /* Extract region name from address components --------------------
+       Country > admin area > locality fallback order.
+       ------------------------------------------------------------ */
+    function extractRegionFromComponents(components) {
+      if (!components || !components.length) return '';
+      for (var i = 0; i < components.length; i++) {
+        var comp = components[i];
+        if (comp.types.indexOf('country') > -1) {
+          return comp.longText || comp.long_name || '';
+        }
+      }
+      for (var j = 0; j < components.length; j++) {
+        var admin = components[j];
+        if (admin.types.indexOf('administrative_area_level_1') > -1) {
+          return admin.longText || admin.long_name || '';
+        }
+      }
+      for (var k = 0; k < components.length; k++) {
+        var fb = components[k];
+        if (fb.types.indexOf('locality') > -1 || fb.types.indexOf('sublocality') > -1) {
+          return fb.longText || fb.long_name || '';
+        }
+      }
+      return '';
+    }
+
+    /* Apply selected place data to the form fields -------------------
+       Fill name, address, region, latitude, and longitude.
+       ------------------------------------------------------------ */
+    function applyPlace(place) {
+      if (!place || !place.location) return;
+
+      var lat = typeof place.location.lat === 'function'
+                ? place.location.lat() : place.location.lat;
+      var lng = typeof place.location.lng === 'function'
+                ? place.location.lng() : place.location.lng;
+
+      syncCoords(lat, lng);
+      addressInput.value = place.formattedAddress || place.formatted_address || addressInput.value;
+
+      if (!nameInput.value.trim() && place.displayName) {
+        nameInput.value = typeof place.displayName === 'string'
+                          ? place.displayName : (place.displayName.text || '');
+      }
+
+      var region = extractRegionFromComponents(place.addressComponents || place.address_components);
+      if (region) regionInput.value = region;
+    }
+
+    /* Image upload: drag-and-drop / click upload ---------------------
+       Validate file size and MIME type first.
+       ------------------------------------------------------------ */
+    function showPreview(file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('\uC774\uBBF8\uC9C0 \uD06C\uAE30\uB294 10MB \uC774\uD558\uB9CC \uAC00\uB2A5\uD569\uB2C8\uB2E4.');
+        return;
+      }
+      var allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (allowed.indexOf(file.type) === -1) {
+        alert('JPG, PNG, GIF, WEBP \uD615\uC2DD\uB9CC \uC5C5\uB85C\uB4DC \uAC00\uB2A5\uD569\uB2C8\uB2E4.');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result;
+        previewWrap.style.display = 'block';
+        placeholder.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (dropZone) {
+      dropZone.addEventListener('click', function (e) {
+        if (e.target === removeBtn || e.target.closest('.spot-image-remove-btn')) return;
+        fileInput.click();
+      });
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) showPreview(this.files[0]);
+      });
+    }
+
+    if (dropZone) {
+      dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+      });
+      dropZone.addEventListener('dragleave', function () {
+        this.classList.remove('drag-over');
+      });
+      dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          fileInput.files = e.dataTransfer.files;
+          showPreview(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        fileInput.value = '';
+        previewImg.src = '';
+        previewWrap.style.display = 'none';
+        placeholder.style.display = '';
+      });
+    }
+
+    /* Modal open / close ---------------------------------------------
+       Support buttons, backdrop click, and ESC key.
+       ------------------------------------------------------------ */
+    function openModal() {
+      if (!modal) return;
+      modal.classList.add('show');
+      document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove('show');
+      document.body.classList.remove('modal-open');
+    }
+
+    if (openBtn)  openBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal && modal.classList.contains('show')) {
+        closeModal();
+      }
+    });
+
+    /* Validate coordinates before submit -----------------------------
+       Block submission when the user has not selected a place.
+       ------------------------------------------------------------ */
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        if (!latHiddenInput.value || !lngHiddenInput.value) {
+          e.preventDefault();
+          alert('\uC704\uCE58 \uAC80\uC0C9\uC5D0\uC11C \uC7A5\uC18C\uB97C \uC120\uD0DD\uD574 \uC8FC\uC18C\uC640 \uC88C\uD45C\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694.');
+        }
+      });
+    }
+
+    /* ------------------------------------------------------------
+       Initialize Google Maps Places API
+       - Use gmp-select and event.placePrediction.toPlace()
+       ------------------------------------------------------------ */
+    window.initExploreWriteMap = async function () {
+      if (!window.google || !window.google.maps) return;
+
+      try {
+        var { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+
+        var placeAutocomplete = new PlaceAutocompleteElement();
+        placeAutocomplete.style.width = '100%';
+
+        var searchWrap = document.getElementById('spotLocationSearchWrap');
+        if (searchWrap) searchWrap.appendChild(placeAutocomplete);
+
+        /* Convert gmp-select prediction into a Place object. */
+        placeAutocomplete.addEventListener('gmp-select', async function (event) {
+          var prediction = event.placePrediction;
+          if (!prediction) return;
+
+          var place = prediction.toPlace();
+          await place.fetchFields({
+            fields: ['displayName', 'formattedAddress', 'location', 'addressComponents']
+          });
+          applyPlace(place);
+        });
+
+      } catch (err) {
+        console.warn('PlaceAutocompleteElement unavailable, fallback to Autocomplete:', err);
+
+        var fallbackInput = document.createElement('input');
+        fallbackInput.type = 'text';
+        fallbackInput.placeholder = '\uC7A5\uC18C\uBA85 \uB610\uB294 \uC8FC\uC18C\uB85C \uAC80\uC0C9';
+        fallbackInput.autocomplete = 'off';
+        fallbackInput.className = 'spot-write-fallback-input';
+
+        var searchWrap = document.getElementById('spotLocationSearchWrap');
+        if (searchWrap) searchWrap.appendChild(fallbackInput);
+
+        var autocomplete = new google.maps.places.Autocomplete(fallbackInput, {
+          fields: ['address_components', 'formatted_address', 'geometry', 'name']
+        });
+
+        autocomplete.addListener('place_changed', function () {
+          var p = autocomplete.getPlace();
+          if (!p || !p.geometry) {
+            alert('\uAC80\uC0C9 \uACB0\uACFC\uC5D0\uC11C \uC62C\uBC14\uB978 \uC7A5\uC18C\uB97C \uC120\uD0DD\uD574\uC8FC\uC138\uC694.');
+            return;
+          }
+          applyPlace({
+            location: p.geometry.location,
+            formattedAddress: p.formatted_address,
+            displayName: p.name,
+            addressComponents: p.address_components
+          });
+        });
+      }
+
+      var initialLat = parseFloat(latHiddenInput.value);
+      var initialLng = parseFloat(lngHiddenInput.value);
+      if (isNaN(initialLat) || isNaN(initialLng)) {
+        syncCoords(null, null);
+      }
+
+      if (shouldOpenOnLoad) openModal();
+    };
+  })();
+</script>
+<script async="" src="https://maps.googleapis.com/maps/api/js?key=DEMO_MAPS_KEY_DISABLED&amp;libraries=places&amp;callback=initExploreWriteMap"></script>
+
+
+
+<script>
+(function() {
+  var CTX_AI = '/TripTogether';
+  var AI_DEFAULT_TITLE = '🤖 맞춤 AI 여행지 추천';
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildAiCard(spot) {
+    var thumb = spot.thumbUrl ||
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80';
+    var tags = (spot.tags || []).slice(0, 3).map(function(t) {
+      return '<span class="spot-tag">' + escHtml(t) + '</span>';
+    }).join('');
+    var rating = (spot.ratingAvg || 0).toFixed(1);
+    var reason = spot.recReason
+      ? '<p style="font-size:12px;color:var(--blue);margin:6px 0 0;">&#x1F916; ' + escHtml(spot.recReason) + '</p>'
+      : '';
+
+    return '<div class="spot-card" style="cursor:pointer;"' +
+      ' onclick="location.href=\'' + CTX_AI + '/detail/' + spot.spotIdx + '\'">' +
+      '<div class="spot-card__img-wrap">' +
+        '<img class="spot-card__img" src="' + escHtml(thumb) + '"' +
+          ' alt="' + escHtml(spot.spotName) + '"' +
+          ' onerror="this.src=\'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80\'">' +
+        (spot.region ? '<span class="spot-card__region-badge">' + escHtml(spot.region) + '</span>' : '') +
+      '</div>' +
+      '<div class="spot-card__body">' +
+        '<div class="spot-card__top">' +
+          '<div class="spot-card__name">' + escHtml(spot.spotName) + '</div>' +
+          '<div class="spot-card__rating"><span class="star">&#11088;</span>' + rating +
+            '<span class="spot-card__review-cnt">(' + (spot.reviewCount || 0) + ')</span></div>' +
+        '</div>' +
+        reason +
+        '<div class="spot-card__tags" style="margin-top:8px;">' + tags + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function loadAiRecommendations() {
+    var loading = document.getElementById('aiLoadingMsg');
+    var grid = document.getElementById('aiGrid');
+    if (loading) loading.style.display = 'block';
+    if (grid) grid.style.display = 'none';
+
+    fetch(CTX_AI + '/recommend/spots')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var loading = document.getElementById('aiLoadingMsg');
+        var grid = document.getElementById('aiGrid');
+        var empty = document.getElementById('aiEmptyMsg');
+        var label = document.getElementById('aiResultLabel');
+
+        if (!data.success || !data.spots || data.spots.length === 0) {
+          if (loading) loading.style.display = 'none';
+          if (empty) empty.style.display = 'block';
+          return;
+        }
+        if (label) {
+          label.innerHTML = data.isTrending ? '&#x1F525; \uC9C0\uAE08 \uB728\uB294 \uC778\uAE30 \uC5EC\uD589\uC9C0 \uCD94\uCC9C' : escHtml(AI_DEFAULT_TITLE);
+        }
+
+
+        if (grid) {
+          grid.innerHTML = data.spots.map(buildAiCard).join('');
+          grid.style.display = '';
+        }
+        if (loading) loading.style.display = 'none';
+      })
+      .catch(function() {
+        var loading = document.getElementById('aiLoadingMsg');
+        if (loading) loading.textContent = '\u0041\u0049 \uCD94\uCC9C \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.';
+      });
+  }
+
+  var aiTabBtn = document.querySelector('[data-tab="ai"]');
+  if (aiTabBtn) {
+    aiTabBtn.addEventListener('click', function() {
+      document.querySelectorAll('.exp-tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      aiTabBtn.classList.add('active');
+
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.classList.remove('active');
+      });
+      var aiPanel = document.getElementById('tab-ai');
+      if (aiPanel) aiPanel.classList.add('active');
+
+      loadAiRecommendations();
+      history.pushState(null, '', window.location.pathname + '?tab=ai');
+    });
+  }
+
+  if (new URLSearchParams(window.location.search).get('tab') === 'ai') {
+    loadAiRecommendations();
+  }
+})();
+</script>
+
+
+
+
+
+<script>window.__DEMO_BASE__="";</script>
+<script src="assets/demo-mock.js"></script>
+</body></html>
